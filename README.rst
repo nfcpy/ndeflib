@@ -1,0 +1,22 @@
+==========================================
+ndeflib - parse and generate NDEF messages
+==========================================
+
+The ``ndeflib`` is an `ISC <http://choosealicense.com/licenses/isc/>`_-licensed Python package for parsing and generating NFC Data Exchange Format messages:
+
+.. code-block:: pycon
+
+   >>> import ndef
+   >>> hexstr = '9101085402656e48656c6c6f5101085402656e576f726c64'
+   >>> octets = bytearray.fromhex(hexstr)
+   >>> for record in ndef.message_decoder(octets): print(record)
+   NDEF Text Record ID '' Text 'Hello' Language 'en' Encoding 'UTF-8'
+   NDEF Text Record ID '' Text 'World' Language 'en' Encoding 'UTF-8'
+   >>> message = [ndef.TextRecord("Hello"), ndef.TextRecord("World")]
+   >>> b''.join(ndef.message_encoder(message)) == octets
+   True
+
+The ``ndeflib`` package is currently in alpha development state and
+documentation so far is only within the source code (for the Python
+help command). However, the source published is considered quite
+stable and fully tested for Python 2 and 3.
