@@ -34,6 +34,7 @@ INSTALL_REQUIRES = []
 
 HERE = os.path.abspath(os.path.dirname(__file__))
 
+
 def read(*parts):
     """
     Build an absolute path from *parts* and and return the contents of the
@@ -43,6 +44,7 @@ def read(*parts):
         return f.read()
 
 META_FILE = read(META_PATH)
+
 
 def find_meta(meta):
     """
@@ -55,6 +57,7 @@ def find_meta(meta):
     if meta_match:
         return meta_match.group(1)
     raise RuntimeError("Unable to find __{meta}__ string.".format(meta=meta))
+
 
 if __name__ == "__main__":
     setup(
