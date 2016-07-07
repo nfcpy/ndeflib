@@ -13,27 +13,36 @@ latin or unicode restricted str or unicode type for Python 2 or 3.
 """
 from __future__ import absolute_import, division
 from abc import ABCMeta, abstractmethod
-import sys, io, re, struct, types
+from functools import wraps
+from io import BytesIO
 import collections
-import functools
+import struct
+import types
+import re
 
-_PY2 = sys.version_info < (3,) 
+import sys
+_PY2 = sys.version_info < (3,)
 
-if _PY2: # pragma: no cover
+if _PY2:  # pragma: no cover
     from urlparse import urlsplit
     from binascii import hexlify
-else: # pragma: no cover
+else:  # pragma: no cover
     from urllib.parse import urlsplit
-    hexlify = lambda octets: octets.hex()
     unicode = str
+
+    def hexlify(octets):
+        return octets.hex()
+
 
 class DecodeError(Exception):
     """NDEF decode error exception class."""
     pass
 
+
 class EncodeError(Exception):
     """NDEF encode error exception class."""
     pass
+
 
 class Record(object):
     """The Record class implements generic decoding and encoding of an
@@ -83,7 +92,7 @@ class Record(object):
     # A Record object is not be hashable because we allow state
     # modifications.
     __hash__ = None
-    
+
     # NDEF supports up to 4 GB payload but it seems practical and wise
     # to restrict the maximum capacity we're dealing with to 1 MB.
     MAX_PAYLOAD_SIZE = 0x100000
@@ -109,7 +118,7 @@ class Record(object):
         """
         assert issubclass(record_class, Record)
         if cls != Record and id(cls._known_types) == id(Record._known_types):
-            cls._known_types = {} # shadow Record.known_types
+            cls._known_types = {}  # shadow Record.known_types
         cls._known_types[record_class._type] = record_class
 
     def __init__(self, type=None, name=None, data=None):
@@ -129,7 +138,7 @@ class Record(object):
         else:
             errstr = "data may be sequence or None, but not {}"
             raise self._type_error(errstr, data.__class__.__name__)
-        
+
     @property
     def type(self):
         """A str object representing the NDEF Record TNF and TYPE fields. The
@@ -151,9 +160,11 @@ class Record(object):
         if value is None:
             _value = ''
         elif isinstance(value, str):
-            _value = str(value) if _PY2 else value.encode('latin').decode('latin')
+            _value = (str(value) if _PY2 else
+                      value.encode('latin').decode('latin'))
         elif isinstance(value, (bytes, bytearray)):
-            _value = bytes(value) if _PY2 else value.decode('latin')
+            _value = (bytes(value) if _PY2 else
+                      value.decode('latin'))
         else:
             errstr = "name may be str or None, but not {}"
             raise self._type_error(errstr, type(value).__name__)
@@ -189,7 +200,7 @@ class Record(object):
                 self.type == other.type and
                 self.name == other.name and
                 self.data == other.data)
-    
+
     def __repr__(self):
         """Return a formal representation of the Record object."""
         return "{}.{}({:args})".format(
@@ -203,12 +214,12 @@ class Record(object):
         if format_spec == 'args':
             return "{!r}, {!r}, {!r}".format(self.type, self.name, self.data)
         if format_spec == 'data':
-            _data = self.data # let derived records encode only once
+            _data = self.data  # let derived records encode only once
             s = "PAYLOAD {} byte".format(len(_data))
             if len(_data) > 0:
                 s += " '{}'".format(hexlify(_data[0:10]))
             if len(_data) > 10:
-                s += " ... {} more".format(len(_data)-10)
+                s += " ... {} more".format(len(_data) - 10)
             return s
         return format(str(self), format_spec)
 
@@ -226,7 +237,7 @@ class Record(object):
     #
     # private encode/decode interface for the message encoder/decoder
     #
-    
+
     def _encode(self, mb=False, me=False, cf=False, stream=None):
         """Encode the NDEF record and return the encoded octets as a bytes
         object (if stream is None) or write the octets into the
@@ -260,10 +271,10 @@ class Record(object):
         layout = '>BB' + ('B' if SR else 'L') + ('B' if IL else '')
         fields = (octet0, len(TYPE), len(PAYLOAD)) + ((len(ID),) if IL else ())
 
-        s = io.BytesIO() if stream is None else stream
+        s = BytesIO() if stream is None else stream
         n = s.write(struct.pack(layout, *fields) + TYPE + ID + PAYLOAD)
         return s.getvalue() if stream is None else n
-    
+
     @classmethod
     def _decode(cls, stream, errors, known_types):
         try:
@@ -284,9 +295,10 @@ class Record(object):
         try:
             layout = '>B' + ('B' if SR else 'L') + ('B' if IL else '')
             bcount = struct.calcsize(layout)
-            fields = struct.unpack(layout, stream.read(bcount))+(0,)
+            fields = struct.unpack(layout, stream.read(bcount)) + (0,)
         except struct.error:
-            raise cls._decode_error("buffer underflow at reading length fields")
+            errstr = "buffer underflow at reading length fields"
+            raise cls._decode_error(errstr)
 
         try:
             if TNF in (0, 5, 6):
@@ -333,7 +345,7 @@ class Record(object):
 
     _decode_min_payload_length = 0
     _decode_max_payload_length = 0xffffffff
-    
+
     @classmethod
     def _decode_payload(cls, octets, errors):
         # This classmethod is called to decode the PAYLOAD of a known
@@ -354,7 +366,8 @@ class Record(object):
         # plus TYPE, for TNF 0, 5, and 6 it is a fixed string, for TNF
         # 2 and 3 it is directly the TYPE string. Other TNF values are
         # not allowed.
-        prefix = ('','urn:nfc:wkt:','','','urn:nfc:ext:','unknown','unchanged')
+        prefix = ('', 'urn:nfc:wkt:', '', '', 'urn:nfc:ext:',
+                  'unknown', 'unchanged')
         if not 0 <= TNF <= 6:
             raise cls._value_error('NDEF Record TNF values must be 0 to 6')
         if TNF in (0, 5, 6):
@@ -422,14 +435,15 @@ class Record(object):
         try:
             values = s.unpack_from(octets, offset)
             if fmt.endswith('*'):
-                values += (octets[offset+s.size:],)
+                values += (octets[(offset + s.size):],)
             elif fmt.endswith('+'):
                 length = values[-1]
                 offset = offset + s.size
-                values = values[0:-1] + (octets[offset:offset+length],)
+                values = values[0:-1] + (octets[offset:(offset + length)],)
                 if len(values[-1]) < length:
                     errstr = "need {} more octet to unpack format '{}'"
-                    raise cls._decode_error(errstr, length-len(values[-1]), fmt)
+                    needed = length - len(values[-1])
+                    raise cls._decode_error(errstr, needed, fmt)
         except struct.error as error:
             raise cls._decode_error(str(error))
         else:
@@ -451,7 +465,8 @@ class Record(object):
             if fmt.endswith('*'):
                 octets = s.pack(*values[0:-1]) + values[-1]
             elif fmt.endswith('+'):
-                octets = s.pack(*(values[0:-1]+(len(values[-1]),)))+values[-1]
+                length = len(values[-1])
+                octets = s.pack(*(values[0:-1] + (length,))) + values[-1]
             else:
                 octets = s.pack(*values)
         except struct.error as error:
@@ -481,8 +496,8 @@ class Record(object):
         # of fmt is the name of a non-function class attribute,
         # otherwise it is joined with ' '.
         record = cls.__module__ + "." + cls.__name__
-        attrib = getattr(cls, fmt.split(' ', 1)[0], lambda:None)
-        joinby = ('.',' ')[type(attrib) == types.FunctionType]
+        attrib = getattr(cls, fmt.split(' ', 1)[0], lambda: None)
+        joinby = ('.', ' ')[isinstance(attrib, types.FunctionType)]
         return TypeError(record + joinby + fmt.format(*args, **kwargs))
 
     @classmethod
@@ -493,8 +508,8 @@ class Record(object):
         # of fmt is the name of a non-function class attribute,
         # otherwise it is joined with ' '.
         record = cls.__module__ + "." + cls.__name__
-        attrib = getattr(cls, fmt.split(' ', 1)[0], lambda:None)
-        joinby = ('.',' ')[type(attrib) == types.FunctionType]
+        attrib = getattr(cls, fmt.split(' ', 1)[0], lambda: None)
+        joinby = ('.', ' ')[isinstance(attrib, types.FunctionType)]
         return ValueError(record + joinby + fmt.format(*args, **kwargs))
 
     @classmethod
@@ -561,7 +576,8 @@ class Record(object):
             errstr = name + ' conversion requires ascii text, but got {!r}'
             raise cls._value_error(errstr, value)
 
-class GlobalRecord(Record): # pragma: no cover
+
+class GlobalRecord(Record):  # pragma: no cover
     """The GlobalRecord class is mostly to provide a namespace for
     grouping record classes in help(). Beyond that it is real abstract
     class that helps ensure derived classes implement the required
@@ -575,12 +591,15 @@ class GlobalRecord(Record): # pragma: no cover
             "derived class must define the '_type' class attribute"
 
     @abstractmethod
-    def _encode_payload(self): pass
+    def _encode_payload(self):
+        pass
 
     @abstractmethod
-    def _decode_payload(cls, octets, errors): pass
+    def _decode_payload(cls, octets, errors):
+        pass
 
-class LocalRecord(Record): # pragma: no cover
+
+class LocalRecord(Record):  # pragma: no cover
     """The LocalRecord class is mostly to provide a namespace for
     grouping record classes in help(). Beyond that it is real abstract
     class that helps ensure derived classes implement the required
@@ -594,24 +613,28 @@ class LocalRecord(Record): # pragma: no cover
             "derived class must define the '_type' class attribute"
 
     @abstractmethod
-    def _encode_payload(self): pass
+    def _encode_payload(self):
+        pass
 
     @abstractmethod
-    def _decode_payload(cls, octets, errors): pass
+    def _decode_payload(cls, octets, errors):
+        pass
 
-#
+
 # A decorator for property setters that runs a given conversion on the
 # value argument and automatically supplies the property name to the
 # conversion method for error string formatting.
-#
+
+
 def convert(conversion):
     def converter(setter):
-        @functools.wraps(setter)
+        @wraps(setter)
         def wrapper(self, value):
             _convert = getattr(self, '_' + conversion)
             return setter(self, _convert(value, setter.__name__))
         return wrapper
     return converter
+
 
 """
 class MyRecord(Record):

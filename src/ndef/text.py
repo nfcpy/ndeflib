@@ -11,6 +11,7 @@ encoded through the ndef.message_encoder().
 from __future__ import absolute_import, division
 from .record import Record, GlobalRecord, convert
 
+
 class TextRecord(GlobalRecord):
     """Representation of an NDEF Text Record as defined by the NFC Forum
     Text Record Type Definition specification.
@@ -26,7 +27,7 @@ class TextRecord(GlobalRecord):
 
     """
     _type = 'urn:nfc:wkt:T'
-    
+
     def __init__(self, text=None, language=None, encoding=None):
         """Initialize an NDEF TextRecord. Default values are the empty text
         string, the language code 'en' for English, and UTF-8 encoding.
@@ -66,7 +67,7 @@ class TextRecord(GlobalRecord):
 
     @encoding.setter
     def encoding(self, value):
-        if not value in ("UTF-8", "UTF-16"):
+        if value not in ("UTF-8", "UTF-16"):
             errstr = "encoding may be 'UTF-8' or 'UTF-16', but not '{}'"
             raise self._value_error(errstr.format(value))
         self._utfx = value
@@ -90,7 +91,7 @@ class TextRecord(GlobalRecord):
         UTFX = self.encoding
         LANG = self.language.encode('ascii')
         TEXT = self.text.encode(UTFX)
-        FLAG = self._encode_struct('B', len(LANG) | ((UTFX=="UTF-16")<<7))
+        FLAG = self._encode_struct('B', len(LANG) | ((UTFX == "UTF-16") << 7))
         return FLAG + LANG + TEXT
 
     _decode_min_payload_length = 1

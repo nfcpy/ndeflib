@@ -17,6 +17,7 @@ from .record import Record, GlobalRecord, LocalRecord, convert
 from .text import TextRecord
 from .uri import UriRecord
 
+
 class ActionRecord(LocalRecord):
     """This is a local record class used within the payload of a
     Smartposter Record. It encodes an action value that translates
@@ -79,6 +80,7 @@ class ActionRecord(LocalRecord):
         action = ACTION if ACTION < len(cls._action_strings) else 0
         return ActionRecord(action)
 
+
 class SizeRecord(LocalRecord):
     """This is a local record class used within the payload of a
     Smartposter Record. It encodes the size of the resource referred
@@ -113,7 +115,7 @@ class SizeRecord(LocalRecord):
 
         if format_spec == 'data':
             return "Resource Size '{r.resource_size} byte'".format(r=self)
-            
+
         return format(str(self), format_spec)
 
     def _encode_payload(self):
@@ -125,6 +127,7 @@ class SizeRecord(LocalRecord):
     @classmethod
     def _decode_payload(cls, octets, errors):
         return SizeRecord(cls._decode_struct('>L', octets))
+
 
 class TypeRecord(LocalRecord):
     """This is a local record class used within the payload of a
@@ -171,6 +174,7 @@ class TypeRecord(LocalRecord):
             errstr = "can't decode payload as utf-8"
             raise cls._decode_error(errstr.format(errstr))
         return TypeRecord(TYPE)
+
 
 class SmartposterRecord(GlobalRecord):
     """The SmartposterRecord provides the attributes and methods to
@@ -398,7 +402,7 @@ class SmartposterRecord(GlobalRecord):
             if self.resource_type:
                 s.append("{r.type_records[0]:data}")
             return ' '.join(s).format(r=self)
-            
+
         return format(str(self), format_spec)
 
     def _encode_payload(self):

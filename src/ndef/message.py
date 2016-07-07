@@ -2,7 +2,8 @@
 from __future__ import absolute_import, division
 
 import io
-from .record import Record, DecodeError, EncodeError
+from .record import Record, DecodeError
+
 
 def message_decoder(stream_or_bytes, errors='strict',
                     known_types=Record._known_types):
@@ -19,10 +20,11 @@ def message_decoder(stream_or_bytes, errors='strict',
     try:
         record, mb, me, cf = Record._decode(stream, errors, known_types)
     except DecodeError:
-        if errors == 'ignore': return
-        else: raise
+        if errors == 'ignore':
+            return  # just stop decoding
+        raise
 
-    if record is not None and mb == False and errors == 'strict':
+    if record is not None and mb is False and errors == 'strict':
         raise DecodeError('MB flag not set in first record')
 
     if record is not None and known_types is Record._known_types:
@@ -30,20 +32,24 @@ def message_decoder(stream_or_bytes, errors='strict',
 
     while record is not None:
         yield record
-        if me == True:
-            if cf == True and errors == 'strict':
+        if me is True:
+            if cf is True and errors == 'strict':
                 raise DecodeError('CF flag set in last record')
             record = None
         else:
             try:
-                record, mb, me, cf = Record._decode(stream, errors, known_types)
+                record, mb, me, cf = Record._decode(stream, errors,
+                                                    known_types)
             except DecodeError:
-                if errors == 'ignore': return
-                else: raise
-            if record is None and errors == 'strict':
-                raise DecodeError('ME flag not set in last record')
-            if mb == True and errors == 'strict':
-                raise DecodeError('MB flag set in middle record')
+                if errors == 'ignore':
+                    return  # just stop decoding
+                raise
+            else:
+                if record is None and errors == 'strict':
+                    raise DecodeError('ME flag not set in last record')
+                if mb is True and errors == 'strict':
+                    raise DecodeError('MB flag set in middle record')
+
 
 def message_encoder(message=None, stream=None):
     encoder = _message_encoder(stream)
@@ -58,6 +64,7 @@ def message_encoder(message=None, stream=None):
         for record in itermsg:
             yield encoder.send(record)
         yield encoder.send(None)
+
 
 def _message_encoder(stream):
     mb_flag = True

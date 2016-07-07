@@ -23,14 +23,15 @@ NDEF Records.
 """
 from __future__ import absolute_import, division
 from .message import message_decoder, message_encoder
-from .record import Record, GlobalRecord, LocalRecord, convert, hexlify
+from .record import Record, GlobalRecord, LocalRecord, hexlify
 from .deviceinfo import DeviceInformationRecord
-#from .wifi import WifiSimpleConfigRecord
-#from .wifi import WifiPeerToPeerRecord
+# from .wifi import WifiSimpleConfigRecord
+# from .wifi import WifiPeerToPeerRecord
 from collections import namedtuple, Sequence
 from io import BytesIO
 
 default_version = '1.3'
+
 
 class AlternativeCarrierRecord(LocalRecord):
     """This is a local record class used within the payload of Handover
@@ -48,7 +49,7 @@ class AlternativeCarrierRecord(LocalRecord):
     """
     _type = 'urn:nfc:wkt:ac'
     _cps_values = ("inactive", "active", "activating", "unknown")
-    
+
     def __init__(self, cps, cdr, *adr):
         """Initialize the record with the carrier power state (cps), carrier
         data reference (cdr), and zero or more auxiliary data
@@ -117,7 +118,8 @@ class AlternativeCarrierRecord(LocalRecord):
         octets = bytearray(length)
         octets[0] = self._carrier_power_state
         offset = self._pack_ref(octets, 1, self.carrier_data_reference)
-        octets[offset] = len(self.auxiliary_data_reference); offset += 1
+        octets[offset] = len(self.auxiliary_data_reference)
+        offset = offset + 1
         for reference in self.auxiliary_data_reference:
             offset = self._pack_ref(octets, offset, reference)
         return bytes(octets)
@@ -127,7 +129,7 @@ class AlternativeCarrierRecord(LocalRecord):
         octets[offset] = length
         octets[offset+1:offset+1+length] = reference.encode('latin')
         return offset + 1 + length
-        
+
     _decode_min_payload_length = 2
 
     @classmethod
@@ -141,17 +143,17 @@ class AlternativeCarrierRecord(LocalRecord):
                 raise cls._decode_error(errmsg)
             else:
                 return cls(CARRIER_POWER_STATE, CARRIER_DATA_REFERENCE)
-        AUXILIARY_DATA_REFERENCE_COUNT = cls._decode_struct("B", octets, offset-1)
-        AUXILIARY_DATA_REFERENCE_LIST = AUXILIARY_DATA_REFERENCE_COUNT * [None]
-        for index in range(AUXILIARY_DATA_REFERENCE_COUNT):
-            AUXILIARY_DATA_REFERENCE = cls._read_ref(octets,offset,'auxiliary')
-            AUXILIARY_DATA_REFERENCE_LIST[index] = AUXILIARY_DATA_REFERENCE
-            offset += 1 + len(AUXILIARY_DATA_REFERENCE)
+        AUX_DATA_REFERENCE_COUNT = cls._decode_struct("B", octets, offset-1)
+        AUX_DATA_REFERENCE_LIST = AUX_DATA_REFERENCE_COUNT * [None]
+        for index in range(AUX_DATA_REFERENCE_COUNT):
+            AUX_DATA_REFERENCE = cls._read_ref(octets, offset, 'auxiliary')
+            AUX_DATA_REFERENCE_LIST[index] = AUX_DATA_REFERENCE
+            offset += 1 + len(AUX_DATA_REFERENCE)
         if offset < len(octets) and errors == 'strict':
             errstr = "payload has {} octet left after decode"
             raise cls._decode_error(errstr, len(octets)-offset)
         return cls(CARRIER_POWER_STATE, CARRIER_DATA_REFERENCE,
-                   *AUXILIARY_DATA_REFERENCE_LIST)
+                   *AUX_DATA_REFERENCE_LIST)
 
     @classmethod
     def _read_ref(cls, octets, offset, name):
@@ -159,6 +161,7 @@ class AlternativeCarrierRecord(LocalRecord):
             errstr = "decode is missing {} data reference length"
             raise cls._decode_error(errstr, name)
         return cls._decode_struct('B+', octets, offset).decode('latin')
+
 
 class CollisionResolutionRecord(LocalRecord):
     """This is a local record class used within the payload of a Handover
@@ -174,7 +177,7 @@ class CollisionResolutionRecord(LocalRecord):
 
     """
     _type = 'urn:nfc:wkt:cr'
-        
+
     def __init__(self, random_number=0):
         """Initialize the record with a random number, which must fit into a
         16-bit unsigned integer.
@@ -224,6 +227,7 @@ class CollisionResolutionRecord(LocalRecord):
         RANDOM_NUMBER = cls._decode_struct(">H", octets)
         return cls(RANDOM_NUMBER)
 
+
 class ErrorRecord(LocalRecord):
     """This is a local record class used within the payload of a Handover
     Select Record. It encodes an 8-bit error reason identifier and an
@@ -245,7 +249,7 @@ class ErrorRecord(LocalRecord):
         "temporarily out of memory, may retry after {} milliseconds",
         "permanently out of memory, may retry with at most {} octets",
         "carrier specific error, may retry after {} milliseconds")
-    
+
     def __init__(self, error_reason=None, error_data=None):
         """Initialize the record with error reason and error data
         information. None values default to error reason value 0 and
@@ -309,7 +313,7 @@ class ErrorRecord(LocalRecord):
     def _encode_payload(self):
         if self.error_reason == 0:
             raise self._encode_error("can't encode reserved error reason 0")
-        
+
         fmt = ('BB', '>BL', 'BB', 'B*')[min(self.error_reason-1, 3)]
         return self._encode_struct(fmt, self.error_reason, self.error_data)
 
@@ -331,6 +335,7 @@ class ErrorRecord(LocalRecord):
         error_data_fmt = ('B', '>L', 'B', '*')[min(ERROR_REASON-1, 3)]
         ERROR_DATA = cls._decode_struct(error_data_fmt, octets, 1)
         return cls(ERROR_REASON, ERROR_DATA)
+
 
 class HandoverRecord(GlobalRecord):
     """This is the base class for the Handover Request, Select, Mediation,
@@ -367,7 +372,7 @@ class HandoverRecord(GlobalRecord):
         for ac in alternative_carrier:
             self.add_alternative_carrier(*ac)
         self.unknown_records = []
-        
+
     @property
     def hexversion(self):
         """The version as an 8-bit integer with 4-bit major and minor
@@ -429,8 +434,8 @@ class HandoverRecord(GlobalRecord):
 
     _encode_records = [
         "alternative_carrier_records",
-        "unknown_records",
-    ]
+        "unknown_records"]
+
     def _encode_payload(self):
         stream = BytesIO()
         encoder = message_encoder(stream=stream)
@@ -441,10 +446,10 @@ class HandoverRecord(GlobalRecord):
         encoder.send(None)
         return self._encode_struct('B*', self.hexversion, stream.getvalue())
 
-    _decode_min_payload_length = 1    
+    _decode_min_payload_length = 1
     _decode_records = [
-        (AlternativeCarrierRecord._type, 'alternative_carrier_records'),
-    ]
+        (AlternativeCarrierRecord._type, 'alternative_carrier_records')]
+
     @staticmethod
     def _decode_payload(cls, octets, errors):
         mapping = dict(HandoverRecord._decode_records + cls._decode_records)
@@ -456,6 +461,7 @@ class HandoverRecord(GlobalRecord):
             else:
                 hrecord.unknown_records.append(record)
         return hrecord
+
 
 class HandoverRequestRecord(HandoverRecord):
     """The HandoverRequestRecord is the first record of a connection
@@ -474,8 +480,9 @@ class HandoverRequestRecord(HandoverRecord):
 
     """
     _type = 'urn:nfc:wkt:Hr'
-    
-    def __init__(self, version=default_version, crn=None, *alternative_carrier):
+
+    def __init__(self, version=default_version, crn=None,
+                 *alternative_carrier):
         """Initialize the record with a version number, a collision resolution
         random number crn and zero or more alternative carriers. The
         version and alternative carrier arguments are handled by the
@@ -511,7 +518,7 @@ class HandoverRequestRecord(HandoverRecord):
 
         if format_spec == 'data':
             return HandoverRecord.__format__(self, format_spec)
-            
+
         return format(str(self), format_spec)
 
     _encode_records = [
@@ -525,16 +532,17 @@ class HandoverRequestRecord(HandoverRecord):
         return super(type(self), self)._encode_payload()
 
     _decode_records = [
-        (CollisionResolutionRecord._type, 'collision_resolution_records'),
-    ]
+        (CollisionResolutionRecord._type, 'collision_resolution_records')]
+
     @classmethod
     def _decode_payload(cls, octets, errors):
         hr = HandoverRecord._decode_payload(cls, octets, errors)
-        if (hr.hexversion > 0x11 and hr.collision_resolution_number is None
-            and errors == 'strict'):
-            errstr = "can't decode {} without collision resolution record"
-            raise cls._decode_error(errstr, "version " + hr.version_string)
+        if errors == 'strict' and hr.hexversion > 0x11:
+            if hr.collision_resolution_number is None:
+                errstr = "can't decode {} without collision resolution record"
+                raise cls._decode_error(errstr, "version " + hr.version_string)
         return hr
+
 
 class HandoverSelectRecord(HandoverRecord):
     """The HandoverSelectRecord is the first record of a connection
@@ -552,8 +560,9 @@ class HandoverSelectRecord(HandoverRecord):
 
     """
     _type = 'urn:nfc:wkt:Hs'
-    
-    def __init__(self, version=default_version,error=None,*alternative_carrier):
+
+    def __init__(self, version=default_version, error=None,
+                 *alternative_carrier):
         """Initialize the record with a version number, an error information
         tuple, and zero or more alternative carriers. The version and
         alternative carrier arguments are handled by the HandoverRecord
@@ -619,6 +628,7 @@ class HandoverSelectRecord(HandoverRecord):
     def _decode_payload(cls, octets, errors):
         return HandoverRecord._decode_payload(cls, octets, errors)
 
+
 class HandoverMediationRecord(HandoverRecord):
     """The HandoverMediationRecord is the first record of a connection
     handover mediation message. Information enclosed within the
@@ -628,7 +638,7 @@ class HandoverMediationRecord(HandoverRecord):
 
     """
     _type = 'urn:nfc:wkt:Hm'
-    
+
     def __init__(self, version=default_version, *alternative_carrier):
         """Initialize the record with a version number and zero or more
         alternative carriers, directly handled by the HandoverRecord
@@ -647,6 +657,7 @@ class HandoverMediationRecord(HandoverRecord):
     @classmethod
     def _decode_payload(cls, octets, errors):
         return HandoverRecord._decode_payload(cls, octets, errors)
+
 
 class HandoverInitiateRecord(HandoverRecord):
     """The HandoverInitiateRecord is the first record of a connection
@@ -657,7 +668,7 @@ class HandoverInitiateRecord(HandoverRecord):
 
     """
     _type = 'urn:nfc:wkt:Hi'
-    
+
     def __init__(self, version=default_version, *alternative_carrier):
         """Initialize the record with a version number and zero or more
         alternative carriers, directly handled by the HandoverRecord
@@ -676,6 +687,7 @@ class HandoverInitiateRecord(HandoverRecord):
     @classmethod
     def _decode_payload(cls, octets, errors):
         return HandoverRecord._decode_payload(cls, octets, errors)
+
 
 class HandoverCarrierRecord(GlobalRecord):
     """The HandoverCarrierRecord allows a unique identification of an
@@ -689,7 +701,7 @@ class HandoverCarrierRecord(GlobalRecord):
 
     """
     _type = 'urn:nfc:wkt:Hc'
-    
+
     def __init__(self, carrier_type=None, carrier_data=None, reference=None):
         """Initialize the HandoverCarrierRecord with a carrier type,
         potentially some carrier data, and a reference that sets the
@@ -772,14 +784,14 @@ HandoverRequestRecord.register_type(AlternativeCarrierRecord)
 HandoverRequestRecord.register_type(CollisionResolutionRecord)
 HandoverRequestRecord.register_type(HandoverCarrierRecord)
 HandoverRequestRecord.register_type(DeviceInformationRecord)
-#HandoverRequestRecord.register_type(WifiSimpleConfigRecord)
-#HandoverRequestRecord.register_type(WifiPeerToPeerRecord)
+# HandoverRequestRecord.register_type(WifiSimpleConfigRecord)
+# HandoverRequestRecord.register_type(WifiPeerToPeerRecord)
 
 HandoverSelectRecord.register_type(AlternativeCarrierRecord)
 HandoverSelectRecord.register_type(ErrorRecord)
 HandoverSelectRecord.register_type(DeviceInformationRecord)
-#HandoverRequestRecord.register_type(WifiSimpleConfigRecord)
-#HandoverSelectRecord.register_type(WifiPeerToPeerRecord)
+# HandoverRequestRecord.register_type(WifiSimpleConfigRecord)
+# HandoverSelectRecord.register_type(WifiPeerToPeerRecord)
 
 HandoverMediationRecord.register_type(AlternativeCarrierRecord)
 HandoverInitiateRecord.register_type(AlternativeCarrierRecord)

@@ -12,6 +12,7 @@ from .record import Record, GlobalRecord, convert
 from collections import namedtuple
 import uuid
 
+
 class DeviceInformationRecord(GlobalRecord):
     """This class decodes or encodes an NDEF Device Information Record and
     provides attributes for the information elements. Individual
@@ -169,7 +170,7 @@ class DeviceInformationRecord(GlobalRecord):
             errmsg = "encoding requires that vendor and model name are set"
             raise self._encode_error(errmsg)
 
-        encode = lambda t, v: self._encode_struct('BB+', t, v)
+        def encode(t, v): return self._encode_struct('BB+', t, v)
         octets = encode(0, self.vendor_name.encode('utf-8'))
         octets += encode(1, self.model_name.encode('utf-8'))
         if self.unique_name is not None:

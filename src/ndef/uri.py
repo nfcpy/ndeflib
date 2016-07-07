@@ -14,11 +14,12 @@ the IRI).
 from __future__ import absolute_import, division
 from .record import Record, GlobalRecord, convert, _PY2
 
-if _PY2: # pragma: no cover
+if _PY2:  # pragma: no cover
     from urlparse import urlsplit, urlunsplit
     from urllib import quote, unquote
-else: # pragma: no cover
+else:  # pragma: no cover
     from urllib.parse import urlsplit, urlunsplit, quote, unquote
+
 
 class UriRecord(GlobalRecord):
     """The UriRecord class decodes or encodes an NDEF URI Record. The
@@ -39,12 +40,12 @@ class UriRecord(GlobalRecord):
     """
     _type = 'urn:nfc:wkt:U'
     _prefix_strings = (
-        "", "http://www.", "https://www.","http://", "https://", "tel:",
+        "", "http://www.", "https://www.", "http://", "https://", "tel:",
         "mailto:", "ftp://anonymous:anonymous@", "ftp://ftp.", "ftps://",
-        "sftp://", "smb://", "nfs://", "ftp://", "dav://", "news:", 
-        "telnet://", "imap:", "rtsp://", "urn:", "pop:", "sip:", "sips:", 
-        "tftp:", "btspp://", "btl2cap://", "btgoep://", "tcpobex://", 
-        "irdaobex://", "file://", "urn:epc:id:", "urn:epc:tag:", 
+        "sftp://", "smb://", "nfs://", "ftp://", "dav://", "news:",
+        "telnet://", "imap:", "rtsp://", "urn:", "pop:", "sip:", "sips:",
+        "tftp:", "btspp://", "btl2cap://", "btgoep://", "tcpobex://",
+        "irdaobex://", "file://", "urn:epc:id:", "urn:epc:tag:",
         "urn:epc:pat:", "urn:epc:raw:", "urn:epc:", "urn:nfc:")
 
     def __init__(self, iri=None):

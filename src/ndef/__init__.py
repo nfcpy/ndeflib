@@ -19,7 +19,7 @@ An NDEF Message can be decoded from bytes, bytearray, or a file-like,
 byte-oriented stream with the ndef.message_decoder() generator
 function. Note that the NDEF Records are decoded sequentially while
 iterating, it is thus possible to successfully decode until some
-malformed record later in the message. 
+malformed record later in the message.
 
 >>> octets = bytearray.fromhex('910301414243005903010158595a30ff')
 >>> for record in ndef.message_decoder(octets): print(record)
@@ -86,25 +86,39 @@ documented in the package contents files.
 
 """
 import sys
-if sys.version_info < (2,7): # pragma: no cover
+if sys.version_info < (2, 7):  # pragma: no cover
     raise ImportError("The ndef module requires Python 2.6 or newer!")
+else:
+    from . import message
+    from . import record
+    from . import uri
+    from . import text
+    from . import smartposter
+    from . import deviceinfo
+    from . import handover
+    # from . import bluetooth
+    # from . import wifi
 
-from .message import message_decoder, message_encoder
-from .record import Record, DecodeError, EncodeError
-from .text import TextRecord
-from .uri import UriRecord
-from .smartposter import SmartposterRecord
-from .handover import HandoverRequestRecord
-from .handover import HandoverSelectRecord
-from .handover import HandoverMediationRecord
-from .handover import HandoverInitiateRecord
-from .handover import HandoverCarrierRecord
-from .deviceinfo import DeviceInformationRecord
-#from .wifi import WifiSimpleConfigRecord
-#from .wifi import WifiPeerToPeerRecord
-#from .bluetooth import BluetoothConfigRecord
+message_decoder = message.message_decoder
+message_encoder = message.message_encoder
 
-### METADATA ##################################################################
+DecodeError = record.DecodeError
+EncodeError = record.EncodeError
+Record = record.Record
+UriRecord = uri.UriRecord
+TextRecord = text.TextRecord
+SmartposterRecord = smartposter.SmartposterRecord
+DeviceInformationRecord = deviceinfo.DeviceInformationRecord
+HandoverRequestRecord = handover.HandoverRequestRecord
+HandoverSelectRecord = handover.HandoverSelectRecord
+HandoverMediationRecord = handover.HandoverMediationRecord
+HandoverInitiateRecord = handover.HandoverInitiateRecord
+HandoverCarrierRecord = handover.HandoverCarrierRecord
+# WifiSimpleConfigRecord = wifi.WifiSimpleConfigRecord
+# WifiPeerToPeerRecord = wifi.WifiPeerToPeerRecord
+# BluetoothConfigRecord = bluetooth.BluetoothConfigRecord
+
+# METADATA ####################################################################
 
 __version__ = "0.0.0"
 
