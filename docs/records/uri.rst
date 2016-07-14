@@ -10,7 +10,7 @@ patterns that are compactly encoded as a single octet and automatically expanded
 when decoding. The `UriRecord` class provides both access attributes for decoded
 IRI as well as a converted URI (if a netloc part is present in the IRI).
 
-.. class:: UriRecord(iri)
+.. class:: UriRecord(iri='')
 
    The `UriRecord` class decodes or encodes an NDEF URI Record. The
    `UriRecord.iri` attribute holds the expanded (if a valid abbreviation code

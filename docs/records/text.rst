@@ -7,7 +7,7 @@ The NDEF Text Record is a well-known record type defined by the `NFC Forum`_. It
 carries a UTF-8 or UTF-16 encoded text string with an associated IANA language
 code identifier.
 
-.. class:: TextRecord(text [, language [, encoding]])
+.. class:: TextRecord(text='', language='en', encoding='UTF-8')
 
    A :class:`TextRecord` is initialized with the actual text content, an
    ISO/IANA language identifier, and the desired transfer encoding UTF-8 or

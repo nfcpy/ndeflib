@@ -8,7 +8,8 @@ The NDEF Device Information Record is a well-known record type defined by the
 provide information about the device, such as the manufacturer and device model
 name.
 
-.. class:: DeviceInformationRecord(vendor_name, model_name, [unique_name, uuid_string, version_string])
+.. class:: DeviceInformationRecord(vendor_name, model_name, \
+           unique_name=None, uuid_string=None, version_string=None)
 
    Initialize the record with required and optional device information. The
    vendor_name and model_name arguments are required, all other arguments are

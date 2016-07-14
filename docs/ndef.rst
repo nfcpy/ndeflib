@@ -22,7 +22,8 @@ class and can be directly encoded as part of a message.
 Message Decoder
 ---------------
 
-.. function:: message_decoder( [stream_or_bytes [, errors [, known_records]]] )
+.. function:: message_decoder(stream_or_bytes, errors='strict', \
+              known_records=Record._known_types)
 
    Returns a generator function that decodes NDEF Records from a file-like,
    byte-oriented stream or a bytes object given by the *stream_or_bytes*
@@ -34,8 +35,8 @@ Message Decoder
    non-correctable error is encountered. The *known_records* argument provides
    the mapping of record type strings to class implementations. It defaults to
    all global records implemented by `ndeflib` or additionally registered from
-   user code. It's main use would probably be to force decoding into base
-   records with `known_records={}`.
+   user code. It's main use would probably be to force decoding into only
+   generic records with `known_records={}`.
 
    :param stream_or_bytes: message data octets
    :type stream_or_bytes: byte stream or bytes object
@@ -62,7 +63,7 @@ Message Decoder
 Message Encoder
 ---------------
 
-.. function:: message_encoder( [message [, stream]] )
+.. function:: message_encoder(message=None, stream=None)
 
    Returns a generator function that encodes :class:`ndef.Record` objects into
    an NDEF Message octet sequence. The *message* argument is either an iterable
@@ -103,7 +104,7 @@ Message Encoder
 Record Class
 ------------
 
-.. class:: Record( [type [, name [, data]]] )
+.. class:: Record(type='', name='', data=b'')
 
    This class implements generic decoding and encoding of an NDEF Record and is
    the base for all specialized record type classes. The NDEF Record Payload

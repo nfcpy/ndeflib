@@ -11,7 +11,8 @@ for icon rendering. For a smartposter application this is a recommendation for
 processing as well as resource type and size hints to guide a strategy for
 retrieving the resource.
 
-.. class:: SmartposterRecord(resource [, title [, action [, icon [, resource_size [, resource_type]]]]])
+.. class:: SmartposterRecord(resource, title=None, action=None, icon=None, \
+           resource_size=None, resource_type=None)
 
    Initialize a `SmartposterRecord` instance. The only required argument is the
    Internationalized Resource Identifier *resource*, all other arguments are
@@ -58,7 +59,7 @@ retrieving the resource.
       A dictionary of all decoded or set titles with language `str` keys and
       title `str` values. The attribute can not be set, use :meth:`set_title`.
 
-   .. method:: set_title(title [, language [, encoding]])
+   .. method:: set_title(title, language='en', encoding='UTF-8')
 
       Set the title string for a specific language which defaults to 'en'. The
       transfer encoding may be set to either 'UTF-8' or 'UTF-16', the default is
