@@ -14,4 +14,5 @@ known record types.
    records/uri
    records/smartposter
    records/deviceinfo
+   records/handover
 
