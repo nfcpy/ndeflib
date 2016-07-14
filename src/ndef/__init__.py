@@ -120,7 +120,7 @@ HandoverCarrierRecord = handover.HandoverCarrierRecord
 
 # METADATA ####################################################################
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __title__ = "ndef"
 __description__ = "NFC Data Exchange Format decoder and encoder."

@@ -13,7 +13,7 @@ PACKAGES = find_packages(where="src")
 META_PATH = os.path.join("src", "ndef", "__init__.py")
 KEYWORDS = ["ndef", "nfc"]
 CLASSIFIERS = [
-    "Development Status :: 3 - Alpha",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "Natural Language :: English",
     "License :: OSI Approved :: ISC License (ISCL)",
