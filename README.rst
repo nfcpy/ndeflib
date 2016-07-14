@@ -6,7 +6,12 @@ Parse or generate NDEF messages
    :target: http://ndeflib.readthedocs.io/en/latest/?badge=latest
    :alt: Documentation Status
 
-The ``ndeflib`` is an `ISC <http://choosealicense.com/licenses/isc/>`_-licensed Python package for parsing and generating NFC Data Exchange Format (NDEF) messages:
+.. image:: https://travis-ci.org/nfcpy/ndeflib.svg?branch=master
+   :target: https://travis-ci.org/nfcpy/ndeflib
+   :alt: Build Status
+
+The ``ndeflib`` is an `ISC <http://choosealicense.com/licenses/isc/>`_-licensed
+Python package for parsing and generating NFC Data Exchange Format (NDEF) messages:
 
 .. code-block:: pycon
 
