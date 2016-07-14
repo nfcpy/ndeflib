@@ -14,8 +14,7 @@ Parse or generate NDEF messages
    :target: https://codecov.io/gh/nfcpy/ndeflib
    :alt: Code Coverage
 
-The ``ndeflib`` is an `ISC <http://choosealicense.com/licenses/isc/>`_-licensed
-Python package for parsing and generating NFC Data Exchange Format (NDEF) messages:
+The ``ndeflib`` is an `ISC <http://choosealicense.com/licenses/isc/>`_-licensed Python package for parsing and generating NFC Data Exchange Format (NDEF) messages:
 
 .. code-block:: pycon
 
@@ -29,7 +28,4 @@ Python package for parsing and generating NFC Data Exchange Format (NDEF) messag
    >>> b''.join(ndef.message_encoder(message)) == octets
    True
 
-The ``ndeflib`` package is currently in alpha development state and
-documentation so far is only within the source code (for the Python
-help command). However, the source published is considered quite
-stable and fully tested for Python 2 and 3.
+The ``ndeflib`` documentation can be found on `Read the Docs <https://ndeflib.readthedocs.io/>`_, the code on `GitHub <https://github.com/hynek/attrs>`_.  It is `continously tested <https://travis-ci.org/nfcpy/ndeflib>` for Python 2.7 and 3.5 and pretty complete `test coverage <https://codecov.io/gh/nfcpy/ndeflib>`.
