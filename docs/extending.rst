@@ -103,7 +103,7 @@ arguments and a data view for the `str() <str>` and :func:`repr` functions.
                data_str = time.strftime('%d.%m.%Y', time.gmtime(self._time))
                time_str = time.strftime('%H:%M:%S', time.gmtime(self._time))
                return "{}°C on {} at {}".format(self._temp, data_str, time_str)
-           return super(type(self), self).__format__(format_spec)
+           return super(ExampleTemperatureRecord, self).__format__(format_spec)
 
        def _encode_payload(self):
            return self._encode_struct('>Lh', self._time, self._temp)
@@ -149,9 +149,11 @@ are returned as `bytes`.
 This example also demonstrates how decode and encode error exceptions are
 generated with the ``_decode_error`` and ``_encode_error`` methods. These
 methods return an instance of ``ndef.DecodeError`` and ``ndef.EncodeError`` with
-the fully qualified class name followed by the expanded format string. And, if
-the first word in the format string matches a data attribute name, it is joined
-with a '.' character to the class name.
+the fully qualified class name followed by the expanded format string. Two
+similar methods, ``_type_error`` and ``_value_error`` may be used whenever a
+`TypeError` or `ValueError` shall be reported with the full classname in its
+error string. They do also check if the first word in the format string matches
+a data attribute name, and if, the string is joined with a '.' to the classname.
 
 The ``_decode_payload`` method also shows the use of the errors argument. With
 'strict' interpretation of errors the payload is expected to have the Type 1 TLV

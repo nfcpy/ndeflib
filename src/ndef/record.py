@@ -12,12 +12,12 @@ latin or unicode restricted str or unicode type for Python 2 or 3.
 
 """
 from __future__ import absolute_import, division
+from types import FunctionType, MethodType
 from abc import ABCMeta, abstractmethod
 from functools import wraps
 from io import BytesIO
 import collections
 import struct
-import types
 import re
 
 import sys
@@ -497,8 +497,8 @@ class Record(object):
         # of fmt is the name of a non-function class attribute,
         # otherwise it is joined with ' '.
         record = cls.__module__ + "." + cls.__name__
-        attrib = getattr(cls, fmt.split(' ', 1)[0], lambda: None)
-        joinby = ('.', ' ')[isinstance(attrib, types.FunctionType)]
+        attrib = getattr(cls, fmt.split(' ', 1)[0], Record._type_error)
+        joinby = ('.', ' ')[isinstance(attrib, (FunctionType, MethodType))]
         return TypeError(record + joinby + fmt.format(*args, **kwargs))
 
     @classmethod
@@ -509,8 +509,8 @@ class Record(object):
         # of fmt is the name of a non-function class attribute,
         # otherwise it is joined with ' '.
         record = cls.__module__ + "." + cls.__name__
-        attrib = getattr(cls, fmt.split(' ', 1)[0], lambda: None)
-        joinby = ('.', ' ')[isinstance(attrib, types.FunctionType)]
+        attrib = getattr(cls, fmt.split(' ', 1)[0], Record._value_error)
+        joinby = ('.', ' ')[isinstance(attrib, (FunctionType, MethodType))]
         return ValueError(record + joinby + fmt.format(*args, **kwargs))
 
     @classmethod

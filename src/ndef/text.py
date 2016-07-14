@@ -82,7 +82,7 @@ class TextRecord(GlobalRecord):
             return ("Text '{r.text}' Language '{r.language}' "
                     "Encoding '{r.encoding}'".format(r=self))
 
-        return format(str(self), format_spec)
+        return super(TextRecord, self).__format__(format_spec)
 
     def _encode_payload(self):
         """Called from Record._encode for the byte representation of the NDEF

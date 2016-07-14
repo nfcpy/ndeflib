@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import absolute_import, division
-import os, sys, pytest, ndef
+
+import ndef
+import pytest
 import _test_record_base
 
 def pytest_generate_tests(metafunc):
@@ -211,6 +213,16 @@ class TestSmartposterRecord(_test_record_base._TestRecordBase):
         assert record.type_records == []
         assert record.icon_records == []
 
+
+def test_set_title():
+    record = ndef.SmartposterRecord()
+    assert record.titles == {}
+    record.set_title("English Text",)
+    record.set_title("German Text", "de")
+    assert record.titles == {'en': 'English Text', 'de': 'German Text'}
+    record.set_title("Deutscher Text", "de")
+    assert record.titles == {'en': 'English Text', 'de': 'Deutscher Text'}
+
 smartposter_messages = [
     ('d102055370 d101015500',
      [ndef.SmartposterRecord('')]),
@@ -223,7 +235,10 @@ smartposter_messages = [
      [ndef.SmartposterRecord('http://nfcpy.org', 'nfcpy', 'exec')]),
 ]
 
-@pytest.mark.parametrize("encoded, message", smartposter_messages)
+@pytest.mark.parametrize("encoded, message", smartposter_messages + [
+    ('d102085370 9101015500 500000',
+     [ndef.SmartposterRecord('')]),
+])
 def test_message_decode(encoded, message):
     octets = bytes(bytearray.fromhex(encoded))
     print(list(ndef.message_decoder(octets)))

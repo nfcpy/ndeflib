@@ -1,12 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import os, sys, pytest, ndef
+from __future__ import absolute_import, division
+
+import ndef
+import pytest
 import _test_record_base
 
 def pytest_generate_tests(metafunc):
     _test_record_base.generate_tests(metafunc)
 
-sys.path.insert(0, os.path.abspath('.'))
 from ndef import message_decoder, message_encoder
 from ndef.record import Record, DecodeError, EncodeError
 from ndef.handover import AlternativeCarrierRecord
@@ -468,7 +470,10 @@ class TestHandoverCarrierRecord(_test_record_base._TestRecordBase):
 def test_handover_request_record_attributes():
     record = HandoverRequestRecord()
     assert record.collision_resolution_number is None
+    record.collision_resolution_number = 0x4321
+    assert record.collision_resolution_number == 0x4321
     record.collision_resolution_number = 0x1234
+    assert record.collision_resolution_number == 0x1234
     record.add_alternative_carrier('active', 'wifi', 'a1', 'a2')
     record.add_alternative_carrier('inactive', 'bt31', 'a3')
     record.unknown_records.append(Record('text/plain', 'txt', 'Hello'))

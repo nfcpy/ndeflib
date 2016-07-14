@@ -61,7 +61,7 @@ class ActionRecord(LocalRecord):
         if format_spec == 'data':
             return "Action '{r.action}'".format(r=self)
 
-        return format(str(self), format_spec)
+        return super(ActionRecord, self).__format__(format_spec)
 
     def _encode_payload(self):
         return self._encode_struct('B', self._action)
@@ -116,7 +116,7 @@ class SizeRecord(LocalRecord):
         if format_spec == 'data':
             return "Resource Size '{r.resource_size} byte'".format(r=self)
 
-        return format(str(self), format_spec)
+        return super(SizeRecord, self).__format__(format_spec)
 
     def _encode_payload(self):
         return self._encode_struct('>L', self.resource_size)
@@ -161,7 +161,7 @@ class TypeRecord(LocalRecord):
         if format_spec == 'data':
             return "Resource Type '{r.resource_type}'".format(r=self)
 
-        return format(str(self), format_spec)
+        return super(TypeRecord, self).__format__(format_spec)
 
     def _encode_payload(self):
         return self.resource_type.encode('utf-8')
@@ -413,7 +413,7 @@ class SmartposterRecord(GlobalRecord):
                 s.append("{r.type_records[0]:data}")
             return ' '.join(s).format(r=self)
 
-        return format(str(self), format_spec)
+        return super(SmartposterRecord, self).__format__(format_spec)
 
     def _encode_payload(self):
         records = (

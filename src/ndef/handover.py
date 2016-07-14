@@ -110,7 +110,7 @@ class AlternativeCarrierRecord(LocalRecord):
             s.append("Auxiliary Data {r.auxiliary_data_reference}")
             return ' '.join(s).format(r=self)
 
-        return format(str(self), format_spec)
+        return super(AlternativeCarrierRecord, self).__format__(format_spec)
 
     def _encode_payload(self):
         length = 3 + len(self.carrier_data_reference) + \
@@ -214,7 +214,7 @@ class CollisionResolutionRecord(LocalRecord):
         if format_spec == 'data':
             return "Random Number {r.random_number}".format(r=self)
 
-        return format(str(self), format_spec)
+        return super(CollisionResolutionRecord, self).__format__(format_spec)
 
     def _encode_payload(self):
         return self._encode_struct(">H", self.random_number)
@@ -308,7 +308,7 @@ class ErrorRecord(LocalRecord):
         if format_spec == 'data':
             return "Error '{r.error_string}'".format(r=self)
 
-        return format(str(self), format_spec)
+        return super(ErrorRecord, self).__format__(format_spec)
 
     def _encode_payload(self):
         if self.error_reason == 0:
@@ -432,6 +432,8 @@ class HandoverRecord(GlobalRecord):
                 s.append("{:data}".format(acr))
             return ' '.join(s)
 
+        return super(HandoverRecord, self).__format__(format_spec)
+
     _encode_records = [
         "alternative_carrier_records",
         "unknown_records"]
@@ -520,7 +522,7 @@ class HandoverRequestRecord(HandoverRecord):
         if format_spec == 'data':
             return HandoverRecord.__format__(self, format_spec)
 
-        return format(str(self), format_spec)
+        return super(HandoverRequestRecord, self).__format__(format_spec)
 
     _encode_records = [
         "collision_resolution_records",
@@ -608,12 +610,14 @@ class HandoverSelectRecord(HandoverRecord):
         if format_spec == 'args':
             err = ", ({:args})".format(self.error) if self.error else ', None'
             return HandoverRecord.__format__(self, format_spec).format(err)
+
         if format_spec == 'data':
             s = HandoverRecord.__format__(self, format_spec)
             if self.error is not None:
                 s += " {r.error:data}".format(r=self)
             return s
-        return format(str(self), format_spec)
+
+        return super(HandoverSelectRecord, self).__format__(format_spec)
 
     _encode_records = HandoverRecord._encode_records + ["error_records"]
 
@@ -651,9 +655,11 @@ class HandoverMediationRecord(HandoverRecord):
     def __format__(self, format_spec):
         if format_spec == 'args':
             return HandoverRecord.__format__(self, format_spec).format('')
+
         if format_spec == 'data':
             return HandoverRecord.__format__(self, format_spec)
-        return format(str(self), format_spec)
+
+        return super(HandoverMediationRecord, self).__format__(format_spec)
 
     @classmethod
     def _decode_payload(cls, octets, errors):
@@ -681,9 +687,11 @@ class HandoverInitiateRecord(HandoverRecord):
     def __format__(self, format_spec):
         if format_spec == 'args':
             return HandoverRecord.__format__(self, format_spec).format('')
+
         if format_spec == 'data':
             return HandoverRecord.__format__(self, format_spec)
-        return format(str(self), format_spec)
+
+        return super(HandoverInitiateRecord, self).__format__(format_spec)
 
     @classmethod
     def _decode_payload(cls, octets, errors):
@@ -761,7 +769,7 @@ class HandoverCarrierRecord(GlobalRecord):
                 s.append("... {} more".format(len(_data)-10))
             return ' '.join(s)
 
-        return format(str(self), format_spec)
+        return super(HandoverCarrierRecord, self).__format__(format_spec)
 
     def _encode_payload(self):
         CTF, CARRIER_TYPE = self._encode_type(self.carrier_type)

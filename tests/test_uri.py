@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import os, sys, pytest, ndef
+from __future__ import absolute_import, division
+
+import ndef
+import pytest
 import _test_record_base
 
 def pytest_generate_tests(metafunc):
@@ -123,6 +126,10 @@ class TestUriRecord(_test_record_base._TestRecordBase):
 
 def test_uri_to_iri_conversion():
     record = ndef.UriRecord()
+    # no netloc -> no conversion
+    record.uri = u"tel:1234"
+    assert record.iri == u"tel:1234"
+    # with netloc -> conversion
     record.uri = u"http://www.xn--hy-viaa5g.com/%7Euser/index.html"
     assert record.iri == u"http://www.hääyö.com/~user/index.html"
 

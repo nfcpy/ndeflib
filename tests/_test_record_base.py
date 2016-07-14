@@ -1,6 +1,10 @@
-import os, sys, pytest, re
-sys.path.insert(0, os.path.abspath('.'))
+from __future__ import absolute_import, division
+
 import ndef
+import pytest
+
+import sys
+import re
 
 def generate_tests(metafunc):
     if metafunc.cls and issubclass(metafunc.cls, _TestRecordBase):

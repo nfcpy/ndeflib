@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import os, sys, pytest, ndef
+from __future__ import absolute_import, division
+
+import ndef
+import pytest
+import _test_record_base
+
 from ndef.record import Record
 from io import BytesIO
 
@@ -412,7 +417,7 @@ class TestValueToLatin:
 
     @pytest.mark.parametrize("value, errstr", fail_values)
     def test_fail(self, value, errstr):
-        errstr = errstr.format(u=('', 'u')[sys.version_info < (3,)])
+        errstr = errstr.format(u=('', 'u')[ndef.record._PY2])
         with pytest.raises((TypeError, ValueError)) as excinfo:
             Record._value_to_latin(value, 'value')
         assert str(excinfo.value) == "ndef.record.Record value " + errstr
@@ -432,7 +437,7 @@ class TestValueToUnicode:
 
     @pytest.mark.parametrize("value, errstr", fail_values)
     def test_fail(self, value, errstr):
-        errstr = errstr.format(b=('b', '')[sys.version_info < (3,)])
+        errstr = errstr.format(b=('b', '')[ndef.record._PY2])
         with pytest.raises((TypeError, ValueError)) as excinfo:
             Record._value_to_unicode(value, 'value')
         assert str(excinfo.value) == "ndef.record.Record value " + errstr

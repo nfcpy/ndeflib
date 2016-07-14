@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import os, sys, pytest, ndef
+from __future__ import absolute_import, division
+
+import ndef
+import pytest
 import _test_record_base
 
 def pytest_generate_tests(metafunc):

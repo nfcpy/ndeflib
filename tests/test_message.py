@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import os
-import sys
-import pytest
-from io import BytesIO
+from __future__ import absolute_import, division
 
-sys.path.insert(0, os.path.abspath('.'))
 import ndef
+import pytest
+
 from ndef import Record
+from io import BytesIO
 
 test_message_set_1 = [
     ('', []),
@@ -123,3 +122,10 @@ def test_fail_message_encoder_invalid_types(argument, errmsg):
     with pytest.raises(TypeError) as excinfo:
         list(ndef.message_encoder(argument))
     assert errmsg == str(excinfo.value)
+
+def test_message_encoder_stop_iteration():
+    encoder = ndef.message_encoder()
+    encoder.send(None)
+    encoder.send(None)
+    with pytest.raises(StopIteration):
+        encoder.send(None)

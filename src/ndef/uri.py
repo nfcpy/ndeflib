@@ -90,17 +90,19 @@ class UriRecord(GlobalRecord):
         if format_spec == 'data':
             return "Resource '{r.iri}'".format(r=self)
 
-        return format(str(self), format_spec)
+        return super(UriRecord, self).__format__(format_spec)
 
     def _encode_payload(self):
         # Called from Record._encode when the byte representation of
         # the NDEF URI Record PAYLOAD is required for Record.data.
         for prefix in sorted(self._prefix_strings, reverse=True):
-            if self.iri.startswith(prefix):
+            if prefix and self.iri.startswith(prefix):
                 index = self._prefix_strings.index(prefix)
                 URI_CODE = self._encode_struct('B', index)
                 URI_DATA = self.iri[len(prefix):].encode('utf-8')
                 return URI_CODE + URI_DATA
+        else:
+            return self._encode_struct('B*', 0, self.iri.encode('utf-8'))
 
     _decode_min_payload_length = 1
 
