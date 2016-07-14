@@ -203,7 +203,7 @@ class _TestHandoverRecordBase(_test_record_base._TestRecordBase):
 class TestHandoverRequestRecord(_TestHandoverRecordBase):
     RECORD = ndef.handover.HandoverRequestRecord
     ATTRIB = "hexversion, version_info, collision_resolution_number,"\
-             "alternative_carrier"
+             "alternative_carriers"
 
     test_init_args_data = [
         ((0x10,), (0x10, (1,0), None, [])),
@@ -264,7 +264,7 @@ class TestHandoverRequestRecord(_TestHandoverRecordBase):
 
 class TestHandoverSelectRecord(_TestHandoverRecordBase):
     RECORD = ndef.handover.HandoverSelectRecord
-    ATTRIB = "hexversion, version_info, error, alternative_carrier"
+    ATTRIB = "hexversion, version_info, error, alternative_carriers"
 
     test_init_args_data = [
         ((0x10,), (0x10, (1,0), None, [])),
@@ -327,7 +327,7 @@ class TestHandoverSelectRecord(_TestHandoverRecordBase):
 
 class TestHandoverMediationRecord(_TestHandoverRecordBase):
     RECORD = ndef.handover.HandoverMediationRecord
-    ATTRIB = "hexversion, version_info, alternative_carrier"
+    ATTRIB = "hexversion, version_info, alternative_carriers"
 
     test_init_args_data = [
         ((0x10,), (0x10, (1,0), [])),
@@ -372,7 +372,7 @@ class TestHandoverMediationRecord(_TestHandoverRecordBase):
 
 class TestHandoverInitiateRecord(_TestHandoverRecordBase):
     RECORD = ndef.handover.HandoverInitiateRecord
-    ATTRIB = "hexversion, version_info, alternative_carrier"
+    ATTRIB = "hexversion, version_info, alternative_carriers"
 
     test_init_args_data = [
         ((0x10,), (0x10, (1,0), [])),
@@ -481,16 +481,16 @@ def test_handover_request_record_attributes():
     assert record.version_info == (1, 3)
     assert record.version_string == "1.3"
     assert record.collision_resolution_number == 0x1234
-    assert len(record.alternative_carrier) == 2
-    assert len(record.alternative_carrier[0].auxiliary_data_reference) == 2
-    assert len(record.alternative_carrier[1].auxiliary_data_reference) == 1
-    assert record.alternative_carrier[0].carrier_power_state == 'active'
-    assert record.alternative_carrier[0].carrier_data_reference == 'wifi'
-    assert record.alternative_carrier[0].auxiliary_data_reference[0] == 'a1'
-    assert record.alternative_carrier[0].auxiliary_data_reference[1] == 'a2'
-    assert record.alternative_carrier[1].carrier_power_state == 'inactive'
-    assert record.alternative_carrier[1].carrier_data_reference == 'bt31'
-    assert record.alternative_carrier[1].auxiliary_data_reference[0] == 'a3'
+    assert len(record.alternative_carriers) == 2
+    assert len(record.alternative_carriers[0].auxiliary_data_reference) == 2
+    assert len(record.alternative_carriers[1].auxiliary_data_reference) == 1
+    assert record.alternative_carriers[0].carrier_power_state == 'active'
+    assert record.alternative_carriers[0].carrier_data_reference == 'wifi'
+    assert record.alternative_carriers[0].auxiliary_data_reference[0] == 'a1'
+    assert record.alternative_carriers[0].auxiliary_data_reference[1] == 'a2'
+    assert record.alternative_carriers[1].carrier_power_state == 'inactive'
+    assert record.alternative_carriers[1].carrier_data_reference == 'bt31'
+    assert record.alternative_carriers[1].auxiliary_data_reference[0] == 'a3'
     assert len(record.unknown_records) == 1
     assert record.unknown_records[0].type == 'text/plain'
     assert record.unknown_records[0].name == 'txt'
@@ -515,16 +515,16 @@ def test_handover_select_record_attributes():
     assert record.error is not None
     assert record.error.error_reason == 1
     assert record.error.error_data == 100
-    assert len(record.alternative_carrier) == 2
-    assert len(record.alternative_carrier[0].auxiliary_data_reference) == 2
-    assert len(record.alternative_carrier[1].auxiliary_data_reference) == 1
-    assert record.alternative_carrier[0].carrier_power_state == 'active'
-    assert record.alternative_carrier[0].carrier_data_reference == 'wifi'
-    assert record.alternative_carrier[0].auxiliary_data_reference[0] == 'a1'
-    assert record.alternative_carrier[0].auxiliary_data_reference[1] == 'a2'
-    assert record.alternative_carrier[1].carrier_power_state == 'inactive'
-    assert record.alternative_carrier[1].carrier_data_reference == 'bt31'
-    assert record.alternative_carrier[1].auxiliary_data_reference[0] == 'a3'
+    assert len(record.alternative_carriers) == 2
+    assert len(record.alternative_carriers[0].auxiliary_data_reference) == 2
+    assert len(record.alternative_carriers[1].auxiliary_data_reference) == 1
+    assert record.alternative_carriers[0].carrier_power_state == 'active'
+    assert record.alternative_carriers[0].carrier_data_reference == 'wifi'
+    assert record.alternative_carriers[0].auxiliary_data_reference[0] == 'a1'
+    assert record.alternative_carriers[0].auxiliary_data_reference[1] == 'a2'
+    assert record.alternative_carriers[1].carrier_power_state == 'inactive'
+    assert record.alternative_carriers[1].carrier_data_reference == 'bt31'
+    assert record.alternative_carriers[1].auxiliary_data_reference[0] == 'a3'
     assert len(record.unknown_records) == 1
     assert record.unknown_records[0].type == 'text/plain'
     assert record.unknown_records[0].name == 'txt'
@@ -543,16 +543,16 @@ def test_handover_mediation_record_attributes():
     assert record.hexversion == 0x13
     assert record.version_info == (1, 3)
     assert record.version_string == "1.3"
-    assert len(record.alternative_carrier) == 2
-    assert len(record.alternative_carrier[0].auxiliary_data_reference) == 2
-    assert len(record.alternative_carrier[1].auxiliary_data_reference) == 1
-    assert record.alternative_carrier[0].carrier_power_state == 'active'
-    assert record.alternative_carrier[0].carrier_data_reference == 'wifi'
-    assert record.alternative_carrier[0].auxiliary_data_reference[0] == 'a1'
-    assert record.alternative_carrier[0].auxiliary_data_reference[1] == 'a2'
-    assert record.alternative_carrier[1].carrier_power_state == 'inactive'
-    assert record.alternative_carrier[1].carrier_data_reference == 'bt31'
-    assert record.alternative_carrier[1].auxiliary_data_reference[0] == 'a3'
+    assert len(record.alternative_carriers) == 2
+    assert len(record.alternative_carriers[0].auxiliary_data_reference) == 2
+    assert len(record.alternative_carriers[1].auxiliary_data_reference) == 1
+    assert record.alternative_carriers[0].carrier_power_state == 'active'
+    assert record.alternative_carriers[0].carrier_data_reference == 'wifi'
+    assert record.alternative_carriers[0].auxiliary_data_reference[0] == 'a1'
+    assert record.alternative_carriers[0].auxiliary_data_reference[1] == 'a2'
+    assert record.alternative_carriers[1].carrier_power_state == 'inactive'
+    assert record.alternative_carriers[1].carrier_data_reference == 'bt31'
+    assert record.alternative_carriers[1].auxiliary_data_reference[0] == 'a3'
     assert len(record.unknown_records) == 1
     assert record.unknown_records[0].type == 'text/plain'
     assert record.unknown_records[0].name == 'txt'
@@ -571,16 +571,16 @@ def test_handover_initiate_record_attributes():
     assert record.hexversion == 0x13
     assert record.version_info == (1, 3)
     assert record.version_string == "1.3"
-    assert len(record.alternative_carrier) == 2
-    assert len(record.alternative_carrier[0].auxiliary_data_reference) == 2
-    assert len(record.alternative_carrier[1].auxiliary_data_reference) == 1
-    assert record.alternative_carrier[0].carrier_power_state == 'active'
-    assert record.alternative_carrier[0].carrier_data_reference == 'wifi'
-    assert record.alternative_carrier[0].auxiliary_data_reference[0] == 'a1'
-    assert record.alternative_carrier[0].auxiliary_data_reference[1] == 'a2'
-    assert record.alternative_carrier[1].carrier_power_state == 'inactive'
-    assert record.alternative_carrier[1].carrier_data_reference == 'bt31'
-    assert record.alternative_carrier[1].auxiliary_data_reference[0] == 'a3'
+    assert len(record.alternative_carriers) == 2
+    assert len(record.alternative_carriers[0].auxiliary_data_reference) == 2
+    assert len(record.alternative_carriers[1].auxiliary_data_reference) == 1
+    assert record.alternative_carriers[0].carrier_power_state == 'active'
+    assert record.alternative_carriers[0].carrier_data_reference == 'wifi'
+    assert record.alternative_carriers[0].auxiliary_data_reference[0] == 'a1'
+    assert record.alternative_carriers[0].auxiliary_data_reference[1] == 'a2'
+    assert record.alternative_carriers[1].carrier_power_state == 'inactive'
+    assert record.alternative_carriers[1].carrier_data_reference == 'bt31'
+    assert record.alternative_carriers[1].auxiliary_data_reference[0] == 'a3'
     assert len(record.unknown_records) == 1
     assert record.unknown_records[0].type == 'text/plain'
     assert record.unknown_records[0].name == 'txt'

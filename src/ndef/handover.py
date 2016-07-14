@@ -398,8 +398,8 @@ class HandoverRecord(GlobalRecord):
         return "{}.{}".format(*self.version_info)
 
     @property
-    def alternative_carrier(self):
-        """The list of alternative carriers. Each item has the attributes
+    def alternative_carriers(self):
+        """List of alternative carriers. Each item has the attributes
         carrier_power_state, carrier_data_reference, and the
         auxiliary_data_reference list.
 
