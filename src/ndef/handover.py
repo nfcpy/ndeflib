@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Classes for decoding and encoding of Connection Handover Records
+"""Decoding and encoding of Connection Handover Records.
 
 The NFC Forum Connection Handover specification defines a number of
 Record structures that are used to exchange messages between Handover
@@ -472,11 +472,12 @@ class HandoverRequestRecord(HandoverRecord):
     and a number of references to alternative carrier information
     records subsequently encoded in the same message.
 
+    >>> import ndef
+    >>> from os import urandom
     >>> wsc = 'application/vnd.wfa.wsc'
-    >>> message = [ndef.HandoverRequestRecord('1.3', os.urandom(2))]
+    >>> message = [ndef.HandoverRequestRecord('1.3', urandom(2))]
     >>> message.append(ndef.HandoverCarrierRecord(wsc, None, 'wifi'))
     >>> message[0].add_alternative_carrier('active', message[1].name)
-    >>> message_bytes = b''.join(ndef.message_encoder(message))
 
     """
     _type = 'urn:nfc:wkt:Hr'
@@ -553,10 +554,10 @@ class HandoverSelectRecord(HandoverRecord):
     of references to alternative carrier information records
     subsequently encoded in the same message.
 
+    >>> import ndef
     >>> carrier = ndef.Record('mimetype/subtype', 'wifi', b'1234')
     >>> message = [ndef.HandoverSelectRecord('1.3'), carrier]
     >>> message[0].add_alternative_carrier('active', carrier.name)
-    >>> message_bytes = b''.join(ndef.message_encoder(message))
 
     """
     _type = 'urn:nfc:wkt:Hs'

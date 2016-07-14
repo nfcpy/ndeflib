@@ -61,6 +61,7 @@ class Record(object):
     it is the Absolute URI formatted TYPE field. The Record.type
     attribute is read-only.
 
+    >>> import ndef
     >>> record = ndef.Record('urn:nfc:wkt:T')
     >>> list(ndef.message_encoder([record]))
     [b'\\xd1\\x01\\x00T']

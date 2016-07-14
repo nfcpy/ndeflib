@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Classes for decoding and encoding of a Smartposter Record
+"""Decoding and encoding of the NDEF Smartposter Record.
 
 The NFC Forum Smart Poster Record Type Definition defines a structure
 that associates an Internationalized Resource Identifier (or Uniform
@@ -181,9 +181,14 @@ class SmartposterRecord(GlobalRecord):
     conviniently access the content of a decoded NDEF Smart Poster
     Record or to encode one through the ndef.message_encoder.
 
-
-    >>> ndef.SmartposterRecord("http://nfcpy.org", "nfcpy")
-    >>> ndef.SmartposterRecord("http://nfcpy.org", "nfcpy", "save")
+    >>> import ndef
+    >>> record = ndef.SmartposterRecord('https://github.com/nfcpy/ndeflib')
+    >>> record.set_title("NFC Data Exchange Format decoder", "en")
+    >>> record.set_title("NFC Datenaustauschformat Dekodierer", "de")
+    >>> iconfile = open('images/ndeflib.ico', 'rb')
+    >>> record.add_icon('image/x-icon', iconfile.read())
+    >>> record.resource_type = 'text/html'
+    >>> record.action = 'exec'
 
     """
     _type = 'urn:nfc:wkt:Sp'
@@ -213,9 +218,9 @@ class SmartposterRecord(GlobalRecord):
         if title is not None:
             if isinstance(title, dict):
                 for lang, text in title.items():
-                    self.add_title(text, lang)
+                    self.set_title(text, lang)
             else:
-                self.add_title(title)
+                self.set_title(title)
         if action is not None:
             self.action = action
         if icon is not None:
@@ -281,13 +286,18 @@ class SmartposterRecord(GlobalRecord):
         except IndexError:
             return None
 
-    def add_title(self, title, language=None, encoding=None):
-        """Add a title string for a specific language with desired transfer
-        encoding UTF-8 or UTF-16. The default values for language and
-        encoding are 'en' and UTF-8.
+    def set_title(self, title, language='en', encoding='UTF-8'):
+        """Set the title string for a specific language, default English. The
+        transfer encoding may be set to either UTF-8 or UTF-16, it
+        defaults to UTF-8 if not specified.
 
         """
-        self.title_records.append(TextRecord(title, language, encoding))
+        for r in self.title_records:
+            if r.language == language:
+                r.text, r.encoding = title, encoding
+                break
+        else:
+            self.title_records.append(TextRecord(title, language, encoding))
 
     @property
     def action(self):

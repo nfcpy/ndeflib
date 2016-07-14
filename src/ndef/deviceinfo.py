@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""A class for decoding and encoding of an NDEF Device Information Record.
+"""Decoding and encoding of the NDEF Device Information Record.
 
 The NDEF Device Information Record is a well-known record type defined
 by the NFC Forum. It carries a number of Type-Length-Value data
@@ -28,7 +28,7 @@ class DeviceInformationRecord(GlobalRecord):
     """
     _type = 'urn:nfc:wkt:Di'
 
-    DataElement = namedtuple('DataElement', 'data_type, data_bytes')
+    _DataElement = namedtuple('DataElement', 'data_type, data_bytes')
 
     def __init__(self, vendor_name, model_name, unique_name=None,
                  uuid_string=None, version_string=None, *undefined_data):
@@ -140,7 +140,7 @@ class DeviceInformationRecord(GlobalRecord):
         if len(data_bytes) > 255:
             errstr = "data_bytes can not be more than 255 octets, got {}"
             raise self._value_error(errstr, len(data_bytes))
-        self._unknown_tlvs.append(self.DataElement(data_type, data_bytes))
+        self._unknown_tlvs.append(self._DataElement(data_type, data_bytes))
 
     def __format__(self, format_spec):
         if format_spec == 'args':

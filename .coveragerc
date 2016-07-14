@@ -1,0 +1,12 @@
+[run]
+branch = True
+source = ndef
+
+[paths]
+source =
+   src/ndef
+   .tox/*/lib/python*/site-packages/ndef
+   .tox/pypy/site-packages/ndef
+
+[report]
+show_missing = True

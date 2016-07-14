@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""A class for decoding and encoding of an NDEF Text Record.
+"""Decoding and encoding of the NDEF Text Record.
 
 The NDEF Text Record is a well-known record type defined by the NFC
 Forum. It carries a UTF-8 or UTF-16 encoded text string with an
@@ -16,9 +16,10 @@ class TextRecord(GlobalRecord):
     """Representation of an NDEF Text Record as defined by the NFC Forum
     Text Record Type Definition specification.
 
-    An NDEF TextRecord is initialized with the actual text content, an
+    A TextRecord is initialized with the actual text content, an
     ISO/IANA language identifier, and the desired transfer encoding
-    UTF-8 or UTF-16.
+    UTF-8 or UTF-16. Default values are empty text, language code
+    'en', and UTF-8 encoding.
 
     >>> ndef.TextRecord("Hello World")
     ndef.text.TextRecord('Hello World', 'en', 'UTF-8')

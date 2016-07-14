@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""A class for decoding and encoding of an NDEF URI Record.
+"""Decoding and encoding of the NDEF URI Record.
 
 The NDEF URI Record is a well-known record type defined by the NFC
 Forum. It carries a, potentially abbreviated, UTF-8 encoded

@@ -1,2 +1,7 @@
-include LICENSE
+include *.rst LICENSE tox.ini .coveragerc docs/Makefile
 recursive-include tests *.py
+recursive-include docs *.ico
+recursive-include docs *.png
+recursive-include docs *.py
+recursive-include docs *.rst
+prune docs/_build
