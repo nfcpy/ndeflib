@@ -8,7 +8,7 @@ The NDEF Device Information Record is a well-known record type defined by the
 provide information about the device, such as the manufacturer and device model
 name.
 
-.. class:: DeviceInformation(vendor_name, model_name, [unique_name, uuid_string, version_string])
+.. class:: DeviceInformationRecord(vendor_name, model_name, [unique_name, uuid_string, version_string])
 
    Initialize the record with required and optional device information. The
    vendor_name and model_name arguments are required, all other arguments are
@@ -19,6 +19,19 @@ name.
    :param str unique_name: sets the :attr:`unique_name` attribute
    :param str uuid_string: sets the :attr:`uuid_string` attribute
    :param str version_string: sets the :attr:`version_string` attribute
+
+   .. attribute:: type
+
+      The Device Information Record type is ``urn:nfc:wkt:Di``.
+
+   .. attribute:: name
+
+      Value of the NDEF Record ID field, an empty `str` if not set.
+
+   .. attribute:: data
+
+      A `bytes` object containing the NDEF Record PAYLOAD encoded from the
+      current attributes.
 
    .. attribute:: vendor_name
 
