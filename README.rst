@@ -28,4 +28,4 @@ The ``ndeflib`` is an `ISC <http://choosealicense.com/licenses/isc/>`_-licensed 
    >>> b''.join(ndef.message_encoder(message)) == octets
    True
 
-The ``ndeflib`` documentation can be found on `Read the Docs <https://ndeflib.readthedocs.io/>`_, the code on `GitHub <https://github.com/hynek/attrs>`_. It is `continously tested <https://travis-ci.org/nfcpy/ndeflib>`_ for Python 2.7 and 3.5 with pretty complete `test coverage <https://codecov.io/gh/nfcpy/ndeflib>`_.
+The ``ndeflib`` documentation can be found on `Read the Docs <https://ndeflib.readthedocs.io/>`_, the code on `GitHub <https://github.com/nfcpy/ndeflib>`_. It is `continously tested <https://travis-ci.org/nfcpy/ndeflib>`_ for Python 2.7 and 3.5 with pretty complete `test coverage <https://codecov.io/gh/nfcpy/ndeflib>`_.
