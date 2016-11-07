@@ -232,22 +232,20 @@ class TestEncode:
         ("B", (1,), "01"),
         ("BB", (1, 2), "0102"),
         ("BB*", (1, 2, b'123'), "0102313233"),
-        ("BB+", (1, b'123'), "0102313233"),
+        ("BB+", (1, b'123'), "0103313233"),
+        ("BB+(B)", (1, (1, 2, 3)), "0103010203"),
+        ("BB+(B)*", (1, (1, 2, 3), b'123'), "0103010203313233"),
+        (">H", (1,), "0001"),
+        (">HH", (1, 2), "00010002"),
+        (">HH*", (1, 2, b'123'), "00010002313233"),
+        (">HH+", (1, b'123'), "00010003313233"),
+        (">HH+(H)", (1, (1, 2, 3)), "00010003000100020003"),
+        (">HH+(H)*", (1, (1, 2, 3), b'123'), "00010003000100020003313233"),
     ]
     @pytest.mark.parametrize("fmt, values, octets", valid_struct_data)
-    def test_struct_pass(self, fmt, values, octets):
+    def test_struct(self, fmt, values, octets):
         octets = bytearray.fromhex(octets)
         assert Record._encode_struct(fmt, *values) == octets
-
-    wrong_struct_data = [
-        ("B", (1000,), "ubyte format requires 0 <= number <= 255"),
-        ("+", (b'123',), "pack expected 0 items for packing (got 1)"),
-    ]
-    @pytest.mark.parametrize("fmt, values, errstr", wrong_struct_data)
-    def test_struct_pass(self, fmt, values, errstr):
-        with pytest.raises(ndef.EncodeError) as excinfo:
-            Record._encode_struct(fmt, *values)
-        assert str(excinfo.value) == 'ndef.record.Record ' + errstr
 
     def test_derived_record(self):
         class MyRecord(Record):
@@ -366,22 +364,19 @@ class TestDecode:
         ("BB*", "0102313233", 0, (1, 2, b'123')),
         ("BB+", "0102313233", 0, (1, b'12')),
         ("BB+", "000102313233", 1, (1, b'12')),
+        ("BB+*", "0102313233", 0, (1, b'12', b'3')),
+        ("BB+(B)", "01020102", 0, (1, (1, 2))),
+        ("BB+(2s)", "010231323334", 0, (1, (b'12', b'34'))),
+        ("BB+(B)*", "010201023132", 0, (1, (1, 2), b'12')),
+        (">H", "0001", 0, 1),
+        (">HH+", "00010002313233", 0, (1, b'12')),
+        (">HH+(H)", "0001000200010002", 0, (1, (1, 2))),
+        ("BB+BB+", "010231320203313233", 0, (1, b'12', 2, b'123')),
     ]
     @pytest.mark.parametrize("fmt, octets, offset, values", valid_struct_data)
-    def test_struct_pass(self, fmt, octets, offset, values):
+    def test_struct(self, fmt, octets, offset, values):
         octets = bytearray.fromhex(octets)
         assert Record._decode_struct(fmt, octets, offset) == values
-
-    wrong_struct_data = [
-        ("H", "01", 0, "unpack_from requires a buffer of at least 2 bytes"),
-        ("B+", "04313233", 0, "need 1 more octet to unpack format 'B+'"),
-    ]
-    @pytest.mark.parametrize("fmt, octets, offset, errstr", wrong_struct_data)
-    def test_struct_pass(self, fmt, octets, offset, errstr):
-        octets = bytearray.fromhex(octets)
-        with pytest.raises(ndef.DecodeError) as excinfo:
-            Record._decode_struct(fmt, octets, offset)
-        assert str(excinfo.value) == 'ndef.record.Record ' + errstr
 
 class TestValueToAscii:
     pass_values = [

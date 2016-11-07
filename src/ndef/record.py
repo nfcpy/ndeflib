@@ -12,12 +12,12 @@ latin or unicode restricted str or unicode type for Python 2 or 3.
 
 """
 from __future__ import absolute_import, division
+from struct import Struct, error as struct_error
 from types import FunctionType, MethodType
 from abc import ABCMeta, abstractmethod
 from functools import wraps
 from io import BytesIO
 import collections
-import struct
 import re
 
 import sys
@@ -269,11 +269,11 @@ class Record(object):
         IL = 0b00001000 if len(ID) > 0 else 0
 
         octet0 = MB | ME | CF | SR | IL | TNF
-        layout = '>BB' + ('B' if SR else 'L') + ('B' if IL else '')
+        struct = Struct('>BB' + ('B' if SR else 'L') + ('B' if IL else ''))
         fields = (octet0, len(TYPE), len(PAYLOAD)) + ((len(ID),) if IL else ())
 
         s = BytesIO() if stream is None else stream
-        n = s.write(struct.pack(layout, *fields) + TYPE + ID + PAYLOAD)
+        n = s.write(struct.pack(*fields) + TYPE + ID + PAYLOAD)
         return s.getvalue() if stream is None else n
 
     @classmethod
@@ -294,10 +294,9 @@ class Record(object):
             raise cls._decode_error("TNF field value must be between 0 and 6")
 
         try:
-            layout = '>B' + ('B' if SR else 'L') + ('B' if IL else '')
-            bcount = struct.calcsize(layout)
-            fields = struct.unpack(layout, stream.read(bcount)) + (0,)
-        except struct.error:
+            struct = Struct('>B' + ('B' if SR else 'L') + ('B' if IL else ''))
+            fields = struct.unpack(stream.read(struct.size)) + (0,)
+        except struct_error:
             errstr = "buffer underflow at reading length fields"
             raise cls._decode_error(errstr)
 
@@ -422,58 +421,164 @@ class Record(object):
         return (TNF, TYPE)
 
     @classmethod
-    def _decode_struct(cls, fmt, octets, offset=0):
+    def _decode_struct(cls, fmt, octets, offset=0, always_tuple=False):
         # Decode octets from a packed structure using the struct
-        # module with slightly extended format string syntax. A
-        # trailing '*' means to return all remaining octets as an
-        # additional bytes value. A trailing '+' means to return an
-        # additional bytes value with as many octets as the value of
-        # the last converted value (which must be an integer) or raise
-        # a DecodeError there are fewer remaining octets than
-        # required. A 'BB+' format is the equivalent of 8-bit TLV
-        # decoding that returns a Type and Value.
-        s = struct.Struct(fmt.rstrip('*+'))
+        # module with extended format string syntax.
+        #
+        # The '+' character unpacks as many values as decoded by the
+        # preceeding format specifier as either bytes or the format
+        # enclosed in round brackets '(..)' immediately follwing the
+        # '+' character. The format string may be ended with a '*'
+        # character and optional format characters to receive all
+        # remaining octets decoded as a repetition of the trailing
+        # format characters or as a single bytes value if '*' is the
+        # last character in the format string. An additional bytes
+        # value may be returned if the repetition of trailing format
+        # characters (those after '*') does not consume all octets.
+        #
+        # The byte order may optionally be set with the first format
+        # character. The '>' character sets big endian, the '<'
+        # character sets little endian byte order with no padding in
+        # either case. The default is big endian byte order.
+        #
+        # Decimal characters in the format string may only be used for
+        # sequence values, not to repeat a format character (i.e. 'BB'
+        # can not be written as '2B'). This is different from the
+        # struct module but a consequence of the extended format
+        # string syntax.
+        #
+        # Examples:
+        #
+        # ('BB+', b'\x01\x03\x31\x32\x33') -> (1, b'123')
+        # ('HH+', b'\x00\x01\x00\x03\x31\x32\x33') -> (1, b'123')
+        # ('B+B+', b'\x01\x31\x01\x32') -> (b'1', b'2')
+        # ('B+(H)', b'\x02\x00\x01\x00\x02') -> ((1, 2))
+        # ('H*', b'\x00\x0A\x31\x32\x33') -> (10, b'123')
+        # ('*H', b'\x00\x01\x00\x02\x31') -> (1, 2, b'1')
+        #
+        assert fmt[0] not in ('@', '=', '!'), "only '>' and '<' are allowed"
+        assert fmt.count('*') < 2, "only one '*' expression is allowed"
+        assert '*' not in fmt or fmt.find('*') > fmt.rfind('+')
+        order, fmt = (fmt[0], fmt[1:]) if fmt[0] in ('>', '<') else ('>', fmt)
         try:
-            values = s.unpack_from(octets, offset)
-            if fmt.endswith('*'):
-                values += (octets[(offset + s.size):],)
-            elif fmt.endswith('+'):
-                length = values[-1]
-                offset = offset + s.size
-                values = values[0:-1] + (octets[offset:(offset + length)],)
-                if len(values[-1]) < length:
-                    errstr = "need {} more octet to unpack format '{}'"
-                    needed = length - len(values[-1])
-                    raise cls._decode_error(errstr, needed, fmt)
-        except struct.error as error:
+            values = list()
+            this_fmt = fmt
+            while this_fmt:
+                this_fmt, plus_fmt, next_fmt = this_fmt.partition('+')
+                if '*' in this_fmt:
+                    this_fmt, next_fmt = this_fmt.split('*', 1)
+                    if this_fmt:
+                        next_fmt = '*' + next_fmt
+                    elif next_fmt:
+                        trailing = len(octets) - offset
+                        size_fmt = Struct(next_fmt).size
+                        this_fmt = int(trailing / size_fmt) * next_fmt
+                        next_fmt = '*' if trailing % size_fmt else ''
+                    else:
+                        this_fmt = str(len(octets) - offset) + 's'
+                        next_fmt = ''
+                struct = Struct(order + this_fmt)
+                values = values + list(struct.unpack_from(octets, offset))
+                offset = offset + struct.size
+                if plus_fmt:
+                    if next_fmt.startswith('('):
+                        this_fmt, next_fmt = next_fmt[1:].split(')', 1)
+                        struct = Struct(order + values.pop() * this_fmt)
+                        values.append(struct.unpack_from(octets, offset))
+                        offset = offset + struct.size
+                    else:
+                        struct = Struct('{:d}s'.format(values.pop()))
+                        values.extend(struct.unpack_from(octets, offset))
+                        offset = offset + struct.size
+                this_fmt = next_fmt
+        except struct_error as error:
             raise cls._decode_error(str(error))
         else:
-            return values if len(values) > 1 else values[0]
+            if len(values) == 1 and not always_tuple:
+                return values[0]
+            else:
+                return tuple(values)
 
     @classmethod
     def _encode_struct(cls, fmt, *values):
         # Encode values into a packed structure using the struct
-        # module with slightly extended format string syntax. A
-        # trailing '*' means that the last value is not part of the
-        # format string but to be appended to the returned octets. A
-        # trailing '+' means that the length of the last argument is
-        # encoded as the value of the last format string element and
-        # the last argument value then appended. A 'BB+' format with
-        # two input values (one 8-bit integer and one octet sequence)
-        # is the equivalent of 8-bit TLV encoding.
-        s = struct.Struct(fmt.rstrip('*+'))
+        # module with an extended format string syntax.
+        #
+        # The '+' character formats the value preceeding it as
+        # len(value) followed by value. The format for len(value) is
+        # the format character before '+'. If '+' is followed by a
+        # format expression enclosed in round brackets '(..)' then
+        # value is formatted as len(value) times the enclosed format
+        # string. Otherwise it is formatted as plain bytes. The format
+        # string may end with a '*' character and optional type
+        # specifiers to indicate that all remaining values shall be
+        # encoded as a sequence of the type specifiers format. If the
+        # '*' character ends the format string, the last value is
+        # interpreted as a sequence of bytes.
+        #
+        # The byte order may optionally be set with the first format
+        # character. The '>' character sets big endian, the '<'
+        # character sets little endian byte order with no padding in
+        # either case. The default is big endian byte order.
+        #
+        # Decimal characters in the format string may only be used for
+        # sequence values, not to repeat a format character (i.e. 'BB'
+        # can not be written as '2B'). This is different from the
+        # struct module but a consequence of the extended format
+        # string syntax.
+        #
+        # Examples:
+        #
+        # ('BB+', 1, b'123') -> b'\x01\x03\x31\x32\x33'
+        # ('HH+', 1, b'123') -> b'\x00\x01\x00\x03\x31\x32\x33'
+        # ('B+B+', b'1', b'2') -> b'\x01\x31\x01\x32'
+        # ('B+(H)', (1, 2)) -> b'\x02\x00\x01\x00\x02'
+        # ('H*', 10, b'123') -> b'\x00\x0A\x31\x32\x33'
+        # ('*H', 1, 2, 3) -> b\x00\x01\x00\x02\x00\x03'
+        #
+        assert fmt[0] not in ('@', '=', '!'), "only '>' and '<' are allowed"
+        assert fmt.count('*') < 2, "only one '*' expression is allowed"
+        assert '*' not in fmt or fmt.find('*') > fmt.rfind('+')
+        order, fmt = (fmt[0], fmt[1:]) if fmt[0] in ('>', '<') else ('>', fmt)
         try:
-            if fmt.endswith('*'):
-                octets = s.pack(*values[0:-1]) + values[-1]
-            elif fmt.endswith('+'):
-                length = len(values[-1])
-                octets = s.pack(*(values[0:-1] + (length,))) + values[-1]
-            else:
-                octets = s.pack(*values)
-        except struct.error as error:
+            values = list(values)
+            octets = list()
+            this_fmt = fmt
+            while this_fmt:
+                this_fmt, plus_fmt, next_fmt = this_fmt.partition('+')
+                if '*' in this_fmt:
+                    this_fmt, next_fmt = this_fmt.split('*', 1)
+                    if this_fmt:
+                        next_fmt = '*' + next_fmt
+                    elif next_fmt:
+                        this_fmt = len(values) * next_fmt
+                        next_fmt = ''
+                    else:
+                        this_fmt = str(len(values[0])) + 's'
+                        next_fmt = ''
+                vcount = len(this_fmt) - sum(map(str.isdigit, this_fmt))
+                if plus_fmt:
+                    assert this_fmt, "'+' character without preceeding format"
+                    if next_fmt.startswith('('):
+                        length = len(values[vcount-1])
+                        values.insert(vcount-1, length)
+                        this_fmt += length * next_fmt[1:].split(')', 1)[0]
+                        next_fmt = next_fmt[1:].split(')', 1)[1]
+                        values[vcount:vcount+1] = list(values[vcount])
+                        vcount = vcount + length
+                    else:
+                        vcount = vcount + 1
+                        length = len(values[vcount-2])
+                        values.insert(vcount-2, length)
+                        this_fmt = this_fmt + str(length) + 's'
+                struct = Struct(order + this_fmt)
+                octets.append(struct.pack(*values[0:vcount]))
+                del values[0:vcount]
+                this_fmt = next_fmt
+        except struct_error as error:
             raise cls._encode_error(str(error))
         else:
-            return octets
+            return b''.join(octets)
 
     @classmethod
     def _decode_error(cls, fmt, *args, **kwargs):
@@ -635,24 +740,3 @@ def convert(conversion):
             return setter(self, _convert(value, setter.__name__))
         return wrapper
     return converter
-
-
-"""
-class MyRecord(Record):
-    _type = ''
-
-    def __init__(self):
-        self._xyz = u''
-
-    def _encode_payload(self):
-        return b''
-
-    @property
-    def xyz(self):
-        return self._xyz
-
-    @xyz.setter
-    @convert('value_to_unicode')
-    def xyz(self, value):
-        self._xyz = value
-"""

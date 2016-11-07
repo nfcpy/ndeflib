@@ -89,10 +89,10 @@ class TestAlternativeCarrierRecord(_test_record_base._TestRecordBase):
     ]
     test_decode_error_data = [
         ('00', 'decode is missing carrier data reference length'),
-        ('0001', "need 1 more octet to unpack format 'B+'"),
+        ('0001', "unpack_from requires a buffer of at least 1 bytes"),
         ('0000', 'decode is missing auxiliary data reference count'),
         ('000001', 'decode is missing auxiliary data reference length'),
-        ('00000101', "need 1 more octet to unpack format 'B+'"),
+        ('00000101', "unpack_from requires a buffer of at least 1 bytes"),
         ('00000000', 'payload has 1 octet left after decode'),
         ('0000000000', 'payload has 2 octet left after decode'),
     ]

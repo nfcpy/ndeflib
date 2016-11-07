@@ -87,7 +87,7 @@ documented in the package contents files.
 """
 import sys
 if sys.version_info < (2, 7):  # pragma: no cover
-    raise ImportError("The ndef module requires Python 2.6 or newer!")
+    raise ImportError("The ndef module requires Python 2.7 or newer!")
 else:
     from . import message
     from . import record
@@ -97,7 +97,7 @@ else:
     from . import deviceinfo
     from . import handover
     # from . import bluetooth
-    # from . import wifi
+    from . import wifi
 
 message_decoder = message.message_decoder
 message_encoder = message.message_encoder
@@ -114,8 +114,8 @@ HandoverSelectRecord = handover.HandoverSelectRecord
 HandoverMediationRecord = handover.HandoverMediationRecord
 HandoverInitiateRecord = handover.HandoverInitiateRecord
 HandoverCarrierRecord = handover.HandoverCarrierRecord
-# WifiSimpleConfigRecord = wifi.WifiSimpleConfigRecord
-# WifiPeerToPeerRecord = wifi.WifiPeerToPeerRecord
+WifiSimpleConfigRecord = wifi.WifiSimpleConfigRecord
+WifiPeerToPeerRecord = wifi.WifiPeerToPeerRecord
 # BluetoothConfigRecord = bluetooth.BluetoothConfigRecord
 
 # METADATA ####################################################################
