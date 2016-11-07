@@ -1092,3 +1092,100 @@ Wi-Fi Peer To Peer Record
 Wi-Fi Peer To Peer Attributes
 -----------------------------
 
+P2P Capability
+~~~~~~~~~~~~~~
+
+The P2P Capability attribute contains a set of parameters that indicate the P2P
+Device's capability and the current state of the P2P Group.
+
+Device Capability Strings::
+
+   'Service Discovery'
+   'P2P Client Discoverability'
+   'Concurrent Operation'
+   'P2P Infastructure Managed'
+   'P2P Device Limit'
+   'P2P Invitation Procedure'
+   'Reserved Bit 6'
+   'Reserved Bit 7'
+
+Group Capability Strings::
+
+  'P2P Group Owner'
+  'Persistent P2P Group'
+  'P2P Group Limit'
+  'Intra-BSS Distribution'
+  'Cross Connection'
+  'Persistent Reconnect'
+  'Group Formation'
+  'IP Address Allocation'
+
+.. class:: ndef.wifi.PeerToPeerCapability(device_capability, group_capability)
+
+   Both init arguments *device_capability* and *group_capability* may be set as
+   either 8-bit integer values with each bit position corresponding to an
+   individual capability, or as a list of capability strings.
+
+   >>> import ndef
+   >>> attr_1 = ndef.wifi.PeerToPeerCapability(0b00000001, 0b01000000)
+   >>> attr_2 = ndef.wifi.PeerToPeerCapability(['Service Discovery'], ['Group Formation'])
+   >>> assert attr_1 == attr_2
+   >>> ndef.wifi.PeerToPeerCapability(3, 65).device_capability
+   (3, 'Service Discovery', 'P2P Client Discoverability')
+
+   .. attribute:: device_capability
+
+      The P2P Device Capabilities as a tuple with the first element the
+      numerical value of the device capability bitmap and following elements are
+      capability strings. This attribute is read-only.
+
+      >>> import ndef
+      >>> ndef.wifi.PeerToPeerCapability(3, 0).device_capability
+      (3, 'Service Discovery', 'P2P Client Discoverability')
+
+   .. attribute:: group_capability
+
+      The P2P Group Capabilities as a tuple with the first element the numerical
+      value of the group capability bitmap and following elements are capability
+      strings. This attribute is read-only.
+
+      >>> import ndef
+      >>> ndef.wifi.PeerToPeerCapability(0, 65).group_capability
+      (65, 'P2P Group Owner', 'Group Formation')
+
+Channel List
+~~~~~~~~~~~~
+
+The Channel List attribute contains a list of Operating Class and Channel pair
+information.
+
+.. class:: ndef.wifi.ChannelList(country_string, *channel_entry)
+
+   The *country_string* argument determines the country code for the
+   *channel_entry* argument(s). Each *channel_entry* is a tuple of an
+   *operating_class* integer and a *channel_numbers* list.
+
+   >>> import ndef
+   >>> channel_list = ndef.wifi.ChannelList(b"de\x04", (81, (1, 6)), (115, (36, 44)))
+   >>> print(channel_list)
+   Channel List Country DE Table E-4 Class 81 Channels [1, 6], Class 115 Channels [36, 44]
+   >>> len(channel_list)
+   2
+   >>> print(channel_list[0])
+   Class 81 Channels [1, 6]
+   >>> channel_list[0].operating_class
+   81
+   >>> channel_list[0].channel_numbers
+   (1, 6)
+
+   .. attribute:: country_string
+
+      The Country String field is the value contained in the dot11CountryString
+      attribute, specifying the country code in which the Channel Entry List is
+      valid. The third octet of the Country String field is always set to hex 04
+      to indicate that Table E-4 is used.
+
+      >>> import ndef
+      >>> ndef.wifi.ChannelList(b"de\x04", (81, (1,))).country_string
+      b'de\x04'
+
