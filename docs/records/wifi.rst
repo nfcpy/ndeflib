@@ -337,8 +337,8 @@ ndef.wifi.APChannel(6)
 
 .. _attributes:
 
-Wi-Fi Attributes
-----------------
+Wi-Fi Simple Config Attributes
+------------------------------
 
 This section lists the Wi-Fi Simple Configuration and P2P Attribute classes that
 are available for decoding and encoding of Attribute Value octets.
@@ -905,7 +905,7 @@ Secondary Device Type List
 
 The Secondary Device Type List contains one or more secondary device types
 supported by the device. The standard values of Category and Sub Category are
-the same as for the Primary Device Type Attribute.
+the same as for the `Primary Device Type`_ Attribute.
 
 .. class:: SecondaryDeviceTypeList(*args)
 
@@ -1188,4 +1188,171 @@ information.
       >>> import ndef
       >>> ndef.wifi.ChannelList(b"de\x04", (81, (1,))).country_string
       b'de\x04'
+
+P2P Device Info
+~~~~~~~~~~~~~~~
+
+The P2P Device Info attribute provides the P2P Device Address, Config Methods,
+Primary Device Type, a list of Secondary Device Types and the user friendly Device
+Name.
+
+.. class:: ndef.wifi.PeerToPeerDeviceInfo(adr, cfg, pdt, sdtl, name)
+
+   The first argument *adr* must be the 6 bytes P2P Device Address. The *cfg*
+   argument is a tuple of `Configuration Methods`_ strings. The *pdt* argument
+   specifies the `Primary Device Type`_ of the P2P Device as a single text
+   string. The `Secondary Device Type List`_ *sdtl* argument expects a tuple of
+   device type strings. The `Device Name`_ *name* argument provides the friendly
+   name of the P2P Device. All arguments must be supplied.
+
+   >>> import ndef
+   >>> adr = b'\x01\x02\x03\x04\x05\x06'
+   >>> cfg = ('Label', 'Display')
+   >>> pdt = 'Computer::Tablet'
+   >>> sdtl = ('Computer::PC', )
+   >>> name = 'my tablet'
+   >>> info = ndef.wifi.PeerToPeerDeviceInfo(adr, cfg, pdt, sdtl, name)
+   >>> print(info)
+   P2P Device Info 01:02:03:04:05:06 0x000C ['Label', 'Display'] Computer::Tablet Computer::PC 'my tablet'
+
+   .. attribute:: device_address
+
+      The P2P Device Identifier used to uniquely reference a P2P Device returned
+      as a 6 byte string. The `device_address` attribute is read-only.
+
+      >>> info.device_address
+      b'\x01\x02\x03\x04\x05\x06'
+
+   .. attribute:: config_methods
+
+      The `Configuration Methods`_ that are supported by this device e.g. PIN
+      from a Keypad, PBC etc. The values are returned as a tuple where the first
+      entry is the config methods bitmap and remaining entries are method
+      strings. The `config_methods` attribute is read-only.
+
+      >>> info.config_methods
+      (12, 'Label', 'Display')
+
+   .. attribute:: primary_device_type
+
+      The Primary Device Type of the P2P Device returned as a string. See
+      `Primary Device Type`_ for representation of pre-defined and custom
+      values. The `primary_device_type` attribute is read-only.
+
+      >>> info.primary_device_type
+      'Computer::Tablet'
+
+   .. attribute:: secondary_device_type_list
+
+      A list of Secondary Device Types of the P2P Client. Returns a, potentially
+      empty, tuple of device type strings. The `secondary_device_type_list`
+      attribute is read-only.
+
+      >>> info.secondary_device_type_list
+      ('Computer::PC',)
+
+   .. attribute:: device_name
+
+      The friendly name of the P2P Device which should be the same as the WSC
+      `Device Name`_. The `device_name` attribute is read-only.
+
+      >>> info.device_name
+      'my tablet'
+
+P2P Group Info
+~~~~~~~~~~~~~~
+
+The P2P Group Info attribute contains device information of P2P Clients that
+are members of the P2P Group.
+
+.. class:: ndef.wifi.PeerToPeerGroupInfo(*client_info)
+
+   A `PeerToPeerGroupInfo` object holds a number of client info descriptors. It
+   is initialized with a number of client info data tuples as shown below.
+
+   >>> import ndef
+   >>> client_info_1 = (
+   ...     b'\x01\x02\x03\x04\x05\x06',  # P2P Device Address
+   ...     b'\x11\x12\x13\x14\x15\x16',  # P2P Interface Address
+   ...     ('Service Discovery',),       # Device Capabilities
+   ...     ('NFC Interface',),           # Configuration Methods
+   ...     "Computer::Tablet",           # Primary Device Type
+   ...     (),                           # Secondary Device Types
+   ...     'first device',               # Device name
+   ... )
+   >>> client_info_2 = (
+   ...     b'\x21\x22\x23\x24\x25\x26',  # P2P Device Address
+   ...     b'\x31\x32\x33\x34\x35\x36',  # P2P Interface Address
+   ...     ('Service Discovery',),       # Device Capabilities
+   ...     ('NFC Interface',),           # Configuration Methods
+   ...     "Computer::Tablet",           # Primary Device Type
+   ...     (),                           # Secondary Device Types
+   ...     'second device',              # Device name
+   ... )
+   >>> group_info = ndef.wifi.PeerToPeerGroupInfo(client_info_1, client_info_2)
+   >>> print(group_info)
+   P2P Group Info (Device 1: 01:02:03:04:05:06 11:12:13:14:15:16 Capability ['Service Discovery'] Config 0x0040 ['NFC Interface'] Type 'Computer::Tablet ' Name 'first device'), (Device 2: 21:22:23:24:25:26 31:32:33:34:35:36 Capability ['Service Discovery'] Config 0x0040 ['NFC Interface'] Type 'Computer::Tablet ' Name 'second device')
+   >>> [client_info.device_name for client_info in group_info]
+   ['first device', 'second device']
+   >>> type(group_info[0])
+   <class 'ndef.wifi.PeerToPeerGroupInfo.Descriptor'>
+
+   .. class:: ndef.wifi.PeerToPeerGroupInfo.Descriptor
+
+      P2P Client Info within a `PeerToPeerGroupInfo` is exposed as a
+      `Descriptor` instance with attributes for the relevant information fields.
+
+      >>> descriptor = group_info[0]
+
+      .. attribute:: device_address
+
+         The 6 byte P2P Device Identifier used to uniquely reference a P2P
+         Device. The `device_address` attribute is read-only.
+
+         >>> descriptor.device_address
+         b'\x01\x02\x03\x04\x05\x06'
+
+      .. attribute:: interface_address
+
+         The 6 byte P2P Interface Address is used to identify a P2P Device
+         within a P2P Group.  The `interface_address` attribute is read-only.
+
+         >>> descriptor.interface_address
+         b'\x11\x12\x13\x14\x15\x16'
+
+      .. attribute:: config_methods
+
+         The `Configuration Methods`_ that are supported by this device e.g. PIN
+         from a Keypad, PBC etc. The values are returned as a tuple where the
+         first entry is the config methods bitmap and remaining entries are
+         method strings. The `config_methods` attribute is read-only.
+
+         >>> descriptor.config_methods
+         (64, 'NFC Interface')
+
+      .. attribute:: primary_device_type
+
+         The Primary Device Type of the P2P Device returned as a string. See
+         `Primary Device Type`_ for representation of pre-defined and custom
+         values. The `primary_device_type` attribute is read-only.
+
+         >>> descriptor.primary_device_type
+         'Computer::Tablet'
+
+      .. attribute:: secondary_device_type_list
+
+         A list of Secondary Device Types of the P2P Client. Returns a,
+         potentially empty, tuple of device type strings. The
+         `secondary_device_type_list` attribute is read-only.
+
+         >>> descriptor.secondary_device_type_list
+         ()
+
+      .. attribute:: device_name
+
+         The friendly name of the P2P Device which should be the same as the WSC
+         `Device Name`_. The `device_name` attribute is read-only.
+
+         >>> descriptor.device_name
+         'first device'
 
