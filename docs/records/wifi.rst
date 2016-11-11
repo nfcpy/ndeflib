@@ -1356,3 +1356,41 @@ are members of the P2P Group.
          >>> descriptor.device_name
          'first device'
 
+P2P Group ID
+~~~~~~~~~~~~
+
+The P2P Group ID attribute contains a unique P2P Group identifier of the P2P
+Group.
+
+.. class:: ndef.wifi.PeerToPeerGroupID(device_address, ssid)
+
+   Both the *device_address* and *ssid* arguments must be given as byte strings
+   and the *device_address* must be exactly 6 byte long.
+
+   >>> import ndef
+   >>> attr = ndef.wifi.PeerToPeerGroupID(b'\1\2\3\4\5\6', b'P2P Group SSID')
+   >>> print(attr)
+   P2P Group ID 01:02:03:04:05:06 SSID 50:32:50:20:47:72:6F:75:70:20:53:53:49:44
+
+   .. attribute:: device_address
+
+      The 6 byte P2P Device Identifier used to uniquely reference a P2P
+      Device. The `device_address` attribute is read-only.
+
+      >>> attr.device_address
+      b'\x01\x02\x03\x04\x05\x06'
+
+   .. attribute:: ssid
+
+      The service set identifier (a.k.a. network name) as a byte
+      string. Although often printable it is in fact just a sequence of bytes
+      with no implied text encoding. The `ssid` attribute is read-only.
+
+      >>> attr.ssid
+      b'P2P Group SSID'
+
+
+
+
+
+
