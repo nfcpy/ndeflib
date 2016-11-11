@@ -1389,8 +1389,61 @@ Group.
       >>> attr.ssid
       b'P2P Group SSID'
 
+Negotiation Channel
+~~~~~~~~~~~~~~~~~~~
 
+The Out-of-Band Group Owner Negotiation Channel attribute contains the Channel
+and Class information used for the Group Owner Negotiation.
 
+.. class:: ndef.wifi.NegotiationChannel(country_string, operating_class, channel_number, role_indication)
 
+   The *country_string* argument specifies the country code and operating class
+   table (always value 0x04) in 3 bytes. The *operating_class* and
+   *channel_number* must be 8-bit integer values. The *role_indication* argument
+   must be either ``'Not Member'``, ``'Group Client'``, or ``'Group Owner'``.
+
+   >>> import ndef
+   >>> attr = ndef.wifi.NegotiationChannel(b'de\x04', 81, 6, 'Group Client')
+   >>> print(attr)
+   Negotiation Channel Country DE Table E-4 Class 81 Channel 6 Role 'Group Client'
+
+   .. attribute:: country_string
+
+      The Country String specifies the country code in which the Group Formation
+      Class and Channel Number fields are valid. The third octet of the Country
+      String is set to hex 04 to indicate that Table E-4 is used. The
+      `country_string` attribute is read-only.
+
+      >>> attr.country_string
+      b'de\x04'
+
+   .. attribute:: operating_class
+
+      Provides the preferred Operating Class for the Group Owner Negotiation. An
+      Operating Class value 0 indicates that no preferred Operating Class is
+      available. If set to 0, the Operating Class information provided in the
+      Channel List attribute shall be used.
+
+      >>> attr.operating_class
+      81
+
+   .. attribute:: channel_number
+
+      Provides the preferred channel for the Group Formation. A Channel Number
+      value 0 indicates that no group formation preferred channel is available
+      and P2P Group Owner negotiation with a full channel search based on the
+      information provided in the Channel List attribute shall be used.
+
+      >>> attr.channel_number
+      6
+
+   .. attribute:: role_indication
+
+      Indicates the current role of the P2P device. It reads as a 2-tuple where
+      the first value is the numerical and the second value the textual
+      representation. The `role_indication` attribute is read-only.
+
+      >>> attr.role_indication
+      (1, 'Group Client')
 
 
