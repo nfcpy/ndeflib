@@ -1,9 +1,13 @@
 .. -*- mode: rst; fill-column: 80 -*-
 
+##########################
 Wi-Fi Simple Configuration
-==========================
+##########################
 
 .. versionadded:: 0.2
+
+Overview
+========
 
 .. _Wi-Fi Alliance: http://www.wi-fi.org/
 .. _Wi-Fi Protected Setup: http://www.wi-fi.org/discover-wi-fi/wi-fi-protected-setup
@@ -25,21 +29,21 @@ with WLAN credentials. Devices with the authority to issue and revoke
 credentials are termed *Registrar*. A Registrar may be integrated into an Access
 Point.
 
-*Password Token*
+`Password Token`_
 
   A Password Token carries an Out-of-Band Device Password from an Enrollee to an
   NFC-enabled Registrar device. The device password is then used with the Wi-Fi
   in-band registration protocol to provision network credentials; an NFC
   Interface on the Enrollee is not required.
 
-*Configuration Token*
+`Configuration Token`_
 
   A Configuration Token carries unencrypted credential from an NFC-enabled
   Registrar to an NFC-enabled Enrollee device. A Configuration Token is created
   when the user touches the Registrar to retrieve the current network settings
   and allows subsequent configuration of one or more Enrollees.
 
-*Connection Handover*
+`Connection Handover`_
 
   Connection Handover is a protocol run between two NFC Peer Devices to
   establish an alternative carrier connection. The Connection Handover protocol
@@ -48,8 +52,8 @@ Point.
   Owner.
 
 
-Password Token Format
----------------------
+Password Token
+--------------
 
 A Wi-Fi Password Token carries an NDEF Record with Payload Type
 "application/vnd.wfa.wsc" that contains an Out-Of-Band Device Password from the
@@ -127,13 +131,17 @@ fields).
 >>> oobpwd = ndef.wifi.OutOfBandPassword(pkhash, pwd_id, my_pwd)
 >>> wfaext = ndef.wifi.WifiAllianceVendorExtension((0, b'\x20'))
 >>> record = ndef.WifiSimpleConfigRecord()
+>>> record.name = 'my password token'
 >>> record['oob-password'] = [oobpwd.encode()]
 >>> record['vendor-extension'] = [wfaext.encode()]
+>>> print(record)
+NDEF Wifi Simple Config Record ID 'my password token' Attributes 0x1049 0x102C
 >>> octets = b''.join(ndef.message_encoder([record]))
->>> assert len(octets) == 87
+>>> len(octets)
+105
 
-Configuration Token Format
---------------------------
+Configuration Token
+-------------------
 
 A Wi-Fi Configuration Token carries an NDEF Record with Payload Type
 "application/vnd.wfa.wsc" that contains unencrypted credential(s) issued by an
@@ -207,6 +215,157 @@ fields).
    attribute then it indicates the RF Bands in which the AP is operating with
    the network name specified by the SSID attribute in the Credential.
 
+**Example**
+
+>>> import ndef
+>>> credential = ndef.wifi.Credential()
+>>> credential.set_attribute('network-index', 1)
+>>> credential.set_attribute('ssid', b'my network name')
+>>> credential.set_attribute('authentication-type', 'WPA2-Personal')
+>>> credential.set_attribute('encryption-type', 'AES')
+>>> credential.set_attribute('network-key', b'my secret password')
+>>> credential.set_attribute('mac-address', b'\xFF\xFF\xFF\xFF\xFF\xFF')
+>>> wfa_ext = ndef.wifi.WifiAllianceVendorExtension()
+>>> wfa_ext.set_attribute('network-key-shareable', 1)
+>>> credential['vendor-extension'] = [wfa_ext.encode()]
+>>> print(credential)
+Credential Attributes 0x1020 0x1003 0x1045 0x1026 0x1027 0x1049 0x100F
+>>> record = ndef.wifi.WifiSimpleConfigRecord()
+>>> record.name = 'my config token'
+>>> record.set_attribute('credential', credential)
+>>> record.set_attribute('rf-bands', ('2.4GHz', '5.0GHz'))
+>>> wfa_ext = ndef.wifi.WifiAllianceVendorExtension()
+>>> wfa_ext.set_attribute('version-2', 0x20)
+>>> record['vendor-extension'] = [wfa_ext.encode()]
+>>> print(record)
+NDEF Wifi Simple Config Record ID 'my config token' Attributes 0x1049 0x103C 0x100E
+>>> octets = b''.join(ndef.message_encoder([record]))
+>>> len(octets)
+139
+
+Connection Handover
+-------------------
+
+Two NFC Devices in close proximity establish NFC communication based on the NFC
+Forum Logical Link Control Protocol (LLCP) specification. If one of the devices
+has intention to activate a further communication method, it can then use the
+NFC Forum Connection Handover protocol to announce possible communication means
+(potentially including configuration data) and request the other device to
+respond with a selection of matching technologies, including necessary
+configuration data.
+
+An Enrollee NFC Device that has established NFC LLCP communication with a
+Registrar NFC Device sends a Connection Handover Request Message indicating
+Wi-Fi communication capability. A Registrar NFC Device responds with a
+Connection Handover Select Message indicating the Wi-Fi carrier which the
+Enrollee should associate with. The Enrollee is then provisioned by the
+Registrar through in-band WSC protocol message exchange (with encrypted
+ConfigData from the Registrar included in M2).
+
+The following table shows the format of the Wi-Fi Carrier Configuration Record
+as transmitted within a Connection Handover Request Message. The UUID-E
+attribute is included to assist with the discovery over 802.11 that follows the
+exchange of the connection handover messages.
+
++-----------------------+----------------------------------------------------------+
+| Attribute             | Required/Conditional/Optional \| Description             |
++=======================+===+======================================================+
+| OOB Device Password   | R | A TLV with fixed data structure [#oob]_              |
++-+---------------------+---+------------------------------------------------------+
+| | Public Key Hash     | R | The Enrollee’s public key hash  [#pkh]_              |
++-+---------------------+---+------------------------------------------------------+
+| | Password ID         | R | Set to NFC-Connection-Handover (0x0007)              |
++-+---------------------+---+------------------------------------------------------+
+| UUID-E                | R | Universally Unique Identifier of the Enrollee Device |
++-----------------------+---+------------------------------------------------------+
+| WFA Vendor Extension  | R | Vendor Extension with Vendor ID 00:37:2A [#wfa]_     |
++-+---------------------+---+------------------------------------------------------+
+| | Version2            | R | Wi-Fi Simple Configuration version [#ver]_           |
++-+---------------------+---+------------------------------------------------------+
+| | <other ...>         | O | Other WFA Vendor Extension subelements               |
++-+---------------------+---+------------------------------------------------------+
+| <other ...>           | O | Other Wi-Fi Simple Configuration TLVs                |
++-----------------------+---+------------------------------------------------------+
+
+**Example:**
+
+>>> import ndef
+>>> import random
+>>> import hashlib
+>>> pkhash = hashlib.sha256(b'enrollee public key').digest()[0:20]
+>>> oobpwd = ndef.wifi.OutOfBandPassword(pkhash, 0x0007, b'')
+>>> wfaext = ndef.wifi.WifiAllianceVendorExtension(('version-2', b'\x20'))
+>>> carrier = ndef.WifiSimpleConfigRecord()
+>>> carrier.name = '0'
+>>> carrier.set_attribute('oob-password', oobpwd)
+>>> carrier.set_attribute('uuid-enrollee', '00010203-0405-0607-0809-0a0b0c0d0e0f')
+>>> carrier['vendor-extension'] = [wfaext.encode()]
+>>> print(carrier)
+NDEF Wifi Simple Config Record ID '0' Attributes 0x1049 0x102C 0x1047
+>>> hr = ndef.handover.HandoverRequestRecord('1.3', random.randint(0, 0xffff))
+>>> hr.add_alternative_carrier('active', carrier.name)
+>>> octets = b''.join(ndef.message_encoder([hr, carrier]))
+>>> len(octets)
+108
+
+The Wi-Fi Carrier Configuration Record transmitted within a Connection Handover
+Select Message from Registrar to Enrollee is shown below. The SSID attribute is
+included to assist with the discovery over 802.11 that follows the exchange of
+the connection handover messages. Optionally the RF Bands attribute, the AP
+Channel attribute and the MAC Address attribute may be included as hints to help
+the Enrollee find the AP without a full scan.
+
++-----------------------+----------------------------------------------------------+
+| Attribute             | Required/Conditional/Optional \| Description             |
++=======================+===+======================================================+
+| OOB Device Password   | R | A TLV with fixed data structure [#oob]_              |
++-+---------------------+---+------------------------------------------------------+
+| | Public Key Hash     | R | The Registrar’s public key hash  [#pkh]_             |
++-+---------------------+---+------------------------------------------------------+
+| | Password ID         | R | Set to NFC-Connection-Handover (0x0007)              |
++-+---------------------+---+------------------------------------------------------+
+| SSID                  | R | Service Set Identifier of the network to connect     |
++-----------------------+---+------------------------------------------------------+
+| RF Bands              | O | Provides the operating RF band of the AP             |
++-----------------------+---+------------------------------------------------------+
+| AP Channel            | O | Provides the operating channel of the AP             |
++-----------------------+---+------------------------------------------------------+
+| MAC Address           | O | Basic Service Set Identifier of the AP               |
++-----------------------+---+------------------------------------------------------+
+| WFA Vendor Extension  | R | Vendor Extension with Vendor ID 00:37:2A [#wfa]_     |
++-+---------------------+---+------------------------------------------------------+
+| | Version2            | R | Wi-Fi Simple Configuration version [#ver]_           |
++-+---------------------+---+------------------------------------------------------+
+| | <other ...>         | O | Other WFA Vendor Extension subelements               |
++-+---------------------+---+------------------------------------------------------+
+| <other ...>           | O | Other Wi-Fi Simple Configuration TLVs                |
++-----------------------+---+------------------------------------------------------+
+
+**Example:**
+
+>>> import ndef
+>>> import hashlib
+>>> pkhash = hashlib.sha256(b'registrar public key').digest()[0:20]
+>>> oobpwd = ndef.wifi.OutOfBandPassword(pkhash, 0x0007, b'')
+>>> wfaext = ndef.wifi.WifiAllianceVendorExtension(('version-2', b'\x20'))
+>>> carrier = ndef.WifiSimpleConfigRecord()
+>>> carrier.name = '0'
+>>> carrier.set_attribute('oob-password', oobpwd)
+>>> carrier.set_attribute('ssid', b'802.11 network')
+>>> carrier.set_attribute('rf-bands', '2.4GHz')
+>>> carrier.set_attribute('ap-channel', 6)
+>>> carrier.set_attribute('mac-address', b'\1\2\3\4\5\6')
+>>> carrier['vendor-extension'] = [wfaext.encode()]
+>>> print(carrier)
+NDEF Wifi Simple Config Record ID '0' Attributes 0x1020 0x1001 0x1045 0x1049 0x102C 0x103C
+>>> hs = ndef.handover.HandoverSelectRecord('1.3')
+>>> hs.add_alternative_carrier('active', carrier.name)
+>>> octets = b''.join(ndef.message_encoder([hs, carrier]))
+>>> len(octets)
+120
+
+NDEF Record Classes
+===================
 
 Wi-Fi Simple Config Record
 --------------------------
@@ -229,7 +388,7 @@ instance of the Wi-Fi TLV Attribute.
 The `~WifiSimpleConfigRecord.get_attribute`,
 `~WifiSimpleConfigRecord.set_attribute` and
 `~WifiSimpleConfigRecord.add_attribute` methods can be used to get or set values
-with `Wi-Fi Simple Config Attributes`_ class instances.
+using :ref:`wsc_attributes`.
 
 .. class:: WifiSimpleConfigRecord(*args)
 
@@ -287,6 +446,7 @@ with `Wi-Fi Simple Config Attributes`_ class instances.
       rf-bands
       secondary-device-type-list
       serial-number
+      ssid
       uuid-enrollee
       uuid-registrar
       vendor-extension
@@ -374,19 +534,22 @@ Wi-Fi Peer To Peer Record
       rf-bands
       secondary-device-type-list
       serial-number
+      ssid
       uuid-enrollee
       uuid-registrar
       vendor-extension
       version-1
 
 
-Wi-Fi Simple Config Attributes
-------------------------------
+.. _wsc_attributes:
+
+WSC Attribute Classes
+=====================
 
 This section documents the Wi-Fi Simple Configuration (WSC) Attribute classes.
 
 AP Channel
-~~~~~~~~~~
+----------
 
 The AP Channel Attribute specifies the 802.11 channel that the AP is using.
 
@@ -404,7 +567,7 @@ The AP Channel Attribute specifies the 802.11 channel that the AP is using.
       The read-only AP Channel `int` value.
 
 Authentication Type
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 The Authentication Type Attribute contains the authentication type for the
 Enrollee to use when associating with the network. For protocol version 2.0 or
@@ -441,7 +604,7 @@ Value  Authentication Type Notes
       A tuple with the authentication type value and corresponding names.
 
 Configuration Methods
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 The Configuration Methods Attribute lists the configuration methods the Enrollee
 or Registrar supports.
@@ -487,7 +650,7 @@ Value  Configuration Method Description
       A tuple with the configuration methods value and corresponding names.
 
 Credential
-~~~~~~~~~~
+----------
 
 .. class:: ndef.wifi.Credential(*args)
 
@@ -506,13 +669,15 @@ Credential
       A read-only `list` of all Wi-Fi Simple Configuration Attribute names that
       can be used as Credential keys.
 
-      | 'authentication-type'
-      | 'encryption-type'
-      | 'key-provided-automatically'
-      | 'mac-address'
-      | 'network-key'
-      | 'ssid'
-      | 'vendor-extension'
+      >>> print('\n'.join(sorted(ndef.wifi.Credential().attribute_names)))
+      authentication-type
+      encryption-type
+      key-provided-automatically
+      mac-address
+      network-index
+      network-key
+      ssid
+      vendor-extension
 
    .. method:: get_attribute(name, index=0)
 
@@ -545,7 +710,7 @@ Credential
 
 
 Device Name
-~~~~~~~~~~~
+-----------
 
 The Device Name Attribute contains a user-friendly description of the device
 encoded in UTF-8. Typically, this is a unique identifier that describes the
@@ -560,7 +725,7 @@ product in a way that is recognizable to the user.
       The device name string.
 
 Encryption Type
-~~~~~~~~~~~~~~~
+---------------
 
 The Encryption Type Attribute contains the encryption type for the Enrollee to
 use when associating with the network. For protocol version 2.0 or newer, the
@@ -596,7 +761,7 @@ Value  Encryption Type Notes
       A tuple with the encryption type value and corresponding names.
 
 Key Provided Automatically
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
 The Key Provided Automatically Attribute specifies whether the Network Key
 is provided automatically by the network.
@@ -614,7 +779,7 @@ is provided automatically by the network.
       Either True or False.
 
 MAC Address
-~~~~~~~~~~~
+-----------
 
 The MAC Address Attribute contains the 48 bit value of the MAC Address.
 
@@ -634,7 +799,7 @@ The MAC Address Attribute contains the 48 bit value of the MAC Address.
       The six MAC Address bytes.
 
 Manufacturer
-~~~~~~~~~~~~
+------------
 
 The Manufacturer Attribute is an ASCII string that identifies the manufacturer
 of the device. Generally, this should allow a user to make an association with
@@ -653,7 +818,7 @@ the labeling on the device.
       The Manufacturer name string.
 
 Model Name
-~~~~~~~~~~
+----------
 
 The Model Name Attribute is an ASCII string that identifies the model of the
 device. Generally, this field should allow a user to make an association with
@@ -672,7 +837,7 @@ the labeling on the device.
       The Model Name string.
 
 Model Number
-~~~~~~~~~~~~
+------------
 
 The Model Number Attribute provides additional description of the device to the
 user.
@@ -690,7 +855,7 @@ user.
       The Model Number string.
 
 Network Index
-~~~~~~~~~~~~~
+-------------
 
 The Network Index Attribute is deprecated. Value 1 must be used for backwards
 compatibility when the attribute is required.
@@ -708,7 +873,7 @@ compatibility when the attribute is required.
       The Network Index integer.
 
 Network Key
-~~~~~~~~~~~
+-----------
 
 The Network Key Attribute specifies the wireless encryption key to be used by
 the Enrollee.
@@ -727,7 +892,7 @@ the Enrollee.
       The Network Key bytes.
 
 Network Key Shareable
-~~~~~~~~~~~~~~~~~~~~~
+---------------------
 
 The Network Key Shareable Attribute is used within Credential Attributes. It
 specifies whether the Network Key included in the Credential can be shared or
@@ -747,7 +912,7 @@ shared.
       Either True or False.
 
 Out Of Band Device Password
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------
 
 The Out-of-Band Device Password Attribute contains a fixed data structure with
 the overall size is given by the Wi-Fi Attribute TLV Length value.
@@ -813,7 +978,7 @@ Registrar’s public key exchanged in message M2.
       The Device Password bytes.
 
 Primary Device Type
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 The Primary Device Type Attribute contains the primary type of the device.
 
@@ -903,7 +1068,7 @@ The Primary Device Type Attribute contains the primary type of the device.
       The Primary Device Type string.
 
 RF Bands
-~~~~~~~~
+--------
 
 The RF Bands Attribute indicates a specific RF band that is utilized during
 message exchange. As an optional attribute in NFC out-of-band provisioning it
@@ -936,7 +1101,7 @@ Value RF Band
       The tuple of RF Bands integer value and corresponding names.
 
 Secondary Device Type List
-~~~~~~~~~~~~~~~~~~~~~~~~~~
+--------------------------
 
 The Secondary Device Type List contains one or more secondary device types
 supported by the device. The standard values of Category and Sub Category are
@@ -956,7 +1121,7 @@ the same as for the `Primary Device Type`_ Attribute.
       A tuple of all device type strings.
 
 Serial Number
-~~~~~~~~~~~~~
+-------------
 
 The Serial Number Attribute contains the serial number of the device.
 
@@ -973,7 +1138,7 @@ The Serial Number Attribute contains the serial number of the device.
       The Serial Number string.
 
 SSID
-~~~~
+----
 
 The SSID Attribute represents the Service Set Identifier a.k.a network
 name. This is used by the client to identify the wireless network to connect
@@ -994,7 +1159,7 @@ i.e. no zero padding and same length.
       The SSID bytes.
 
 UUID-E
-~~~~~~
+------
 
 The UUID-E Attribute contains the universally unique identifier (UUID) generated
 as a GUID by the Enrollee. It uniquely identifies an operational device and
@@ -1016,7 +1181,7 @@ should survive reboots and resets.
       The UUID-E string.
 
 UUID-R
-~~~~~~
+------
 
 The UUID-R Attribute contains the universally unique identifier (UUID) generated
 as a GUID by the Registrar. It uniquely identifies an operational device and
@@ -1038,7 +1203,7 @@ should survive reboots and resets.
       The UUID-E string.
 
 Version
-~~~~~~~
+-------
 
 The Version Attribute is deprecated and always set to 0x10 (version 1.0) for
 backwards compatibility. Version 1.0h of the specification did not fully
@@ -1062,7 +1227,7 @@ interoperability issues with deployed 1.0h-based devices.
       major and minor fields.
 
 Version2
-~~~~~~~~
+--------
 
 The Version2 Attribute specifies the Wi-Fi Simple Configuration version
 implemented by the device sending this attribute. It is a subelement within a
@@ -1085,7 +1250,7 @@ version 1.0.
       The Version2 as a `~collections.namedtuple` with major and minor fields.
 
 Vendor Extension
-~~~~~~~~~~~~~~~~
+----------------
 
 The Vendor Extension Attribute allows vendor specific extensions in the Wi-Fi
 Simple Configuration message formats. The Vendor Extension Value field contains
@@ -1109,7 +1274,7 @@ is the SMI network management private enterprise code.
       vendor_data).
 
 Wi-Fi Alliance Vendor Extension
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
 
 The Wi-Fi Alliance (WFA) Vendor Extension is a Vendor Extension attribute (ID
 0x1049) that uses Vendor ID 0x00372A and contains one or more subelements. The
@@ -1173,13 +1338,15 @@ requirements to ignore new attributes.
       ndef.wifi.Version2(2, 1)
 
 
-Wi-Fi Peer To Peer Attributes
------------------------------
+.. _p2p_attributes:
+
+P2P Attribute Classes
+=====================
 
 This section documents the Wi-Fi Peer To Peer (P2P) Attribute classes.
 
 P2P Capability
-~~~~~~~~~~~~~~
+--------------
 
 The P2P Capability attribute contains a set of parameters that indicate the P2P
 Device's capability and the current state of the P2P Group.
@@ -1240,7 +1407,7 @@ Group Capability Strings::
       (65, 'P2P Group Owner', 'Group Formation')
 
 Channel List
-~~~~~~~~~~~~
+------------
 
 The Channel List attribute contains a list of Operating Class and Channel pair
 information.
@@ -1276,7 +1443,7 @@ information.
       b'de\x04'
 
 P2P Device Info
-~~~~~~~~~~~~~~~
+---------------
 
 The P2P Device Info attribute provides the P2P Device Address, Config Methods,
 Primary Device Type, a list of Secondary Device Types and the user friendly Device
@@ -1346,7 +1513,7 @@ Name.
       'my tablet'
 
 P2P Group Info
-~~~~~~~~~~~~~~
+--------------
 
 The P2P Group Info attribute contains device information of P2P Clients that
 are members of the P2P Group.
@@ -1443,7 +1610,7 @@ are members of the P2P Group.
          'first device'
 
 P2P Group ID
-~~~~~~~~~~~~
+------------
 
 The P2P Group ID attribute contains a unique P2P Group identifier of the P2P
 Group.
@@ -1476,7 +1643,7 @@ Group.
       b'P2P Group SSID'
 
 Negotiation Channel
-~~~~~~~~~~~~~~~~~~~
+-------------------
 
 The Out-of-Band Group Owner Negotiation Channel attribute contains the Channel
 and Class information used for the Group Owner Negotiation.
