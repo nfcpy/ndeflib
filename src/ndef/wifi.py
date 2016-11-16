@@ -1110,6 +1110,7 @@ class WifiSimpleConfigRecord(AttributeContainer, GlobalRecord):
         'rf-bands': RFBands,
         'secondary-device-type-list': SecondaryDeviceTypeList,
         'serial-number': SerialNumber,
+        'ssid': SSID,
         'uuid-enrollee': UUIDEnrollee,
         'uuid-registrar': UUIDRegistrar,
         'vendor-extension': VendorExtension,
@@ -1164,8 +1165,8 @@ class WifiSimpleConfigRecord(AttributeContainer, GlobalRecord):
                 octets.append(Record._encode_struct('HH+', _type, _data))
 
         # The WSC spec requires the overall attribute size in octets
-        # encoded before the TLVs as a 16-bit unsigned integer when an
-        # OOB Device Password is exchanged with Password ID 0x0007
+        # encoded before the TLVs (as a 16-bit unsigned integer) when
+        # an OOB Device Password is exchanged with Password ID 0x0007
         # (NFC-Connection-Handover).
         oob_password = self.get_attribute('oob-password')
         if oob_password and oob_password.password_id == 7:

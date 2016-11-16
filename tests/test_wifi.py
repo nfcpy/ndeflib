@@ -1368,6 +1368,7 @@ class TestWifiSimpleConfigRecord:
             'rf-bands',
             'secondary-device-type-list',
             'serial-number',
+            'ssid',
             'uuid-enrollee',
             'uuid-registrar',
             'vendor-extension',
