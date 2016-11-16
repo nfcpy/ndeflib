@@ -116,6 +116,21 @@ fields).
    4 bits. The Attribute is encoded as a WFA Vendor Extension sub-element with
    ID 0x00 and Length 0x01.
 
+**Example**
+
+>>> import ndef
+>>> import random
+>>> import hashlib
+>>> pkhash = hashlib.sha256(b'my public key goes here').digest()[0:20]
+>>> pwd_id = random.randint(16, 65535)
+>>> my_pwd = b"long password can't guess"
+>>> oobpwd = ndef.wifi.OutOfBandPassword(pkhash, pwd_id, my_pwd)
+>>> wfaext = ndef.wifi.WifiAllianceVendorExtension((0, b'\x20'))
+>>> record = ndef.WifiSimpleConfigRecord()
+>>> record['oob-password'] = [oobpwd.encode()]
+>>> record['vendor-extension'] = [wfaext.encode()]
+>>> octets = b''.join(ndef.message_encoder([record]))
+>>> assert len(octets) == 87
 
 Configuration Token Format
 --------------------------
@@ -196,62 +211,31 @@ fields).
 Wi-Fi Simple Config Record
 --------------------------
 
-The `WifiSimpleConfigRecord` carries a number of Wi-Fi Type-Length-Value
-Attributes that provide the information defined in the specification. Depending
-on the information contained, it represents either a Password or a Configuration
-Token. Each data element can be get or set as `bytes` with the numeric Attribute
-ID (Type) as a key on the `WifiSimpleConfigRecord` instance. Additionally, any
-of the `WifiSimpleConfigRecord.attribute_names` may also be used as a key.
-Although often implicit, the Wi-Fi TLV structure allows no assumptions on the
-cardinality of keys. Thus the `WifiSimpleConfigRecord` returns and expects key
-values as lists.
+A `WifiSimpleConfigRecord` holds any number of Wi-Fi TLV (Type-Length-Value)
+Attributes which are defined in the Wi-Fi Simple Configuration specification. It
+is organized as a `dict` with numeric Attribute ID or symbolic
+`~WifiSimpleConfigRecord.attribute_names` keys. Values are returned and must be
+set as a `list` of `bytes`, where each `bytes` object corresponds to one
+instance of the Wi-Fi TLV Attribute.
 
 >>> import ndef
 >>> record = ndef.WifiSimpleConfigRecord()
 >>> record[0x1020] = [b'\x00\x01\x02\x03\x04\x05']
->>> record[0x1020] == record['mac-address']
-True
+>>> assert record[0x1020] == record['mac-address']
 >>> record['mac-address'].append(b'\x05\x04\x03\x02\x01\x00')
 >>> record['mac-address']
 [b'\x00\x01\x02\x03\x04\x05', b'\x05\x04\x03\x02\x01\x00']
 
-
->>> import ndef
->>> import random
->>> import hashlib
->>> pkhash = hashlib.sha256(b'my public key goes here').digest()[0:20]
->>> pwd_id = random.randint(16, 65535)
->>> my_pwd = b"long password can't guess"
->>> oobpwd = ndef.wifi.OutOfBandPassword(pkhash, pwd_id, my_pwd)
->>> wfaext = ndef.wifi.WifiAllianceVendorExtension((0, b'\x20'))
->>> record = ndef.WifiSimpleConfigRecord()
->>> record['oob-password'] = [oobpwd.encode()]
->>> record['vendor-extension'] = [wfaext.encode()]
->>> #b''.join(ndef.message_encoder([record]))
-
-Typically required Wi-Fi Attributes are available as data attributes with values
-decoded from the first Wi-Fi Attribute Value for the associated Attribute Type.
-
->>> import ndef
->>> record = ndef.WifiSimpleConfigRecord()
->>> record[0x1020] = [b'\x00\x01\x02\x03\x04\x05']
->>> mac_address = record.get_attribute('mac-address')
->>> mac_address
-ndef.wifi.MacAddress(b'\x00\x01\x02\x03\x04\x05')
->>> print(mac_address)
-MAC Address 00:01:02:03:04:05
->>> record.set_attribute('ap-channel', 6)
->>> ap_channel = record.get_attribute('ap-channel')
->>> ap_channel
-ndef.wifi.APChannel(6)
->>> ap_channel.value
-6
+The `~WifiSimpleConfigRecord.get_attribute`,
+`~WifiSimpleConfigRecord.set_attribute` and
+`~WifiSimpleConfigRecord.add_attribute` methods can be used to get or set values
+with `Wi-Fi Simple Config Attributes`_ class instances.
 
 .. class:: WifiSimpleConfigRecord(*args)
 
-   The `WifiSimpleConfigRecord` can be initialized with any number of Wi-Fi
-   Attribute Type and Value tuples. The same Attribute Type may also appear more
-   than once.
+   The `WifiSimpleConfigRecord` is initialized with any number of Wi-Fi Simple
+   Config Attribute Type and Value tuples. The same Attribute Type may appear
+   more than once.
 
    >>> import ndef
    >>> print(ndef.WifiSimpleConfigRecord((0x1001, b'\x00\x06'), ('ap-channel', b'\x00\x06')))
@@ -259,96 +243,147 @@ ndef.wifi.APChannel(6)
 
    .. attribute:: type
 
-      The Wifi Simple Config Record type is ``application/vnd.wfa.wsc``.
+      The read-only Wifi Simple Configuration Record type.
+
+      >>> ndef.wifi.WifiSimpleConfigRecord().type
+      'application/vnd.wfa.wsc'
 
    .. attribute:: name
 
       Value of the NDEF Record ID field, an empty `str` if not set.
 
+      >>> record = ndef.wifi.WifiSimpleConfigRecord()
+      >>> record.name = 'WSC Record'
+      >>> record.name
+      'WSC Record'
+
    .. attribute:: data
 
       A `bytes` object containing the NDEF Record PAYLOAD encoded from the
-      current attributes.
+      current attribute data.
 
-   .. attribute:: context
-
-      Get the decoding or set the encoding context for the Wi-Fi Simple Config
-      Record. The `str` context attribute determines whether the record is part
-      of a connection ``handover`` exchange between two devices or belongs to a
-      Wi-Fi Password or Configuration ``token``. This is unfortunately needed
-      because the Wi-Fi Simple Configuration specification uses the same Payload
-      Type for two different encoding formats.
+      >>> record = ndef.wifi.WifiSimpleConfigRecord()
+      >>> record.data
+      b''
+      >>> record['ap-channel'] = [b'\x00\x06']
+      >>> record.data
+      b'\x10\x01\x00\x02\x00\x06'
 
    .. attribute:: attribute_names
 
-      A read-only `list` of all Wi-Fi Simple Configuration Attribute names that
-      can be used like keys on the record instance or as names for the
-      get/set/add_attribute methods below.
+      The read-only `list` of all WSC Attribute names that can be used as keys
+      on the record instance or as names for the get/set/add_attribute methods.
 
-      | 'ap-channel'
-      | 'credential'
-      | 'device-name'
-      | 'mac-address'
-      | 'manufacturer'
-      | 'model-name'
-      | 'model-number'
-      | 'oob-password'
-      | 'primary-device-type'
-      | 'rf-bands'
-      | 'secondary-device-type-list'
-      | 'serial-number'
-      | 'uuid-enrollee'
-      | 'uuid-registrar'
-      | 'vendor-extension'
-      | 'version-1'
+      >>> print('\n'.join(sorted(ndef.wifi.WifiSimpleConfigRecord().attribute_names)))
+      ap-channel
+      credential
+      device-name
+      mac-address
+      manufacturer
+      model-name
+      model-number
+      oob-password
+      primary-device-type
+      rf-bands
+      secondary-device-type-list
+      serial-number
+      uuid-enrollee
+      uuid-registrar
+      vendor-extension
+      version-1
 
    .. method:: get_attribute(name, index=0)
 
-      The `get_attribute` method returns a :ref:`attributes`
+      The `get_attribute` method returns the Wi-Fi Attribute selected by *name*
+      and *index*.
 
-
-      >>> import ndef
-      >>> record = ndef.wifi.WifiSimpleConfigRecord(('ap-channel', b'\x00\x06'))
-      >>> print(record.get_attribute('ap-channel'))
+      >>> record = ndef.WifiSimpleConfigRecord(('ap-channel', b'\x00\x06'))
+      >>> print(record.get_attribute('ap-channel', 0))
       AP Channel 6
       >>> print(record.get_attribute('ap-channel', 1))
       None
 
    .. method:: set_attribute(name, *args)
 
-      >>> import ndef
-      >>> record = ndef.wifi.WifiSimpleConfigRecord(('ap-channel', b'\x00\x06'))
+      The `set_attribute` method sets the Wi-Fi Attribute *name* to a single
+      instance constructed from *args*.
+
+      >>> record = ndef.WifiSimpleConfigRecord(('ap-channel', b'\x00\x06'))
       >>> record.set_attribute('ap-channel', 10)
-      >>> print(record.get_attribute('ap-channel'))
+      >>> print(record.get_attribute('ap-channel', 0))
       AP Channel 10
       >>> print(record.get_attribute('ap-channel', 1))
       None
 
    .. method:: add_attribute(name, *args)
 
-      >>> import ndef
-      >>> record = ndef.wifi.WifiSimpleConfigRecord(('ap-channel', b'\x00\x06'))
-      >>> record.add_attribute('ap-channel', 10)
-      >>> print(record.get_attribute('ap-channel'))
+      The `add_attribute` method adds a Wi-Fi Attribute *name* constructed from
+      *args* to any existing Wi-Fi Attributes of *name*. If there are no
+      existing attributes for *name* the result is the same as for
+      `set_attribute`.
+
+      >>> record = ndef.WifiSimpleConfigRecord(('ap-channel', b'\x00\x06'))
+      >>> record.add_attribute('ap-channel', 12)
+      >>> print(record.get_attribute('ap-channel', 0))
       AP Channel 6
       >>> print(record.get_attribute('ap-channel', 1))
-      AP Channel 10
+      AP Channel 12
 
 
-.. _attributes:
+Wi-Fi Peer To Peer Record
+-------------------------
+
+.. class:: WifiPeerToPeerRecord(*args)
+
+   The `WifiPeerToPeerRecord` inherits from `WifiSimpleConfigRecord` and adds
+   handling of Wi-Fi P2P Attributes.
+
+   >>> import ndef
+   >>> print(ndef.WifiPeerToPeerRecord(('negotiation-channel', b'de\x04\x51\x06\x01')))
+   NDEF Wifi Peer To Peer Record ID '' Attributes 0x13
+
+   .. attribute:: type
+
+      The read-only Wifi Peer To Peer Record type.
+
+      >>> ndef.wifi.WifiPeerToPeerRecord().type
+      'application/vnd.wfa.p2p'
+
+   .. attribute:: attribute_names
+
+      The read-only `list` of all WSC and P2P Attribute names that may be used
+      as keys on the record instance or as names for the get/set/add_attribute
+      methods.
+
+      >>> print('\n'.join(sorted(ndef.wifi.WifiPeerToPeerRecord().attribute_names)))
+      ap-channel
+      channel-list
+      credential
+      device-name
+      mac-address
+      manufacturer
+      model-name
+      model-number
+      negotiation-channel
+      oob-password
+      p2p-capability
+      p2p-device-info
+      p2p-group-id
+      p2p-group-info
+      primary-device-type
+      rf-bands
+      secondary-device-type-list
+      serial-number
+      uuid-enrollee
+      uuid-registrar
+      vendor-extension
+      version-1
+
 
 Wi-Fi Simple Config Attributes
 ------------------------------
 
-This section lists the Wi-Fi Simple Configuration and P2P Attribute classes that
-are available for decoding and encoding of Attribute Value octets.
-
->>> import ndef
->>> ndef.wifi.VendorExtension.decode(b'123456').value
-(b'123', b'456')
->>> ndef.wifi.VendorExtension(b'123', b'456').encode()
-b'123456'
-
+This section documents the Wi-Fi Simple Configuration (WSC) Attribute classes.
 
 AP Channel
 ~~~~~~~~~~
@@ -1076,21 +1111,72 @@ is the SMI network management private enterprise code.
 Wi-Fi Alliance Vendor Extension
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+The Wi-Fi Alliance (WFA) Vendor Extension is a Vendor Extension attribute (ID
+0x1049) that uses Vendor ID 0x00372A and contains one or more subelements. The
+WFA Vendor Extension attribute is used to encode new information in a way that
+avoids some backwards compatibility issues with deployed implementations that
+are based on previous specification versions, but do not comply with
+requirements to ignore new attributes.
+
 .. class:: ndef.wifi.WifiAllianceVendorExtension
 
+   The `~ndef.wifi.WifiAllianceVendorExtension` is an attribute container class
+   that holds other Wi-Fi Simple Configuration attributes. It may be initialzed
+   with any number of WFA sublement type-value tuples.
 
-Wi-Fi Peer To Peer Record
--------------------------
+   >>> import ndef
+   >>> wfa_ext = ndef.wifi.WifiAllianceVendorExtension(('version-2', b'\x20'))
+   >>> wfa_ext[0x02] = [b'\x01'] # network key shareable
+   >>> print(wfa_ext)
+   WFA Vendor Extension Attributes 0x00 0x02
 
-.. class:: WifiPeerToPeerRecord(*args)
+   .. attribute:: attribute_names
 
-   The WifiPeerToPeerRecord inherits from `WifiSimpleConfigRecord` and shares
-   the same Attribute access mechanism. Wi-Fi P2P Attribute numeric keys are all
-   less than 256 (thus distinct from Wi-Fi Simple Config Attribute numeric keys
-   that are all greater than 4095).
+      The read-only list of all WSC attribute names (subelements) that may be
+      used as a key or name for the get/set/add_attribute methods.
+
+      >>> print('\n'.join(sorted(ndef.wifi.WifiAllianceVendorExtension().attribute_names)))
+      network-key-shareable
+      version-2
+
+   .. attribute:: get_attribute(name, index=0)
+
+      The `get_attribute` method returns the WFA subelement attribute selected
+      by name and index.
+
+      >>> wfa_ext = ndef.wifi.WifiAllianceVendorExtension(('version-2', b'\x20'))
+      >>> wfa_ext.get_attribute('version-2')
+      ndef.wifi.Version2(2, 0)
+
+   .. method:: set_attribute(name, *args)
+
+      The `set_attribute` method sets the WFA subelement attribute *name* to a
+      single instance constructed from *args*.
+
+      >>> wfa_ext = ndef.wifi.WifiAllianceVendorExtension(('version-2', b'\x20'))
+      >>> wfa_ext.set_attribute('version-2', 0x21)
+      >>> wfa_ext.get_attribute('version-2')
+      ndef.wifi.Version2(2, 1)
+
+   .. method:: add_attribute(name, *args)
+
+      The `add_attribute` method adds a WFA subelement attribute *name*
+      constructed from *args* to any existing *name* attributes. If there are no
+      existing *name* attributes it is effectively the same as `set_attribute`.
+
+      >>> wfa_ext = ndef.wifi.WifiAllianceVendorExtension()
+      >>> wfa_ext.add_attribute('version-2', ndef.wifi.Version2(2, 0))
+      >>> wfa_ext.add_attribute('version-2', ndef.wifi.Version2(2, 1))
+      >>> wfa_ext.get_attribute('version-2', 0)
+      ndef.wifi.Version2(2, 0)
+      >>> wfa_ext.get_attribute('version-2', 1)
+      ndef.wifi.Version2(2, 1)
+
 
 Wi-Fi Peer To Peer Attributes
 -----------------------------
+
+This section documents the Wi-Fi Peer To Peer (P2P) Attribute classes.
 
 P2P Capability
 ~~~~~~~~~~~~~~
