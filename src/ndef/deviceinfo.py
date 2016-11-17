@@ -212,4 +212,5 @@ class DeviceInformationRecord(GlobalRecord):
 
         return record
 
+
 Record.register_type(DeviceInformationRecord)

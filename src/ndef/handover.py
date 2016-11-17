@@ -789,6 +789,7 @@ class HandoverCarrierRecord(GlobalRecord):
         carrier_data = octets[2+CARRIER_TYPE_LENGTH:]
         return HandoverCarrierRecord(carrier_type, carrier_data)
 
+
 HandoverRequestRecord.register_type(AlternativeCarrierRecord)
 HandoverRequestRecord.register_type(CollisionResolutionRecord)
 HandoverRequestRecord.register_type(HandoverCarrierRecord)

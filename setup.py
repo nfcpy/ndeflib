@@ -43,6 +43,7 @@ def read(*parts):
     with codecs.open(os.path.join(HERE, *parts), "rb", "utf-8") as f:
         return f.read()
 
+
 META_FILE = read(META_PATH)
 
 

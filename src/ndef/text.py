@@ -118,4 +118,5 @@ class TextRecord(GlobalRecord):
             raise cls._decode_error("can't be decoded as {}".format(UTFX))
         return cls(TEXT, LANG, UTFX)
 
+
 Record.register_type(TextRecord)

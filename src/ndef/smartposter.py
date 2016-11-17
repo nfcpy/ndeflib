@@ -446,6 +446,7 @@ class SmartposterRecord(GlobalRecord):
                 raise cls._decode_error(errmsg.format(uri_record_count))
         return sp_record
 
+
 SmartposterRecord.register_type(UriRecord)
 SmartposterRecord.register_type(TextRecord)
 SmartposterRecord.register_type(SizeRecord)

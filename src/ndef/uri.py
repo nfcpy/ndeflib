@@ -131,4 +131,5 @@ class UriRecord(GlobalRecord):
 
         return cls(cls._prefix_strings[uri_code] + uri_data)
 
+
 Record.register_type(UriRecord)
