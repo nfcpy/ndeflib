@@ -2,6 +2,11 @@
 History
 =======
 
+0.2.0 (2016-11-16)
+------------------
+
+* Wi-Fi Simple Configuration (WSC) and P2P records and attributes
+  decode and encode added.
 
 0.1.1 (2016-07-14)
 ------------------
