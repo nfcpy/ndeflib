@@ -120,7 +120,7 @@ WifiPeerToPeerRecord = wifi.WifiPeerToPeerRecord
 
 # METADATA ####################################################################
 
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 __title__ = "ndef"
 __description__ = "NFC Data Exchange Format decoder and encoder."
