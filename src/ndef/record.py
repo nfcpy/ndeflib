@@ -39,9 +39,25 @@ class DecodeError(Exception):
     pass
 
 
+def decode_error(obj, fmt, *args, **kwargs):
+    # Return a DecodeError instance with a formatted error string
+    # that starts with the module and class name of obj.
+    mod = obj.__module__
+    cls = obj.__name__ if isinstance(obj, type) else obj.__class__.__name__
+    return DecodeError(mod + '.' + cls + " " + fmt.format(*args, **kwargs))
+
+
 class EncodeError(Exception):
     """NDEF encode error exception class."""
     pass
+
+
+def encode_error(obj, fmt, *args, **kwargs):
+    # Return a EncodeError instance with a formatted error string
+    # that starts with the module and class name of obj.
+    mod = obj.__module__
+    cls = obj.__name__ if isinstance(obj, type) else obj.__class__.__name__
+    return EncodeError(mod + '.' + cls + " " + fmt.format(*args, **kwargs))
 
 
 class Record(object):
