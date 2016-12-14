@@ -15,5 +15,6 @@ known record types.
    records/smartposter
    records/deviceinfo
    records/handover
+   records/bluetooth
    records/wifi
 

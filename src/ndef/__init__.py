@@ -96,7 +96,7 @@ else:
     from . import smartposter
     from . import deviceinfo
     from . import handover
-    # from . import bluetooth
+    from . import bluetooth
     from . import wifi
 
 message_decoder = message.message_decoder
@@ -116,7 +116,8 @@ HandoverInitiateRecord = handover.HandoverInitiateRecord
 HandoverCarrierRecord = handover.HandoverCarrierRecord
 WifiSimpleConfigRecord = wifi.WifiSimpleConfigRecord
 WifiPeerToPeerRecord = wifi.WifiPeerToPeerRecord
-# BluetoothConfigRecord = bluetooth.BluetoothConfigRecord
+BluetoothEasyPairingRecord = bluetooth.BluetoothEasyPairingRecord
+BluetoothLowEnergyRecord = bluetooth.BluetoothLowEnergyRecord
 
 # METADATA ####################################################################
 
