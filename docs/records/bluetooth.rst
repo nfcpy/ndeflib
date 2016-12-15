@@ -397,7 +397,7 @@ Device Address
 
    >>> import ndef
    >>> print(ndef.bluetooth.DeviceAddress('01:02:03:04:05:06'))
-   01:02:03:04:05:06 (public)
+   Device Address 01:02:03:04:05:06 (public)
 
    .. staticmethod:: decode(octets)
 
@@ -458,7 +458,7 @@ Device Class
 
    >>> import ndef
    >>> print(ndef.bluetooth.DeviceClass(0x120104))
-   Computer - Desktop workstation - Networking and Object Transfer
+   Device Class Computer - Desktop workstation - Networking and Object Transfer
 
    .. staticmethod:: decode(octets)
 

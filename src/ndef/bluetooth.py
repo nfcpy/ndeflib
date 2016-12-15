@@ -37,7 +37,7 @@ class DeviceAddress(object):
         return (self.addr, self.type) == (other.addr, other.type)
 
     def __str__(self):
-        return "{addr.addr} ({addr.type})".format(addr=self)
+        return "Device Address {addr.addr} ({addr.type})".format(addr=self)
 
     def __repr__(self):
         return "{}.{}({!r}, {!r})".format(
@@ -246,10 +246,10 @@ class DeviceClass(object):
                 major_service_class = ' and '.join(self.major_service_class)
             else:
                 major_service_class = 'Unspecified'
-            return ('{o.major_device_class} - {o.minor_device_class} - {0}'
-                    .format(major_service_class, o=self))
+            s = '{self.major_device_class} - {self.minor_device_class} - {0}'
+            return 'Device Class ' + s.format(major_service_class, self=self)
         else:
-            return 'Unknown format {:024b}b'.format(self.cod)
+            return 'Device Class {:024b}b'.format(self.cod)
 
     def __repr__(self):
         return "{}.{}(0x{:06X})".format(
@@ -358,12 +358,15 @@ class ServiceClass(object):
         else:
             self._uuid = UUID(*args, **kwargs)
 
+    def __eq__(self, other):
+        return self._uuid == other._uuid
+
+    def __str__(self):
+        return "Service Class {}".format(self.name)
+
     def __repr__(self):
         return "{}.{}({!r})".format(
             self.__module__, self.__class__.__name__, str(self.uuid))
-
-    def __eq__(self, other):
-        return self._uuid == other._uuid
 
     @property
     def uuid(self):

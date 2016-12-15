@@ -28,9 +28,9 @@ class TestDeviceAddress:
 
     def test_format_str(self):
         obj = ndef.bluetooth.DeviceAddress('01:02:03:04:05:06', 'public')
-        assert str(obj) == '01:02:03:04:05:06 (public)'
+        assert str(obj) == 'Device Address 01:02:03:04:05:06 (public)'
         obj = ndef.bluetooth.DeviceAddress('01:02:03:04:05:06', 'random')
-        assert str(obj) == '01:02:03:04:05:06 (random)'
+        assert str(obj) == 'Device Address 01:02:03:04:05:06 (random)'
 
     def test_format_repr(self):
         obj = ndef.bluetooth.DeviceAddress('01:02:03:04:05:06', 'public')
@@ -117,11 +117,11 @@ class TestDeviceClass:
         (0x000800, "Toy - Reserved 000000b - Unspecified"),
         (0x200410, "Audio / Video - Microphone - Audio"),
         (0x000104, "Computer - Desktop workstation - Unspecified"),
-        (0x000001, "Unknown format 000000000000000000000001b"),
+        (0x000001, "000000000000000000000001b"),
     ])
     def test_format_str(self, cod, strstr):
         obj = ndef.bluetooth.DeviceClass(cod)
-        assert str(obj) == strstr
+        assert str(obj) == 'Device Class ' + strstr
 
     def test_format_repr(self):
         obj = ndef.bluetooth.DeviceClass(0x123456)
@@ -177,6 +177,83 @@ class TestServiceClass:
     def test_format_repr(self):
         obj = ndef.bluetooth.ServiceClass(0x1101)
         assert repr(obj) == self.cls + "('00001101-0000-1000-8000-00805f9b34fb')"
+
+    @pytest.mark.parametrize("sc, strstr", [
+        (0x00000000, "00000000-0000-1000-8000-00805f9b34fb"),
+        (0x00001000, "Service Discovery Server"),
+        (0x00001001, "Browse Group Descriptor"),
+        (0x00001101, "Serial Port"),
+        (0x00001102, "LAN Access Using PPP"),
+        (0x00001103, "Dialup Networking"),
+        (0x00001104, "IrMC Sync"),
+        (0x00001105, "OBEX Object Push"),
+        (0x00001106, "OBEX File Transfer"),
+        (0x00001107, "IrMC Sync Command"),
+        (0x00001108, "Headset"),
+        (0x00001109, "Cordless Telephony"),
+        (0x0000110a, "Audio Source"),
+        (0x0000110b, "Audio Sink"),
+        (0x0000110c, "A/V Remote Control Target"),
+        (0x0000110d, "Advanced Audio Distribution"),
+        (0x0000110e, "A/V Remote Control"),
+        (0x0000110f, "A/V Remote Control Controller"),
+        (0x00001110, "Intercom"),
+        (0x00001111, "Fax"),
+        (0x00001112, "Headset - Audio Gateway (AG)"),
+        (0x00001113, "WAP"),
+        (0x00001114, "WAP Client"),
+        (0x00001115, "PANU"),
+        (0x00001116, "NAP"),
+        (0x00001117, "GN"),
+        (0x00001118, "Direct Printing"),
+        (0x00001119, "Reference Printing"),
+        (0x0000111a, "Basic Imaging Profile"),
+        (0x0000111b, "Imaging Responder"),
+        (0x0000111c, "Imaging Automatic Archive"),
+        (0x0000111d, "Imaging Referenced Objects"),
+        (0x0000111e, "Handsfree"),
+        (0x0000111f, "Handsfree Audio Gateway"),
+        (0x00001120, "Direct Printing Reference"),
+        (0x00001121, "Reflected UI"),
+        (0x00001122, "Basic Printing"),
+        (0x00001123, "Printing Status"),
+        (0x00001124, "Human Interface Device"),
+        (0x00001125, "Hardcopy Cable Replacement"),
+        (0x00001126, "HCR Print"),
+        (0x00001127, "HCR Scan"),
+        (0x00001128, "Common ISDN Access"),
+        (0x0000112d, "SIM Access"),
+        (0x0000112e, "Phonebook Access - PCE"),
+        (0x0000112f, "Phonebook Access - PSE"),
+        (0x00001130, "Phonebook Access"),
+        (0x00001131, "Headset - HS"),
+        (0x00001132, "Message Access Server"),
+        (0x00001133, "Message Notification Server"),
+        (0x00001134, "Message Access Profile"),
+        (0x00001135, "GNSS"),
+        (0x00001136, "GNSS Server"),
+        (0x00001200, "PnP Information"),
+        (0x00001201, "Generic Networking"),
+        (0x00001202, "Generic File Transfer"),
+        (0x00001203, "Generic Audio"),
+        (0x00001204, "Generic Telephony"),
+        (0x00001205, "UPNP Service"),
+        (0x00001206, "UPNP IP Service"),
+        (0x00001300, "ESDP UPNP IP PAN"),
+        (0x00001301, "ESDP UPNP IP LAP"),
+        (0x00001302, "ESDP UPNP L2CAP"),
+        (0x00001303, "Video Source"),
+        (0x00001304, "Video Sink"),
+        (0x00001305, "Video Distribution"),
+        (0x00001400, "HDP"),
+        (0x00001401, "HDP Source"),
+        (0x00001402, "HDP Sink"),
+        ("00000000-0000-0000-0000-000000000000",
+         "00000000-0000-0000-0000-000000000000"),
+    ])
+    def test_format_str(self, sc, strstr):
+        obj = ndef.bluetooth.ServiceClass(sc)
+        assert str(obj) == 'Service Class ' + strstr
 
     def test_uuid_name(self):
         obj = ndef.bluetooth.ServiceClass(0x1101)
