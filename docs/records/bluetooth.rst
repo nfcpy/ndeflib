@@ -501,13 +501,13 @@ Device Class
 Service Class
 -------------
 
-.. class:: ndef.bluetooth.ServiceClass
+.. class:: ndef.bluetooth.ServiceClass(*args, **kwargs)
 
-   The ServiceClass represents a single Bluetooth Service Class UUID. It
-   inherits from `uuid.UUID` all possible init arguments and
-   properties. Additionally, the first positional argument may be an integer
-   that is a 16 or 32 bit Bluetooth 'uuid16' or 'uuid32', or it may be the
-   Bluetooth service class name.
+   The ServiceClass represents a single Bluetooth Service Class UUID. The first
+   positional argument may be a Bluetooth 'uuid16' or 'uuid32' integer, a
+   Bluetooth service class name, or any of the UUID string formats accepted by
+   `uuid.UUID`. Alternatively, the same keyword arguments supported by
+   `uuid.UUID` may be used.
 
    >>> import ndef
    >>> ndef.bluetooth.ServiceClass(0x110A)
@@ -534,6 +534,14 @@ Service Class
       b'\n\x11'
       >>> ndef.bluetooth.ServiceClass(0x1000110A).encode()
       b'\n\x11\x00\x10'
+
+   .. attribute:: uuid
+
+      A `uuid.UUID` object that represents the Bluetooth Service Class UUID
+      (read-only).
+
+      >>> ndef.bluetooth.ServiceClass(0x110A).uuid
+      UUID('0000110a-0000-1000-8000-00805f9b34fb')
 
    .. attribute:: name
 

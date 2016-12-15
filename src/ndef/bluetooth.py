@@ -33,6 +33,9 @@ class DeviceAddress(object):
         assert value in ('public', 'random')
         self._type = value
 
+    def __eq__(self, other):
+        return (self.addr, self.type) == (other.addr, other.type)
+
     def __str__(self):
         return "{addr.addr} ({addr.type})".format(addr=self)
 
@@ -204,6 +207,9 @@ class DeviceClass(object):
     def __init__(self, cod):
         self.cod = cod.cod if isinstance(cod, DeviceClass) else cod
 
+    def __eq__(self, other):
+        return self.cod == other.cod
+
     @property
     def major_service_class(self):
         if self.cod & 0b11 == 0:
@@ -265,7 +271,7 @@ class DeviceClass(object):
             raise decode_error(cls, errstr, len(octets))
 
 
-class ServiceClass(UUID):
+class ServiceClass(object):
     bluetooth_base_uuid = UUID('00000000-0000-1000-8000-00805F9B34FB')
     bluetooth_uuid_list = {
         0x00001000: "Service Discovery Server",
@@ -341,42 +347,52 @@ class ServiceClass(UUID):
     def __init__(self, *args, **kwargs):
         if args and isinstance(args[0], int):
             fields = (args[0],) + self.bluetooth_base_uuid.fields[1:]
-            super(ServiceClass, self).__init__(fields=fields)
+            self._uuid = UUID(fields=fields)
         elif args and args[0] in self.bluetooth_uuid_list.values():
             index = list(self.bluetooth_uuid_list.values()).index(args[0])
             value = list(self.bluetooth_uuid_list.keys())[index]
             fields = (value,) + self.bluetooth_base_uuid.fields[1:]
-            super(ServiceClass, self).__init__(fields=fields)
+            self._uuid = UUID(fields=fields)
+        elif args and isinstance(args[0], UUID):
+            self._uuid = UUID(str(args[0]))
         else:
-            super(ServiceClass, self).__init__(*args, **kwargs)
+            self._uuid = UUID(*args, **kwargs)
 
     def __repr__(self):
         return "{}.{}({!r})".format(
-            self.__module__, self.__class__.__name__, str(self))
+            self.__module__, self.__class__.__name__, str(self.uuid))
+
+    def __eq__(self, other):
+        return self._uuid == other._uuid
+
+    @property
+    def uuid(self):
+        return self._uuid
 
     @property
     def name(self):
-        if self.fields[1:] == self.bluetooth_base_uuid.fields[1:]:
-            return self.bluetooth_uuid_list.get(self.fields[0], str(self))
-        return super(ServiceClass, self).__str__()
+        if self.uuid.fields[1:] == self.bluetooth_base_uuid.fields[1:]:
+            if self.uuid.fields[0] in self.bluetooth_uuid_list:
+                return self.bluetooth_uuid_list[self.uuid.fields[0]]
+        return str(self.uuid)
 
     @classmethod
     def get_uuid_names(cls):
         return tuple(cls.bluetooth_uuid_list.values())
 
     def encode(self):
-        if self.fields[1:] == self.bluetooth_base_uuid.fields[1:]:
-            fmt = '<H' if self.fields[0] < 0x10000 else '<I'
-            return struct.pack(fmt, self.fields[0])
-        return self.bytes_le
+        if self.uuid.fields[1:] == self.bluetooth_base_uuid.fields[1:]:
+            fmt = '<H' if self.uuid.fields[0] < 0x10000 else '<I'
+            return struct.pack(fmt, self.uuid.fields[0])
+        return self.uuid.bytes_le
 
     @classmethod
     def decode(cls, octets):
         if len(octets) in (2, 4):
             value = struct.unpack('<H' if len(octets) == 2 else '<I', octets)
-            return cls(fields=value+cls.bluetooth_base_uuid.fields[1:])
+            return cls(UUID(fields=value+cls.bluetooth_base_uuid.fields[1:]))
         elif len(octets) == 16:
-            return cls(bytes_le=octets)
+            return cls(UUID(bytes_le=octets))
         else:
             errstr = "can't decode service class uuid from {} octets"
             raise decode_error(cls, errstr, len(octets))

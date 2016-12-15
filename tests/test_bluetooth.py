@@ -15,6 +15,7 @@ class TestDeviceAddress:
     def test_init_address_format(self, address):
         obj = ndef.bluetooth.DeviceAddress(address)
         assert isinstance(obj, ndef.bluetooth.DeviceAddress)
+        assert obj == ndef.bluetooth.DeviceAddress(address)
         assert obj.addr == '01:02:03:04:05:06'
         assert obj.type == 'public'
 
@@ -101,6 +102,7 @@ class TestDeviceClass:
     def test_init(self, cod, major_dc, minor_dc, major_sc):
         obj = ndef.bluetooth.DeviceClass(cod)
         assert isinstance(obj, ndef.bluetooth.DeviceClass)
+        assert obj == ndef.bluetooth.DeviceClass(cod)
         assert obj.major_device_class == major_dc
         assert obj.minor_device_class == minor_dc
         assert obj.major_service_class == major_sc
@@ -162,15 +164,15 @@ class TestServiceClass:
     cls = "ndef.bluetooth.ServiceClass"
 
     @pytest.mark.parametrize("arg, uuid", [
-        (0x1101, "00001101-0000-1000-8000-00805f9b34fb"),
-        ("Serial Port", "00001101-0000-1000-8000-00805f9b34fb"),
+        (0x1101, uuid.UUID("00001101-0000-1000-8000-00805f9b34fb")),
+        ("Serial Port", uuid.UUID("00001101-0000-1000-8000-00805f9b34fb")),
         ("00001101-0000-1000-8000-00805f9b34fb",
-         "00001101-0000-1000-8000-00805f9b34fb"),
+         uuid.UUID("00001101-0000-1000-8000-00805f9b34fb")),
     ])
     def test_init(self, arg, uuid):
         obj = ndef.bluetooth.ServiceClass(arg)
         assert isinstance(obj, eval(self.cls))
-        assert str(obj) == uuid
+        assert obj.uuid == uuid
 
     def test_format_repr(self):
         obj = ndef.bluetooth.ServiceClass(0x1101)
@@ -342,11 +344,11 @@ class TestBluetoothEasyPairingRecord:
         sc_1 = ndef.bluetooth.ServiceClass(str(uuid.uuid4()))
         sc_2 = ndef.bluetooth.ServiceClass(str(uuid.uuid4()))
         obj.add_service_class(sc_1)
-        assert obj.get(0x06) == sc_1.bytes_le
+        assert obj.get(0x06) == sc_1.uuid.bytes_le
         assert obj.get(0x07) is None
         obj.add_service_class(sc_2, complete=True)
         assert obj.get(0x06) is None
-        assert obj.get(0x07) == sc_1.bytes_le + sc_2.bytes_le
+        assert obj.get(0x07) == sc_1.uuid.bytes_le + sc_2.uuid.bytes_le
 
     def test_meth_get_simple_pairing_hash(self):
         obj = ndef.BluetoothEasyPairingRecord('01:02:03:04:05:06')
