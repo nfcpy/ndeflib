@@ -25,6 +25,8 @@ from __future__ import absolute_import, division
 from .message import message_decoder, message_encoder
 from .record import Record, GlobalRecord, LocalRecord, hexlify
 from .deviceinfo import DeviceInformationRecord
+from .bluetooth import BluetoothEasyPairingRecord
+from .bluetooth import BluetoothLowEnergyRecord
 from .wifi import WifiSimpleConfigRecord
 from .wifi import WifiPeerToPeerRecord
 from collections import namedtuple, Sequence
@@ -796,12 +798,16 @@ HandoverRequestRecord.register_type(HandoverCarrierRecord)
 HandoverRequestRecord.register_type(DeviceInformationRecord)
 HandoverRequestRecord.register_type(WifiSimpleConfigRecord)
 HandoverRequestRecord.register_type(WifiPeerToPeerRecord)
+HandoverRequestRecord.register_type(BluetoothEasyPairingRecord)
+HandoverRequestRecord.register_type(BluetoothLowEnergyRecord)
 
 HandoverSelectRecord.register_type(AlternativeCarrierRecord)
 HandoverSelectRecord.register_type(ErrorRecord)
 HandoverSelectRecord.register_type(DeviceInformationRecord)
-HandoverRequestRecord.register_type(WifiSimpleConfigRecord)
+HandoverSelectRecord.register_type(WifiSimpleConfigRecord)
 HandoverSelectRecord.register_type(WifiPeerToPeerRecord)
+HandoverSelectRecord.register_type(BluetoothEasyPairingRecord)
+HandoverSelectRecord.register_type(BluetoothLowEnergyRecord)
 
 HandoverMediationRecord.register_type(AlternativeCarrierRecord)
 HandoverInitiateRecord.register_type(AlternativeCarrierRecord)
