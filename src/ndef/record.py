@@ -701,9 +701,9 @@ class Record(object):
 
 class GlobalRecord(Record):  # pragma: no cover
     """The GlobalRecord class is mostly to provide a namespace for
-    grouping record classes in help(). Beyond that it is real abstract
-    class that helps ensure derived classes implement the required
-    interface methods.
+    grouping record classes in help(). Beyond that it is also an
+    abstract class that helps ensure derived classes implement the
+    required interface methods.
 
     """
     __metaclass__ = ABCMeta
@@ -722,10 +722,10 @@ class GlobalRecord(Record):  # pragma: no cover
 
 
 class LocalRecord(Record):  # pragma: no cover
-    """The LocalRecord class is mostly to provide a namespace for
-    grouping record classes in help(). Beyond that it is real abstract
-    class that helps ensure derived classes implement the required
-    interface methods.
+    """The LocalRecord class is mostly to provide a namespace for grouping
+    record classes in help(). Beyond that it is also an abstract class
+    that helps ensure derived classes implement the required interface
+    methods.
 
     """
     __metaclass__ = ABCMeta
