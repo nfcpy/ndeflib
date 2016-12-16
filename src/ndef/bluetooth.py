@@ -11,12 +11,53 @@ import re
 
 
 class DeviceAddress(object):
+    """Encapsulation a Bluetooth Device Address.
+
+    Since Bluetooth 4.0 the transmission format of a Device Address
+    may be 6 (Bluetooth BR/EDR) or 7 (Bluetooth LE) octets. The
+    seventh octet distincts between a public and a random address.
+
+    """
     def __init__(self, address, address_type='public'):
+        """Initialize the object with an address and address_type.
+
+        The address is a string of 6 hexadecimal octets separated by
+        colon or dash (which can be mixed). The address_type must be
+        either 'public' (default) or 'random'.
+
+        """
         self.addr = address
         self.type = address_type
 
+    def __eq__(self, other):
+        """Return True if self equals other, False if not.
+
+        """
+        return (self.addr, self.type) == (other.addr, other.type)
+
+    def __str__(self):
+        """Return a formatted representation suitable for printing.
+
+        """
+        return "Device Address {addr.addr} ({addr.type})".format(addr=self)
+
+    def __repr__(self):
+        """Return a formal representation suitable for evaluation.
+
+        """
+        return "{}.{}({!r}, {!r})".format(
+            self.__module__, self.__class__.__name__, self.addr, self.type)
+
     @property
     def addr(self):
+        """Get or set the address part of a device address.
+
+        The address part is given by a text string of hexadecimal
+        octets separated by colon or dash. For examples, the strings
+        '01:02:03:04:05:06', '01-02-03-04-05-06', '01-02:03-04:05-06'
+        are all the same.
+
+        """
         return self._addr
 
     @addr.setter
@@ -26,6 +67,9 @@ class DeviceAddress(object):
 
     @property
     def type(self):
+        """Get or set the address type as either 'public' or 'random'.
+
+        """
         return self._type
 
     @type.setter
@@ -33,17 +77,15 @@ class DeviceAddress(object):
         assert value in ('public', 'random')
         self._type = value
 
-    def __eq__(self, other):
-        return (self.addr, self.type) == (other.addr, other.type)
-
-    def __str__(self):
-        return "Device Address {addr.addr} ({addr.type})".format(addr=self)
-
-    def __repr__(self):
-        return "{}.{}({!r}, {!r})".format(
-            self.__module__, self.__class__.__name__, self.addr, self.type)
-
     def encode(self, context='LE'):
+        """Return the encoded representation suitable for transmission.
+        
+        The context argument determines the number of bytes that are
+        returned. If context requires an 'LE' address encoding then 7
+        bytes are returned. If context requires an 'EP' (Easy Pairing)
+        BD_ADDR encoding then 6 bytes are returned.
+
+        """
         assert context in ('LE', 'EP')
         octets = bytearray(int(x, 16) for x in reversed(self.addr.split(':')))
         if context == 'LE':
@@ -52,6 +94,12 @@ class DeviceAddress(object):
 
     @classmethod
     def decode(cls, octets):
+        """Return a class instance initialized from octets.
+
+        The octets argument is a byte sequence of length 6 (BD_ADDR)
+        or 7 (LE address).
+
+        """
         if len(octets) == 6:
             addr_t = 'public'
             addr_v = ':'.join(['%02X' % x for x in bytearray(octets[::-1])])
@@ -67,6 +115,12 @@ class DeviceAddress(object):
 
 
 class DeviceClass(object):
+    """Encapsulation of a Bluetooth Class of Device/Service (CoD).
+
+    The Bluetooth Class of Device format is defined at
+    https://www.bluetooth.com/specifications/assigned-numbers/baseband
+
+    """
     service_class_name = (
         "Limited Discoverable Mode", "Reserved (bit 14)", "Reserved (bit 15)",
         "Positioning", "Networking", "Rendering", "Capturing",
@@ -205,19 +259,63 @@ class DeviceClass(object):
     }
 
     def __init__(self, cod):
+        """Initialize the object with a given class-of-device.
+
+        The class-of-device argument *cod* may be either a 24-bit
+        integer in the format described by Bluetooth Assigned Numbers,
+        or another instance of DeviceClass from which the
+        class-of-device bits are copied.
+
+        """
         self.cod = cod.cod if isinstance(cod, DeviceClass) else cod
 
     def __eq__(self, other):
+        """Return True if self equals other, False if not.
+
+        """
         return self.cod == other.cod
+
+    def __str__(self):
+        """Return a formatted representation suitable for printing.
+
+        """
+        if self.cod & 0b11 == 0:
+            if self.major_service_class:
+                major_service_class = ' and '.join(self.major_service_class)
+            else:
+                major_service_class = 'Unspecified'
+            s = '{self.major_device_class} - {self.minor_device_class} - {0}'
+            return 'Device Class ' + s.format(major_service_class, self=self)
+        else:
+            return 'Device Class {:024b}b'.format(self.cod)
+
+    def __repr__(self):
+        """Return a formal representation suitable for evaluation.
+
+        """
+        return "{}.{}(0x{:06X})".format(
+            self.__module__, self.__class__.__name__, self.cod)
 
     @property
     def major_service_class(self):
+        """A tuple of text strings for the device's major service classes.
+
+        Note that this will be an empty tuple if no service class bits
+        are set and None if the class-of-device is not "format #1".
+
+        """
         if self.cod & 0b11 == 0:
             bits = [i-13 for i in range(13, 24) if self.cod >> i & 1]
             return tuple([self.service_class_name[i] for i in bits])
 
     @property
     def major_device_class(self):
+        """A text string for the major device class.
+
+        Note that this will be None if the 24-bit class-of-device
+        format is not "format #1".
+
+        """
         if self.cod & 0b11 == 0:
             major = self.cod >> 8 & 0b11111
             if major in self.device_class:
@@ -227,6 +325,12 @@ class DeviceClass(object):
 
     @property
     def minor_device_class(self):
+        """A text string for the minor device class.
+
+        Note that this will be None if the 24-bit class-of-device
+        format is not "format #1".
+
+        """
         if self.cod & 0b11 == 0:
             text = []
             major = self.cod >> 8 & 0b11111
@@ -240,22 +344,13 @@ class DeviceClass(object):
             else:
                 return 'Undefined {}b'.format(minor)
 
-    def __str__(self):
-        if self.cod & 0b11 == 0:
-            if self.major_service_class:
-                major_service_class = ' and '.join(self.major_service_class)
-            else:
-                major_service_class = 'Unspecified'
-            s = '{self.major_device_class} - {self.minor_device_class} - {0}'
-            return 'Device Class ' + s.format(major_service_class, self=self)
-        else:
-            return 'Device Class {:024b}b'.format(self.cod)
-
-    def __repr__(self):
-        return "{}.{}(0x{:06X})".format(
-            self.__module__, self.__class__.__name__, self.cod)
-
     def encode(self):
+        """Return the encoded representation suitable for transmission.
+
+        In absence of encoding errors the return value is exactly
+        three bytes.
+
+        """
         if 0 <= self.cod <= 0xFFFFFF:
             return struct.pack('<I', self.cod)[0:3]
         else:
@@ -264,6 +359,13 @@ class DeviceClass(object):
 
     @classmethod
     def decode(cls, octets):
+        """Return a class instance initialized from octets.
+
+        The octets argument must be a byte sequence of length 3 that
+        is assumed to be the 24-bit class-of-device integer (in little
+        endian).
+
+        """
         if len(octets) == 3:
             return cls(struct.unpack('I', octets + b'\0')[0])
         else:
@@ -272,6 +374,20 @@ class DeviceClass(object):
 
 
 class ServiceClass(object):
+    """Encapsulation of a Bluetooth Service Class UUID.
+
+    Bluetooth Service Class UUIDs are transmitted in three different
+    lengths: 128-bit regular UUID and 32-bit or 16-bit shortened
+    UUID. A shortened UUID implies the remaining parts to be equal to
+    the well-known Blutooth base UUID. This class can decode and
+    encode either form and universially represents them as a 128-bit
+    regular UUID. It also knows the names of all registered Bluetooth
+    Service Class UUIDs.
+
+    Values and names of Bluetooth Service Class UUIDs are defined at
+    https://www.bluetooth.com/specifications/assigned-numbers/service-discovery
+
+    """
     bluetooth_base_uuid = UUID('00000000-0000-1000-8000-00805F9B34FB')
     bluetooth_uuid_list = {
         0x00001000: "Service Discovery Server",
@@ -345,6 +461,23 @@ class ServiceClass(object):
     }
 
     def __init__(self, *args, **kwargs):
+        """Initialize the object with some form of UUID.
+
+        If the first positional argument is an integer then it is used
+        to construct a UUID from the Bluetooth base UUID with the
+        first 32 bits substituted by the argument.
+
+        If the first positional argument is a Bluetooth Service Class
+        UUID name then the UUID is constructed from the associated
+        integer value combined with the Bluetooth base UUID.
+
+        If the first positional argument is a uuid.UUID object then it
+        is copied.
+
+        In all other cases the positional and keyword arguments are
+        used to intialize a uuid.UUID object.
+
+        """
         if args and isinstance(args[0], int):
             fields = (args[0],) + self.bluetooth_base_uuid.fields[1:]
             self._uuid = UUID(fields=fields)
@@ -359,21 +492,36 @@ class ServiceClass(object):
             self._uuid = UUID(*args, **kwargs)
 
     def __eq__(self, other):
+        """Return True if self equals other, False if not.
+
+        """
         return self._uuid == other._uuid
 
     def __str__(self):
+        """Return a formatted representation suitable for printing.
+
+        """
         return "Service Class {}".format(self.name)
 
     def __repr__(self):
+        """Return a formal representation suitable for evaluation.
+
+        """
         return "{}.{}({!r})".format(
             self.__module__, self.__class__.__name__, str(self.uuid))
 
     @property
     def uuid(self):
+        """A reference to the internally hold uuid.UUID object.
+
+        """
         return self._uuid
 
     @property
     def name(self):
+        """The Bluetooth Service Class UUID name or UUID string.
+
+        """
         if self.uuid.fields[1:] == self.bluetooth_base_uuid.fields[1:]:
             if self.uuid.fields[0] in self.bluetooth_uuid_list:
                 return self.bluetooth_uuid_list[self.uuid.fields[0]]
@@ -381,9 +529,18 @@ class ServiceClass(object):
 
     @classmethod
     def get_uuid_names(cls):
+        """Returns a tuple of all known Bluetooth Service Class UUID names.
+
+        """
         return tuple(cls.bluetooth_uuid_list.values())
 
     def encode(self):
+        """Return the encoded representation suitable for transmission.
+
+        This is either 2, 4 or 16 bytes depending on whether or not it
+        is a shortened Bluetooth Service Class UUID.
+
+        """
         if self.uuid.fields[1:] == self.bluetooth_base_uuid.fields[1:]:
             fmt = '<H' if self.uuid.fields[0] < 0x10000 else '<I'
             return struct.pack(fmt, self.uuid.fields[0])
@@ -391,6 +548,13 @@ class ServiceClass(object):
 
     @classmethod
     def decode(cls, octets):
+        """Return a class instance initialized from octets.
+
+        The octets argument must be a byte sequence of either length 2
+        for a uuid-16, length 4 for a uuid-32, or length 16 for a
+        uuid-128.
+
+        """
         if len(octets) in (2, 4):
             value = struct.unpack('<H' if len(octets) == 2 else '<I', octets)
             return cls(UUID(fields=value+cls.bluetooth_base_uuid.fields[1:]))
@@ -402,6 +566,9 @@ class ServiceClass(object):
 
 
 class BluetoothRecord(GlobalRecord):
+    """Base class that implements dict-like Bluetooth EIR/AD data access.
+
+    """
     _attribute_name_mapping = {
         'Flags': 0x01,
         'Incomplete List of 16-bit Service Class UUIDs': 0x02,
@@ -430,6 +597,9 @@ class BluetoothRecord(GlobalRecord):
 
     @property
     def attribute_names(self):
+        """A tuple of all attribute names that may be used as keys.
+
+        """
         return tuple(self._attribute_name_mapping.keys())
 
     def _map_key(self, key):
@@ -490,14 +660,36 @@ class BluetoothRecord(GlobalRecord):
 
 
 class BluetoothEasyPairingRecord(BluetoothRecord):
+    """Decoder/Encoder for Bluetooth Easy Pairing out-of-band data.
+
+    """
     _type = 'application/vnd.bluetooth.ep.oob'
 
     def __init__(self, device_address, *eir):
+        """Initialize the record with device_address and optionally more.
+
+        Bluetooth Easy Pairing out-of-band data must have BD_ADDR and
+        may have zero or more EIR data structures. The first
+        positional argument device_address argument must be a string
+        of 6 hexadecimal octets separated by colon or dash, or a
+        DeviceAddress instance. Any more positional arguments must be
+        (tag, value) tuples of EIR data structures, where tag is an
+        integer or EIR name and value is a byte sequence in
+        transmission order.
+
+        """
         super(BluetoothEasyPairingRecord, self).__init__(*eir)
         self.device_address = device_address
 
     @property
     def device_address(self):
+        """Get or set the Bluetooth Device Address.
+
+        The internal BD_ADDR is returned as a DeviceAddress object. A
+        set value may be either another DeviceAddress or a string of 6
+        hexadecimal octets separated by colon or dash.
+
+        """
         return DeviceAddress.decode(self.bd_addr)
 
     @device_address.setter
@@ -508,6 +700,17 @@ class BluetoothEasyPairingRecord(BluetoothRecord):
 
     @property
     def device_name(self):
+        """Get or set the Bluetooth Local Device Name.
+
+        If present, this attribute returns the 'Complete Local Name'
+        as a text string. Otherwise it returns the 'Shortened Local
+        Name' or None if that doesn't exist.
+
+        A device name assigned to this attribute sets the 'Complete
+        Local Name' and removes the 'Shortened Local Name' if that
+        exists.
+
+        """
         return (
             self.get('Complete Local Name') or
             self.get('Shortened Local Name', b'')
@@ -522,6 +725,17 @@ class BluetoothEasyPairingRecord(BluetoothRecord):
 
     @property
     def device_class(self):
+        """Get or set the Bluetooth Class of Device.
+
+        This attribute provides the decoded 'Class of Device' as a
+        DeviceClass object. If 'Class of Device' is not present it
+        reads as None.
+
+        The attribute may be set by assigning either a 24-bit integer
+        according to the Bluetooth Class of Device format or another
+        DeviceClass object.
+
+        """
         try:
             return DeviceClass.decode(self['Class of Device'])
         except KeyError:
@@ -535,8 +749,11 @@ class BluetoothEasyPairingRecord(BluetoothRecord):
 
     @property
     def service_class_list(self):
-        """List of service class UUIDs build from all available service class
-        UUID attributes.
+        """List of all present Bluetooth Service Class UUIDs.
+
+        The list contains all Bluetooth Service Class UUIDs found in
+        the the complete and incomplete variants of 16, 32 and 128-bit
+        UUID data structures.
 
         """
         uuid_list = []
@@ -552,13 +769,15 @@ class BluetoothEasyPairingRecord(BluetoothRecord):
         return uuid_list
 
     def add_service_class(self, service_class, complete=False):
-        """Add a service class identifier. The *service_class* argument must
-        be given as either a `ServiceClass` object, a UUID string, or
-        as the integer value of a 16 or 32 bit Bluetooth Service Class
-        UUID. The optional argument *complete* determines whether a
-        list of complete or incomplete service class identifiers is
-        populated. In case of multiple additions it is the last value
-        of *complete* that counts.
+        """Add a service class identifier.
+
+        The service_class argument must be either a ServiceClass
+        object, a UUID string, or an integer value for a 16 or 32 bit
+        Bluetooth Service Class UUID. The second argument determines
+        whether the complete or incomplete service class data type is
+        populated. Note that existing Service Class UUIDs (of the same
+        size uuid-16, uuid-32, or uuid-128) are moved to complete or
+        incomplete depending on the flag.
 
         """
         if not isinstance(service_class, ServiceClass):
@@ -588,6 +807,14 @@ class BluetoothEasyPairingRecord(BluetoothRecord):
                 pass
 
     def get_simple_pairing_hash(self, variant='C-192'):
+        """Get the Simple Pairing Hash C-192 or C-256.
+
+        The hash value is returned as a 128-bit integer converted from
+        the 'Simple Pairing Hash C-192' or 'Simple Pairing Hash C-256'
+        bytes depending on the variant. It is None if the requested
+        hash is not preset.
+
+        """
         assert variant in ('C-192', 'C-256')
         octets = self.get('Simple Pairing Hash {}'.format(variant))
         if octets is not None:
@@ -595,12 +822,27 @@ class BluetoothEasyPairingRecord(BluetoothRecord):
                     else int.from_bytes(octets, byteorder='little'))
 
     def set_simple_pairing_hash(self, value, variant='C-192'):
+        """Set the Simple Pairing Hash C-192 or C-256.
+
+        The hash value must be a 128-bit integer that is written to
+        either 'Simple Pairing Hash C-192' or 'Simple Pairing Hash
+        C-256' depending on the variant.
+
+        """
         assert variant in ('C-192', 'C-256')
         octets = ('{:032x}'.format(value).decode('hex')[::-1] if _PY2
                   else value.to_bytes(16, byteorder='little'))
         self['Simple Pairing Hash {}'.format(variant)] = octets
 
     def get_simple_pairing_randomizer(self, variant='R-192'):
+        """Get the Simple Pairing Randomize R-192 or R-256.
+
+        The randomizer value is returned as a 128-bit integer
+        converted from the 'Simple Pairing Randomizer R-192' or
+        'Simple Pairing Randomizer R-256' bytes depending on the
+        variant. It is None if the requested randomizer is not preset.
+
+        """
         assert variant in ('R-192', 'R-256')
         octets = self.get('Simple Pairing Randomizer {}'.format(variant))
         if octets is not None:
@@ -608,6 +850,13 @@ class BluetoothEasyPairingRecord(BluetoothRecord):
                     else int.from_bytes(octets, byteorder='little'))
 
     def set_simple_pairing_randomizer(self, value, variant='R-192'):
+        """Set the Simple Pairing Randomize R-192 or R-256.
+
+        The randomizer value must be a 128-bit integer that is written
+        to either 'Simple Pairing Randomizer R-192' or 'Simple Pairing
+        Randomizer R-256' depending on the variant.
+
+        """
         assert variant in ('R-192', 'R-256')
         octets = ('{:032x}'.format(value).decode('hex')[::-1] if _PY2
                   else value.to_bytes(16, byteorder='little'))
@@ -659,6 +908,9 @@ class BluetoothEasyPairingRecord(BluetoothRecord):
 
 
 class BluetoothLowEnergyRecord(BluetoothRecord):
+    """Decoder/Encoder for Bluetooth Low Energy out-of-band pairing data.
+
+    """
     _type = 'application/vnd.bluetooth.le.oob'
 
     @property
