@@ -8,3 +8,5 @@ __pycache__/
 docs/_build/
 htmlcov
 dist
+python-2
+python-3
