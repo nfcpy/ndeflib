@@ -79,7 +79,7 @@ class DeviceAddress(object):
 
     def encode(self, context='LE'):
         """Return the encoded representation suitable for transmission.
-        
+
         The context argument determines the number of bytes that are
         returned. If context requires an 'LE' address encoding then 7
         bytes are returned. If context requires an 'EP' (Easy Pairing)
