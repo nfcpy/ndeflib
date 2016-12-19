@@ -15,50 +15,26 @@ Overview
 
 Bluetooth Secure Simple Pairing (SSP) has been introduced in Bluetooth Core
 Specification Version 2.1 + EDR as a method by which two Bluetooth devices can
-establish secure communication through data exchange over an out-of-band channel
-such as NFC. With Bluetooth Core Specification Version 4.0 this was extended to
-cover Bluetooth Low Energy devices and Bluetooth LE Secure Connections pairing
-has been introduced in Bluetooth Core Specification Version 4.2.
-
-Bluetooth devices since version 2.1 use Secure Simple Pairing (SSP) to securely
-connect. SSP provides a stronger level of security, yet makes it easier for the
-user to perform pairing. SSP explicitly introduces the notion of Out-of-Band
-(OOB) pairing. The information (Hash C and Randomizer R used for Bluetooth
-BR/EDR devices and TK-value and/or LE Secure Connections Confirmation Value and
-Random Value used for Bluetooth LE devices) can be exchanged over an NFC link to
-be used as part of the OOB pairing process.
-
-A Bluetooth BR/EDR Device may support Interlaced Page Scan to reduce the
-connection time. It is recommended that after OOB Data has been exchanged over
-NFC, Interlaced Page Scan is enabled for at least 60 seconds. As this consumes
-more power than normal page scan, it is also recommended to limit the maximum
-duration of Interlaced Page Scan to 120 seconds.
-
-Bluetooth LE Central and Peripheral Devices should use the fast connection
-establishment parameters recommended by the Bluetooth SIG (Bluetooth
-Specification 4.2, Volume 3, Part C, Sections 9.3.11 and 9.3.12) to reduce the
-Bluetooth LE connection setup time.
-
-Connection Handover
--------------------
+establish secure communication. With Bluetooth Core Specification Version 4.0
+this was extended to cover Bluetooth Low Energy devices.
 
 Bluetooth Secure Simple Pairing defines four different association models, one
-of them using an Out-of-Band channel such as NFC. This is defined since Bluetooth version 2.1
+of them is using an out-of-band channel such as NFC. Secure Simple Pairing
+introduced in Bluetooth Version 2.1 + EDR uses Elliptic Curve Diffie-Hellman
+with curve P-192. Bluetooth Version 4.1 added the Secure Connections feature,
+which upgraded Secure Simple Pairing to utilize the P-256 elliptic curve. In
+either case the out-of-band communication transfers a public key commitment
+through a 128-bit hash and randomizer prior to in-band public key
+exchange. Bluetooth BR/EDR key generation is performed in the Controller.
 
-The Bluetooth SIG defined a mechanism called “Secure Simple Pairing”
-([BLUETOOTH_CORE], Volume 2, Part H, Section 7) to simplify the process of pairing two
-Bluetooth BR/EDR devices. Pairing between Bluetooth LE devices is defined in
-[BLUETOOTH_CORE], Volume 3, Part H.
-Secure Simple Pairing defines four different association models, one of them using an Out-of-
-Band channel such as NFC.
-The [BLUETOOTH_CORE] Version 4.2 introduces following terms for Bluetooth LE pairing:
+Bluetooth Low Energy, introduced with Core Specification Version 4.0, uses a
+Security Manager component on the device host to generate keys. Three pairing
+methods - Just Works, Passkey Entry, and Out of Band - were initially defined
+with protection levels depending on the secrecy of temporary keys exchanged
+while pairing. Bluetooth Version 4.2 then added LE Secure Connections with the
+same pairing methods and P-256 based Elliptic Curve Diffie-Hellman as for BR/EDR
+Secure Connections.
 
-LE Secure Connections pairing
-
-LE legacy pairing (LE pairing as defined in [BLUETOOTH_CORE] Versions 4.0 and 4.1)
-Four different association models are defined for LE Secure Connections pairing and three for LE
-legacy pairing, one of them is the Out-Of-Band association model (defined for both LE Secure
-Connections pairing and LE legacy pairing).
 
 Bluetooth BR/EDR Out-of-Band Data
 ---------------------------------
