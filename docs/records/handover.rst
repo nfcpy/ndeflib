@@ -1,5 +1,7 @@
 .. -*- mode: rst; fill-column: 80 -*-
 
+.. _connection-handover:
+
 Connection Handover
 ===================
 

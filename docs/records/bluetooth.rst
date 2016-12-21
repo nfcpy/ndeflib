@@ -8,8 +8,8 @@ Bluetooth Secure Simple Pairing
 
 .. versionadded:: 0.3
 
-Overview
-========
+Introduction
+============
 
 .. _Bluetooth Assigned Numbers: https://www.bluetooth.com/specifications/assigned-numbers
 
@@ -24,16 +24,46 @@ introduced in Bluetooth Version 2.1 + EDR uses Elliptic Curve Diffie-Hellman
 with curve P-192. Bluetooth Version 4.1 added the Secure Connections feature,
 which upgraded Secure Simple Pairing to utilize the P-256 elliptic curve. In
 either case the out-of-band communication transfers a public key commitment
-through a 128-bit hash and randomizer prior to in-band public key
-exchange. Bluetooth BR/EDR key generation is performed in the Controller.
-
-Bluetooth Low Energy, introduced with Core Specification Version 4.0, uses a
-Security Manager component on the device host to generate keys. Three pairing
-methods - Just Works, Passkey Entry, and Out of Band - were initially defined
-with protection levels depending on the secrecy of temporary keys exchanged
-while pairing. Bluetooth Version 4.2 then added LE Secure Connections with the
-same pairing methods and P-256 based Elliptic Curve Diffie-Hellman as for BR/EDR
+through a 128-bit hash and randomizer prior to in-band public key exchange.
+Bluetooth BR/EDR key generation is performed in the Controller. Bluetooth Low
+Energy, introduced with Core Specification Version 4.0, uses a Security Manager
+component on the device host to generate keys. Three pairing methods - Just
+Works, Passkey Entry, and Out of Band - were initially defined with protection
+levels depending on the secrecy of temporary keys exchanged while
+pairing. Bluetooth Version 4.2 then added LE Secure Connections with the same
+pairing methods and P-256 based Elliptic Curve Diffie-Hellman as for BR/EDR
 Secure Connections.
+
+Bluetooth pairing is the process of connecting with a Bluetooth devices that has
+been found by device discovery. The discovery process provides the identity of
+the other device. The pairing process then yields a shared secret that is used
+to derive encryption keys. There are four pairing methods: Numeric Comparision,
+Just Works, Passkey Entry, and Out of Band. Numeric Comparision protects against
+man-in-the-middle by having the user confirm equality of a six digit number
+displayed on both devices. Just Works is basically the same but the number is
+not shown for confirmation. Passkey Entry requires one device to have a keypad
+and the other to have a display. A number entered into the keypad is shown on
+the other device for confirmation. Out of Band uses some external communication
+means to ensure that key material exchanged in-band belongs to the adressed
+communication partner.
+
+NFC is a perfect fit for an out-of-band communication channel for Bluetooth
+device pairing. NFC communication only starts when two devices are in very close
+proximity, literally touched to each other, but works without any discovery,
+device selection or confirmation steps. NFC is comparatively slow and it is not
+always convinient to keep proximity for a longer period of time. So Bluetooth is
+also a perfect fit for NFC when larger or longer data transfers are requested.
+From an NFC point of view this is :ref:`connection-handover` with Bluetooth
+out-of-band data transmitted as an alternative carrier.
+
+Connection Handover may be performed between two NFC Devices (negotiated
+handover) or one NFC Device and another device that has an NFC Tag attached
+(static handover). In negotiated handover, the NFC Device that wants to
+establish an alternative connection sends a Connection Handover Request and
+waits for a Connection Handover Select message. In static handover, the NFC
+Device reads a Connection Handover Select message from the NFC Tag.
+
+
 
 
 Bluetooth BR/EDR Out-of-Band Data
@@ -87,7 +117,7 @@ Bluetooth LE Out-of-Band Data
    +--------------+--------------+-----------------------------------------------------+
    | 0x1C         | Mandatory    | LE Role                                             |
    +--------------+--------------+-----------------------------------------------------+
-   | 0x10         | Optional     | Security Manager TK Value                           |
+   | 0x10         | Optional     | Security Manager TK Value (LE legacy pairing)       |
    +--------------+--------------+-----------------------------------------------------+
    | 0x19         | Optional     | Appearance                                          |
    +--------------+--------------+-----------------------------------------------------+
@@ -99,6 +129,8 @@ Bluetooth LE Out-of-Band Data
    +--------------+--------------+-----------------------------------------------------+
    | 0x23         | Optional     | LE Secure Connections Random Value                  |
    +--------------+--------------+-----------------------------------------------------+
+   | << Other AD types >>                                                              |
+   +-----------------------------------------------------------------------------------+
 
 
 NDEF Records
