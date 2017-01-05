@@ -2,9 +2,17 @@
 Parse or generate NDEF messages
 ===============================
 
+.. image:: https://badge.fury.io/py/ndeflib.svg
+   :target: https://pypi.python.org/pypi/ndeflib
+   :alt: Python Package
+
+.. image:: https://readthedocs.org/projects/ndeflib/badge/?version=stable
+   :target: http://ndeflib.readthedocs.io/en/latest/?badge=stable
+   :alt: Stable Documentation
+
 .. image:: https://readthedocs.org/projects/ndeflib/badge/?version=latest
    :target: http://ndeflib.readthedocs.io/en/latest/?badge=latest
-   :alt: Documentation Status
+   :alt: Latest Documentation
 
 .. image:: https://travis-ci.org/nfcpy/ndeflib.svg?branch=master
    :target: https://travis-ci.org/nfcpy/ndeflib
@@ -13,10 +21,6 @@ Parse or generate NDEF messages
 .. image:: https://codecov.io/gh/nfcpy/ndeflib/branch/master/graph/badge.svg
    :target: https://codecov.io/gh/nfcpy/ndeflib
    :alt: Code Coverage
-
-.. image:: https://badge.fury.io/py/ndeflib.svg
-   :target: https://pypi.python.org/pypi/ndeflib
-   :alt: Python Package
 
 The ``ndeflib`` is an `ISC <http://choosealicense.com/licenses/isc/>`_-licensed Python package for parsing and generating NFC Data Exchange Format (NDEF) messages:
 
