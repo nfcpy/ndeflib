@@ -7,7 +7,7 @@ Parse or generate NDEF messages
    :alt: Python Package
 
 .. image:: https://readthedocs.org/projects/ndeflib/badge/?version=stable
-   :target: http://ndeflib.readthedocs.io/en/latest/?badge=stable
+   :target: http://ndeflib.readthedocs.io/en/stable/?badge=stable
    :alt: Stable Documentation
 
 .. image:: https://readthedocs.org/projects/ndeflib/badge/?version=latest
