@@ -73,7 +73,7 @@ Development tips
 - Test coverage should be close to 100 percent. A great help is the
   HTML output produced by coverage.py::
 
-    py.test --cov ndeftool --cov-report html
+    py.test --cov ndef --cov-report html
     firefox htmlcov/index.html
 
 - The documentation can be created and viewed loacally::
