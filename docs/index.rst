@@ -29,4 +29,5 @@ True
    Decoding and Encoding <ndef>
    Known Record Types <records>
    Adding Private Records <extending>
-
+   contributing
+   license
