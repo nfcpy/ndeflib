@@ -314,7 +314,7 @@ Easy Pairing Record
       Public Key. The value is returned as a 128-bit integer. If *variant* is
       'C-192' then the value represents the 'Simple Pairing Hash C-192' EIR data
       type. If *variant* is 'C-256' then the value represents the 'Simple
-      Pairing Hash C-256' EIR data type. :const:`Ǹone` is returned if the EIR
+      Pairing Hash C-256' EIR data type. :const:`None` is returned if the EIR
       data type is not present.
 
       >>> record.get_simple_pairing_hash('C-192')
@@ -343,7 +343,7 @@ Easy Pairing Record
       Public Key. The value is returned as a 128-bit integer. If *variant* is
       'R-192' then the value represents the 'Simple Pairing Randomizer R-192'
       EIR data type. If *variant* is 'R-256' then the value represents the
-      'Simple Pairing Randomizer R-256' EIR data type. :const:`Ǹone` is returned
+      'Simple Pairing Randomizer R-256' EIR data type. :const:`None` is returned
       if the EIR data type is not present.
 
       >>> record.get_simple_pairing_randomizer('R-192')
@@ -387,6 +387,45 @@ Low Energy Record
       >>> record.device_address = ('01:02:03:04:05:06', 'random')
       >>> record.device_address
       ndef.bluetooth.DeviceAddress('01:02:03:04:05:06', 'random')
+
+   .. method:: set_confirmation_value(value)
+
+      Set the LE Secure Connections Confirmation Value. The *value* argument is
+      the 128-bit integer that shall be send as the 'LE Secure Connections
+      Confirmation Value' octets after conversion to bytes.
+
+      >>> record.set_confirmation_value(0x1234567890ABCDEF1234567890ABCDEF)
+      >>> record.get('LE Secure Connections Confirmation Value').hex()
+      'efcdab9078563412efcdab9078563412'
+
+   .. method:: get_confirmation_value()
+
+      Retrieve the LE Secure Connections Confirmation Value as a 128-bit integer
+      converted from the 'LE Secure Connections Confirmation Value' AD type
+      octets. :const:`None` is returned if the AD type is not present.
+
+      >>> record.get_confirmation_value()
+      24197857200151252728969465429440056815
+
+   .. method:: set_random_value(value)
+
+      Set the LE Secure Connections Random Value. The *value* argument is the
+      128-bit integer that shall be send as the 'LE Secure Connections Random
+      Value' octets after conversion to bytes.
+
+      >>> record.set_random_value(0x1234567890ABCDEF1234567890ABCDEF)
+      >>> record.get('LE Secure Connections Random Value').hex()
+      'efcdab9078563412efcdab9078563412'
+
+   .. method:: get_random_value()
+
+      Retrieve the LE Secure Connections Random Value as a 128-bit integer
+      converted from the 'LE Secure Connections Random Value' AD type
+      octets. :const:`None` is returned if the AD type is not present.
+
+      >>> record.get_random_value()
+      24197857200151252728969465429440056815
+
 
 Data Types
 ==========

@@ -812,7 +812,7 @@ class BluetoothEasyPairingRecord(BluetoothRecord):
         The hash value is returned as a 128-bit integer converted from
         the 'Simple Pairing Hash C-192' or 'Simple Pairing Hash C-256'
         bytes depending on the variant. It is None if the requested
-        hash is not preset.
+        hash is not present.
 
         """
         assert variant in ('C-192', 'C-256')
@@ -840,7 +840,8 @@ class BluetoothEasyPairingRecord(BluetoothRecord):
         The randomizer value is returned as a 128-bit integer
         converted from the 'Simple Pairing Randomizer R-192' or
         'Simple Pairing Randomizer R-256' bytes depending on the
-        variant. It is None if the requested randomizer is not preset.
+        variant. It is None if the requested randomizer is not
+        present.
 
         """
         assert variant in ('R-192', 'R-256')
@@ -957,6 +958,54 @@ class BluetoothLowEnergyRecord(BluetoothRecord):
                 offset += 1
 
         return cls(*attrs)
+
+    def get_confirmation_value(self):
+        """Get the LE Secure Connections Confirmation Value.
+
+        The value returned is the 128-bit integer converted from the
+        'LE Secure Connections Confirmation Value' bytes if present,
+        otherwise None.
+
+        """
+        octets = self.get('LE Secure Connections Confirmation Value')
+        if octets is not None:
+            return (int((octets[::-1]).encode('hex'), base=16) if _PY2
+                    else int.from_bytes(octets, byteorder='little'))
+
+    def set_confirmation_value(self, value):
+        """Set the LE Secure Connections Confirmation Value.
+
+        The *value* must be the 128-bit integer that shall be send as
+        the 'LE Secure Connections Confirmation Value' octets.
+
+        """
+        octets = ('{:032x}'.format(value).decode('hex')[::-1] if _PY2
+                  else value.to_bytes(16, byteorder='little'))
+        self['LE Secure Connections Confirmation Value'] = octets
+
+    def get_random_value(self):
+        """Get the LE Secure Connections Random Value.
+
+        The value returned is the 128-bit integer converted from the
+        'LE Secure Connections Random Value' bytes if present,
+        otherwise None.
+
+        """
+        octets = self.get('LE Secure Connections Random Value')
+        if octets is not None:
+            return (int((octets[::-1]).encode('hex'), base=16) if _PY2
+                    else int.from_bytes(octets, byteorder='little'))
+
+    def set_random_value(self, value):
+        """Set the LE Secure Connections Random Value.
+
+        The *value* must be the 128-bit integer that shall be send as
+        the 'LE Secure Connections Random Value' octets.
+
+        """
+        octets = ('{:032x}'.format(value).decode('hex')[::-1] if _PY2
+                  else value.to_bytes(16, byteorder='little'))
+        self['LE Secure Connections Random Value'] = octets
 
 
 Record.register_type(BluetoothEasyPairingRecord)

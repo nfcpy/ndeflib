@@ -605,6 +605,28 @@ class TestBluetoothLowEnergyRecord:
         assert obj.device_address.addr == "01:02:03:04:05:06"
         assert obj.device_address.type == "public"
 
+    def test_meth_get_confirmation_value(self):
+        obj = ndef.BluetoothLowEnergyRecord()
+        assert obj.get_confirmation_value() is None
+        obj[0x22] = b'\1' + 15 * b'\0'
+        assert obj.get_confirmation_value() == 1
+
+    def test_meth_set_confirmation_value(self):
+        obj = ndef.BluetoothLowEnergyRecord()
+        obj.set_confirmation_value(1)
+        assert obj[0x22] == b'\1' + 15 * b'\0'
+
+    def test_meth_get_random_value(self):
+        obj = ndef.BluetoothLowEnergyRecord()
+        assert obj.get_random_value() is None
+        obj[0x23] = b'\1' + 15 * b'\0'
+        assert obj.get_random_value() == 1
+
+    def test_meth_set_random_value(self):
+        obj = ndef.BluetoothLowEnergyRecord()
+        obj.set_random_value(1)
+        assert obj[0x23] == b'\1' + 15 * b'\0'
+
     def test_encode(self):
         obj = ndef.BluetoothLowEnergyRecord()
         assert obj.type == 'application/vnd.bluetooth.le.oob'
