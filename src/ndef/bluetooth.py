@@ -959,6 +959,40 @@ class BluetoothLowEnergyRecord(BluetoothRecord):
 
         return cls(*attrs)
 
+    _le_role_table = (
+        "Peripheral",
+        "Central",
+        "Peripheral/Central",
+        "Central/Peripheral",
+    )
+
+    @property
+    def role_capabilities(self):
+        """Get or set the LE Role capabilities.
+
+        Role capabilties are string values describing one of the four
+        defined roles 'Peripheral', 'Central', 'Peripheral/Central'
+        (Peripheral Role preferred for connection establishment), or
+        'Central/Peripheral' (Central is preferred for connection
+        establishment).
+
+        """
+        if 'LE Role' in self:
+            value = self._decode_struct('B', self['LE Role'])
+            if value < len(self._le_role_table):
+                return self._le_role_table[value]
+            else:
+                return "Reserved 0x{:02X}".format(value)
+
+    @role_capabilities.setter
+    def role_capabilities(self, value):
+        if value in self._le_role_table:
+            octet = self._le_role_table.index(value)
+            self['LE Role'] = self._encode_struct('B', octet)
+        else:
+            errmsg = "undefined role capability {!r}"
+            raise self._value_error(errmsg, value)
+
     def get_confirmation_value(self):
         """Get the LE Secure Connections Confirmation Value.
 

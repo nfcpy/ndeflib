@@ -605,6 +605,27 @@ class TestBluetoothLowEnergyRecord:
         assert obj.device_address.addr == "01:02:03:04:05:06"
         assert obj.device_address.type == "public"
 
+    @pytest.mark.parametrize("octets, string", [
+        (b"\x00", "Peripheral"),
+        (b"\x01", "Central"),
+        (b"\x02", "Peripheral/Central"),
+        (b"\x03", "Central/Peripheral"),
+        (b"\x04", "Reserved 0x04"),
+    ])
+    def test_attr_role_capabilities(self, octets, string):
+        obj = ndef.BluetoothLowEnergyRecord()
+        assert obj.role_capabilities is None
+        obj['LE Role'] = octets
+        assert obj.role_capabilities == string
+        del obj['LE Role']
+        if not string.startswith("Reserved"):
+            obj.role_capabilities = string
+            assert obj['LE Role'] == octets
+        else:
+            with pytest.raises(ValueError) as excinfo:
+                obj.role_capabilities = string
+            assert "undefined role capability" in str(excinfo.value)
+
     def test_meth_get_confirmation_value(self):
         obj = ndef.BluetoothLowEnergyRecord()
         assert obj.get_confirmation_value() is None

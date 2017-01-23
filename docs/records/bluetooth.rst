@@ -388,6 +388,20 @@ Low Energy Record
       >>> record.device_address
       ndef.bluetooth.DeviceAddress('01:02:03:04:05:06', 'random')
 
+   .. attribute:: role_capabilities
+
+      Get or set the LE role capabilities of the device. The value is a string
+      describing one of the four defined roles ``Peripheral``, ``Central``,
+      ``Peripheral/Central`` (Peripheral Role preferred for connection
+      establishment), or ``Central/Peripheral`` (Central is preferred for
+      connection establishment).
+
+      >>> record['LE Role'] = b'\x02'
+      >>> print(record.role_capabilities)
+      Peripheral/Central
+      >>> record.role_capabilities = "Central"
+      >>> assert record['LE Role'] == b'\x01'
+
    .. method:: set_confirmation_value(value)
 
       Set the LE Secure Connections Confirmation Value. The *value* argument is
