@@ -18,10 +18,9 @@
 #
 # Required packages and typical use:
 #
-pytest            # run regression tests     "py.test tests/"
-coverage          # check code coverage      "py.test tests/ --cov ndef --cov-report html"
-flake8            # syntax and style checks  "flake8 src/"
+pytest            # run regression tests     "py.test"
+pytest-cov        # check code coverage      "py.test --cov ndef --cov-report html"
+flake8            # syntax and style checks  "flake8 src/ tests/"
 tox               # run tests before push    "tox -c tox.ini"
 sphinx            # to create documentation  "(cd docs && amke html doctest)"
 sphinx-rtd-theme  # with the final layout    "firefox docs/_build/html/index.html"
-twine             # for upload to PyPI       "twine upload -s dist/ndeflib-x.y.z*"

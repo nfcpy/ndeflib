@@ -6,8 +6,10 @@ import ndef
 import pytest
 import _test_record_base
 
+
 def pytest_generate_tests(metafunc):
     _test_record_base.generate_tests(metafunc)
+
 
 class TestUriRecord(_test_record_base._TestRecordBase):
     RECORD = ndef.uri.UriRecord
@@ -27,7 +29,8 @@ class TestUriRecord(_test_record_base._TestRecordBase):
         (("tel:01234",), ("tel:01234", "tel:01234")),
         (("mailto:nfcpy",), ("mailto:nfcpy", "mailto:nfcpy")),
         (("ftp://anonymous:anonymous@nfcpy",),
-         ("ftp://anonymous:anonymous@nfcpy","ftp://anonymous:anonymous@nfcpy")),
+         ("ftp://anonymous:anonymous@nfcpy",
+          "ftp://anonymous:anonymous@nfcpy")),
         (("ftp://ftp.nfcpy",), ("ftp://ftp.nfcpy", "ftp://ftp.nfcpy")),
         (("ftps://nfcpy",), ("ftps://nfcpy", "ftps://nfcpy")),
         (("sftp://nfcpy",), ("sftp://nfcpy", "sftp://nfcpy")),
@@ -41,7 +44,8 @@ class TestUriRecord(_test_record_base._TestRecordBase):
         (("rtsp://nfcpy",), ("rtsp://nfcpy", "rtsp://nfcpy")),
         (("urn:nfcpy",), ("urn:nfcpy", "urn:nfcpy")),
         (("pop:nfcpy",), ("pop:nfcpy", "pop:nfcpy")),
-        (("sip:123@server.net",), ("sip:123@server.net", "sip:123@server.net")),
+        (("sip:123@server.net",),
+         ("sip:123@server.net", "sip:123@server.net")),
         (("sips:nfcpy",), ("sips:nfcpy", "sips:nfcpy")),
         (("tftp:nfcpy",), ("tftp:nfcpy", "tftp:nfcpy")),
         (("btspp://nfcpy",), ("btspp://nfcpy", "btspp://nfcpy")),
@@ -124,6 +128,7 @@ class TestUriRecord(_test_record_base._TestRecordBase):
         (('tel:1234',), "NDEF Uri Record ID '' Resource 'tel:1234'"),
     ]
 
+
 def test_uri_to_iri_conversion():
     record = ndef.UriRecord()
     # no netloc -> no conversion
@@ -132,6 +137,7 @@ def test_uri_to_iri_conversion():
     # with netloc -> conversion
     record.uri = u"http://www.xn--hy-viaa5g.com/%7Euser/index.html"
     assert record.iri == u"http://www.hääyö.com/~user/index.html"
+
 
 uri_messages = [
     ('D1010a55036e666370792e6f7267',
@@ -143,15 +149,16 @@ uri_messages = [
      [ndef.UriRecord('smtp://nfcpy.org')]),
 ]
 
+
 @pytest.mark.parametrize("encoded, message", uri_messages)
 def test_message_decode(encoded, message):
     octets = bytes(bytearray.fromhex(encoded))
     print(list(ndef.message_decoder(octets)))
     assert list(ndef.message_decoder(octets)) == message
 
+
 @pytest.mark.parametrize("encoded, message", uri_messages)
 def test_message_encode(encoded, message):
     octets = bytes(bytearray.fromhex(encoded))
     print(list(ndef.message_encoder(message)))
     assert b''.join(list(ndef.message_encoder(message))) == octets
-

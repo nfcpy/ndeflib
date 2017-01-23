@@ -6,6 +6,7 @@ import pytest
 import sys
 import re
 
+
 def generate_tests(metafunc):
     if metafunc.cls and issubclass(metafunc.cls, _TestRecordBase):
         test_func = metafunc.function.__name__
@@ -29,6 +30,7 @@ def generate_tests(metafunc):
         if test_data:
             metafunc.parametrize(metafunc.fixturenames, test_data)
 
+
 class _TestRecordBase:
     def test_init_args(self, args, attrs):
         RECORD = self.RECORD
@@ -40,7 +42,7 @@ class _TestRecordBase:
         for i, attr in enumerate(ATTRIB):
             print(ASSERT.format(CLNAME, args, attr, attrs[i]))
             assert getattr(record, attr) == attrs[i]
-        
+
     def test_init_kwargs(self, args, kwargs):
         RECORD = self.RECORD
         CLNAME = RECORD.__module__ + '.' + RECORD.__name__
@@ -61,7 +63,7 @@ class _TestRecordBase:
         if sys.version_info < (3,):
             # remove b'..' literals but reinsert them for bytearray
             ERRSTR = re.sub("b'([^']*)'", r"'\1'", ERRSTR)
-            ERRSTR = re.sub("(bytearray)\(('[^']*?')\)",r"\1(b\2)",ERRSTR)
+            ERRSTR = re.sub("(bytearray)\(('[^']*?')\)", r"\1(b\2)", ERRSTR)
             # remove u'..' literals
             result = re.sub("u'([^']*)'", r"'\1'", result)
         assert result == ERRSTR
@@ -76,7 +78,7 @@ class _TestRecordBase:
         assert RECORD._decode_payload(OCTETS, 'strict') == record
 
     def test_decode_error(self, payload, errstr):
-        RECORD = self.RECORD;
+        RECORD = self.RECORD
         CLNAME = RECORD.__module__ + '.' + RECORD.__name__
         OCTETS = bytes(bytearray.fromhex(payload))
         ERRSTR = CLNAME + ' ' + errstr
@@ -145,7 +147,8 @@ class _TestRecordBase:
         if sys.version_info < (3,):
             # remove b'..' literals but reinsert them for bytearray
             formatted = re.sub("b'([^']*)'", r"'\1'", formatted)
-            formatted = re.sub("(bytearray)\(('[^']*?')\)",r"\1(b\2)",formatted)
+            formatted = re.sub("(bytearray)\(('[^']*?')\)",
+                               r"\1(b\2)", formatted)
             # remove u'..' literals
             result = re.sub("u'([^']*)'", r"'\1'", result)
         assert result == formatted
@@ -161,4 +164,3 @@ class _TestRecordBase:
             formatted = re.sub("b'([^']*)'", r"'\1'", formatted)
             result = re.sub("u'([^']*)'", r"'\1'", result)
         assert result == formatted
-

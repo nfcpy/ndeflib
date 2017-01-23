@@ -6,19 +6,17 @@ import ndef
 import pytest
 import _test_record_base
 
-def pytest_generate_tests(metafunc):
-    _test_record_base.generate_tests(metafunc)
-
 from ndef import message_decoder, message_encoder
-from ndef.record import Record, DecodeError, EncodeError
-from ndef.handover import AlternativeCarrierRecord
-from ndef.handover import CollisionResolutionRecord
-from ndef.handover import ErrorRecord
+from ndef.record import Record
 from ndef.handover import HandoverRequestRecord
 from ndef.handover import HandoverSelectRecord
 from ndef.handover import HandoverMediationRecord
 from ndef.handover import HandoverInitiateRecord
-from ndef.handover import HandoverCarrierRecord
+
+
+def pytest_generate_tests(metafunc):
+    _test_record_base.generate_tests(metafunc)
+
 
 class TestAlternativeCarrierRecord(_test_record_base._TestRecordBase):
     RECORD = ndef.handover.AlternativeCarrierRecord
@@ -58,20 +56,20 @@ class TestAlternativeCarrierRecord(_test_record_base._TestRecordBase):
     ]
     test_format_str_data = [
         ((0, ''),
-         "NDEF Handover Alternative Carrier Record ID ''"\
-         " Carrier Reference '' Power State 'inactive'"\
+         "NDEF Handover Alternative Carrier Record ID ''"
+         " Carrier Reference '' Power State 'inactive'"
          " Auxiliary Data []"),
         ((1, 'cdr'),
-         "NDEF Handover Alternative Carrier Record ID ''"\
-         " Carrier Reference 'cdr' Power State 'active'"\
+         "NDEF Handover Alternative Carrier Record ID ''"
+         " Carrier Reference 'cdr' Power State 'active'"
          " Auxiliary Data []"),
         ((2, 'cdr', 'aux'),
-         "NDEF Handover Alternative Carrier Record ID ''"\
-         " Carrier Reference 'cdr' Power State 'activating'"\
+         "NDEF Handover Alternative Carrier Record ID ''"
+         " Carrier Reference 'cdr' Power State 'activating'"
          " Auxiliary Data ['aux']"),
         ((3, 'cdr', 'aux1', 'aux2'),
-         "NDEF Handover Alternative Carrier Record ID ''"\
-         " Carrier Reference 'cdr' Power State 'unknown'"\
+         "NDEF Handover Alternative Carrier Record ID ''"
+         " Carrier Reference 'cdr' Power State 'unknown'"
          " Auxiliary Data ['aux1', 'aux2']"),
     ]
     test_decode_valid_data = [
@@ -98,6 +96,7 @@ class TestAlternativeCarrierRecord(_test_record_base._TestRecordBase):
     ]
     test_encode_error = None
 
+
 class TestCollisionResolutionRecord(_test_record_base._TestRecordBase):
     RECORD = ndef.handover.CollisionResolutionRecord
     ATTRIB = "random_number"
@@ -120,7 +119,7 @@ class TestCollisionResolutionRecord(_test_record_base._TestRecordBase):
     ]
     test_format_str_data = [
         ((99,),
-         "NDEF Handover Collision Resolution Record ID ''"\
+         "NDEF Handover Collision Resolution Record ID ''"
          " Random Number 99"),
     ]
     test_decode_valid_data = [
@@ -134,6 +133,7 @@ class TestCollisionResolutionRecord(_test_record_base._TestRecordBase):
     ]
     test_decode_error = None
     test_encode_error = None
+
 
 class TestErrorRecord(_test_record_base._TestRecordBase):
     RECORD = ndef.handover.ErrorRecord
@@ -154,15 +154,15 @@ class TestErrorRecord(_test_record_base._TestRecordBase):
         ((1, 100), "1, 100"),
     ]
     test_format_str_data = [
-        ((1, 100), "NDEF Handover Error Record ID '' Error "\
+        ((1, 100), "NDEF Handover Error Record ID '' Error "
          "'temporarily out of memory, may retry after 100 milliseconds'"),
-        ((2, 500), "NDEF Handover Error Record ID '' Error "\
+        ((2, 500), "NDEF Handover Error Record ID '' Error "
          "'permanently out of memory, may retry with at most 500 octets'"),
-        ((3, 200), "NDEF Handover Error Record ID '' Error "\
-          "'carrier specific error, may retry after 200 milliseconds'"),
-        ((0, b'ab'), "NDEF Handover Error Record ID '' Error "\
+        ((3, 200), "NDEF Handover Error Record ID '' Error "
+         "'carrier specific error, may retry after 200 milliseconds'"),
+        ((0, b'ab'), "NDEF Handover Error Record ID '' Error "
          "'Reason 0 Data 6162'"),
-        ((4, b'cd'), "NDEF Handover Error Record ID '' Error "\
+        ((4, b'cd'), "NDEF Handover Error Record ID '' Error "
          "'Reason 4 Data 6364'"),
     ]
     test_decode_valid_data = [
@@ -190,6 +190,7 @@ class TestErrorRecord(_test_record_base._TestRecordBase):
         ((1, 256), "ubyte format requires 0 <= number <= 255"),
     ]
 
+
 class _TestHandoverRecordBase(_test_record_base._TestRecordBase):
     def test_unknown_records_decode(self):
         octets = bytearray.fromhex('11d20a00746578742f706c61696e')
@@ -202,19 +203,20 @@ class _TestHandoverRecordBase(_test_record_base._TestRecordBase):
         record.unknown_records.append(ndef.Record('text/plain'))
         assert record.data == bytearray.fromhex('11d20a00746578742f706c61696e')
 
+
 class TestHandoverRequestRecord(_TestHandoverRecordBase):
     RECORD = ndef.handover.HandoverRequestRecord
     ATTRIB = "hexversion, version_info, collision_resolution_number,"\
              "alternative_carriers"
 
     test_init_args_data = [
-        ((0x10,), (0x10, (1,0), None, [])),
-        ((0x12, 100), (0x12, (1,2), 100, [])),
+        ((0x10,), (0x10, (1, 0), None, [])),
+        ((0x12, 100), (0x12, (1, 2), 100, [])),
         ((0x12, 100, (1, 'cdr')),
-         (0x12, (1,2), 100, [
+         (0x12, (1, 2), 100, [
              ndef.handover.AlternativeCarrierRecord('active', 'cdr')])),
         ((0x12, 100, (1, 'cdr1'), (1, 'cdr2')),
-         (0x12, (1,2), 100, [
+         (0x12, (1, 2), 100, [
              ndef.handover.AlternativeCarrierRecord('active', 'cdr1'),
              ndef.handover.AlternativeCarrierRecord('active', 'cdr2')])),
     ]
@@ -235,11 +237,11 @@ class TestHandoverRequestRecord(_TestHandoverRecordBase):
         ((0x12, 1001),
          "NDEF Handover Request Record ID '' Version '1.2'"),
         ((0x13, 1001, (1, 'cdr')),
-         "NDEF Handover Request Record ID '' Version '1.3'"\
+         "NDEF Handover Request Record ID '' Version '1.3'"
          " Carrier Reference 'cdr' Power State 'active' Auxiliary Data []"),
         ((0x14, 1001, (1, 'cdr1'), (0, 'cdr2')),
-         "NDEF Handover Request Record ID '' Version '1.4'"\
-         " Carrier Reference 'cdr1' Power State 'active' Auxiliary Data []"\
+         "NDEF Handover Request Record ID '' Version '1.4'"
+         " Carrier Reference 'cdr1' Power State 'active' Auxiliary Data []"
          " Carrier Reference 'cdr2' Power State 'inactive' Auxiliary Data []"),
     ]
     test_decode_valid_data = [
@@ -258,25 +260,28 @@ class TestHandoverRequestRecord(_TestHandoverRecordBase):
         ('12110202637212341102066163010163000000', (0x12, 4660, (1, 'c'))),
     ]
     test_decode_error_data = [
-        ('12', "can't decode version 1.2 without collision resolution record"),
+        ('12',
+         "can't decode version 1.2 without collision resolution record"),
     ]
     test_encode_error_data = [
-        ((18,), "can't encode version 1.2 without collision resolution record"),
+        ((18,),
+         "can't encode version 1.2 without collision resolution record"),
     ]
+
 
 class TestHandoverSelectRecord(_TestHandoverRecordBase):
     RECORD = ndef.handover.HandoverSelectRecord
     ATTRIB = "hexversion, version_info, error, alternative_carriers"
 
     test_init_args_data = [
-        ((0x10,), (0x10, (1,0), None, [])),
+        ((0x10,), (0x10, (1, 0), None, [])),
         ((0x12, (1, 100)),
-         (0x12, (1,2), ndef.handover.ErrorRecord(1, 100), [])),
+         (0x12, (1, 2), ndef.handover.ErrorRecord(1, 100), [])),
         ((0x12, (1, 100), (1, 'cdr')),
-         (0x12, (1,2), ndef.handover.ErrorRecord(1, 100), [
+         (0x12, (1, 2), ndef.handover.ErrorRecord(1, 100), [
              ndef.handover.AlternativeCarrierRecord('active', 'cdr')])),
         ((0x12, (1, 100), (1, 'cdr1'), (1, 'cdr2')),
-         (0x12, (1,2), ndef.handover.ErrorRecord(1, 100), [
+         (0x12, (1, 2), ndef.handover.ErrorRecord(1, 100), [
              ndef.handover.AlternativeCarrierRecord('active', 'cdr1'),
              ndef.handover.AlternativeCarrierRecord('active', 'cdr2')])),
     ]
@@ -297,16 +302,16 @@ class TestHandoverSelectRecord(_TestHandoverRecordBase):
         ((0x11,),
          "NDEF Handover Select Record ID '' Version '1.1'"),
         ((0x12, (1, 5)),
-         "NDEF Handover Select Record ID '' Version '1.2'"\
+         "NDEF Handover Select Record ID '' Version '1.2'"
          " Error 'temporarily out of memory, may retry after 5 milliseconds'"),
         ((0x13, (1, 5), (1, 'cdr')),
-         "NDEF Handover Select Record ID '' Version '1.3'"\
-         " Carrier Reference 'cdr' Power State 'active' Auxiliary Data []"\
+         "NDEF Handover Select Record ID '' Version '1.3'"
+         " Carrier Reference 'cdr' Power State 'active' Auxiliary Data []"
          " Error 'temporarily out of memory, may retry after 5 milliseconds'"),
         ((0x13, (1, 5), (1, 'cdr1'), (0, 'cdr2')),
-         "NDEF Handover Select Record ID '' Version '1.3'"\
-         " Carrier Reference 'cdr1' Power State 'active' Auxiliary Data []"\
-         " Carrier Reference 'cdr2' Power State 'inactive' Auxiliary Data []"\
+         "NDEF Handover Select Record ID '' Version '1.3'"
+         " Carrier Reference 'cdr1' Power State 'active' Auxiliary Data []"
+         " Carrier Reference 'cdr2' Power State 'inactive' Auxiliary Data []"
          " Error 'temporarily out of memory, may retry after 5 milliseconds'"),
     ]
     test_decode_valid_data = [
@@ -327,16 +332,17 @@ class TestHandoverSelectRecord(_TestHandoverRecordBase):
         ((0x11, (1, 2)), "can't encode error record for version 1.1"),
     ]
 
+
 class TestHandoverMediationRecord(_TestHandoverRecordBase):
     RECORD = ndef.handover.HandoverMediationRecord
     ATTRIB = "hexversion, version_info, alternative_carriers"
 
     test_init_args_data = [
-        ((0x10,), (0x10, (1,0), [])),
-        ((0x12,), (0x12, (1,2), [])),
-        ((0x12, (1, 'cdr')), (0x12, (1,2), [
+        ((0x10,), (0x10, (1, 0), [])),
+        ((0x12,), (0x12, (1, 2), [])),
+        ((0x12, (1, 'cdr')), (0x12, (1, 2), [
             ndef.handover.AlternativeCarrierRecord('active', 'cdr')])),
-        ((0x12, (1, 'cdr1'), (1, 'cdr2')), (0x12, (1,2), [
+        ((0x12, (1, 'cdr1'), (1, 'cdr2')), (0x12, (1, 2), [
             ndef.handover.AlternativeCarrierRecord('active', 'cdr1'),
             ndef.handover.AlternativeCarrierRecord('active', 'cdr2')])),
     ]
@@ -355,11 +361,11 @@ class TestHandoverMediationRecord(_TestHandoverRecordBase):
         ((0x13,),
          "NDEF Handover Mediation Record ID '' Version '1.3'"),
         ((0x13, (1, 'cdr')),
-         "NDEF Handover Mediation Record ID '' Version '1.3'"\
+         "NDEF Handover Mediation Record ID '' Version '1.3'"
          " Carrier Reference 'cdr' Power State 'active' Auxiliary Data []"),
         ((0x13, (1, 'cdr1'), (0, 'cdr2')),
-         "NDEF Handover Mediation Record ID '' Version '1.3'"\
-         " Carrier Reference 'cdr1' Power State 'active' Auxiliary Data []"\
+         "NDEF Handover Mediation Record ID '' Version '1.3'"
+         " Carrier Reference 'cdr1' Power State 'active' Auxiliary Data []"
          " Carrier Reference 'cdr2' Power State 'inactive' Auxiliary Data []"),
     ]
     test_decode_valid_data = [
@@ -372,16 +378,17 @@ class TestHandoverMediationRecord(_TestHandoverRecordBase):
     test_decode_relax = None
     test_encode_error = None
 
+
 class TestHandoverInitiateRecord(_TestHandoverRecordBase):
     RECORD = ndef.handover.HandoverInitiateRecord
     ATTRIB = "hexversion, version_info, alternative_carriers"
 
     test_init_args_data = [
-        ((0x10,), (0x10, (1,0), [])),
-        ((0x12,), (0x12, (1,2), [])),
-        ((0x12, (1, 'cdr')), (0x12, (1,2), [
+        ((0x10,), (0x10, (1, 0), [])),
+        ((0x12,), (0x12, (1, 2), [])),
+        ((0x12, (1, 'cdr')), (0x12, (1, 2), [
             ndef.handover.AlternativeCarrierRecord('active', 'cdr')])),
-        ((0x12, (1, 'cdr1'), (1, 'cdr2')), (0x12, (1,2), [
+        ((0x12, (1, 'cdr1'), (1, 'cdr2')), (0x12, (1, 2), [
             ndef.handover.AlternativeCarrierRecord('active', 'cdr1'),
             ndef.handover.AlternativeCarrierRecord('active', 'cdr2')])),
     ]
@@ -400,11 +407,11 @@ class TestHandoverInitiateRecord(_TestHandoverRecordBase):
         ((0x13,),
          "NDEF Handover Initiate Record ID '' Version '1.3'"),
         ((0x13, (1, 'cdr')),
-         "NDEF Handover Initiate Record ID '' Version '1.3'"\
+         "NDEF Handover Initiate Record ID '' Version '1.3'"
          " Carrier Reference 'cdr' Power State 'active' Auxiliary Data []"),
         ((0x13, (1, 'cdr1'), (0, 'cdr2')),
-         "NDEF Handover Initiate Record ID '' Version '1.3'"\
-         " Carrier Reference 'cdr1' Power State 'active' Auxiliary Data []"\
+         "NDEF Handover Initiate Record ID '' Version '1.3'"
+         " Carrier Reference 'cdr1' Power State 'active' Auxiliary Data []"
          " Carrier Reference 'cdr2' Power State 'inactive' Auxiliary Data []"),
     ]
     test_decode_valid_data = [
@@ -416,6 +423,7 @@ class TestHandoverInitiateRecord(_TestHandoverRecordBase):
     test_decode_error = None
     test_decode_relax = None
     test_encode_error = None
+
 
 class TestHandoverCarrierRecord(_test_record_base._TestRecordBase):
     RECORD = ndef.handover.HandoverCarrierRecord
@@ -449,12 +457,15 @@ class TestHandoverCarrierRecord(_test_record_base._TestRecordBase):
     ]
     test_format_str_data = [
         (('ab/cd', None),
-         "NDEF Handover Carrier Record ID '' CARRIER 'ab/cd' DATA 0 byte"),
+         "NDEF Handover Carrier Record ID ''"
+         " CARRIER 'ab/cd' DATA 0 byte"),
         (('ab/cd', b'1'),
-         "NDEF Handover Carrier Record ID '' CARRIER 'ab/cd' DATA 1 byte '31'"),
+         "NDEF Handover Carrier Record ID ''"
+         " CARRIER 'ab/cd' DATA 1 byte '31'"),
         (('ab/cd', 20*b'1'),
-         "NDEF Handover Carrier Record ID '' CARRIER 'ab/cd' DATA 20 byte "\
-         "'31313131313131313131' ... 10 more"),
+         "NDEF Handover Carrier Record ID ''"
+         " CARRIER 'ab/cd' DATA 20 byte"
+         " '31313131313131313131' ... 10 more"),
     ]
     test_decode_valid_data = [
         ('0000', ()),
@@ -466,6 +477,7 @@ class TestHandoverCarrierRecord(_test_record_base._TestRecordBase):
     ]
     test_decode_relax = None
     test_encode_error = None
+
 
 def test_handover_request_record_attributes():
     record = HandoverRequestRecord()
@@ -501,6 +513,7 @@ def test_handover_request_record_attributes():
     assert record.unknown_records[0].name == 'txt'
     assert record.unknown_records[0].data == b'Hello'
 
+
 def test_handover_select_record_attributes():
     record = HandoverSelectRecord()
     assert record.error is None
@@ -535,6 +548,7 @@ def test_handover_select_record_attributes():
     assert record.unknown_records[0].name == 'txt'
     assert record.unknown_records[0].data == b'Hello'
 
+
 def test_handover_mediation_record_attributes():
     record = HandoverMediationRecord()
     record.add_alternative_carrier('active', 'wifi', 'a1', 'a2')
@@ -562,6 +576,7 @@ def test_handover_mediation_record_attributes():
     assert record.unknown_records[0].type == 'text/plain'
     assert record.unknown_records[0].name == 'txt'
     assert record.unknown_records[0].data == b'Hello'
+
 
 def test_handover_initiate_record_attributes():
     record = HandoverInitiateRecord()
@@ -591,21 +606,23 @@ def test_handover_initiate_record_attributes():
     assert record.unknown_records[0].name == 'txt'
     assert record.unknown_records[0].data == b'Hello'
 
+
 handover_request_messages = [
     ('d102014872 11',
      [ndef.HandoverRequestRecord('1.1')]),
-    ('91020a4872 11 d10204616301013100 5a030201612f62310001',
+    ('91020a487211 d10204616301013100 5a030201612f62310001',
      [ndef.HandoverRequestRecord('1.1', None, (1, '1')),
       ndef.Record('a/b', '1', b'\x00\x01')]),
-    ('d102084872 12 d1020263721234',
+    ('d10208487212 d1020263721234',
      [ndef.HandoverRequestRecord('1.2', 0x1234)]),
-    ('9102114872 12 91020263721234 510204616301013100 5a030201612f62310001',
+    ('910211487212 91020263721234 510204616301013100 5a030201612f62310001',
      [ndef.HandoverRequestRecord('1.2', 0x1234, (1, '1')),
       ndef.Record('a/b', '1', b'\x00\x01')]),
-    ('9102114872 12 91020263721234 510204616301013100 590205014863310203612f62',
+    ('910211487212 91020263721234 510204616301013100 590205014863310203612f62',
      [ndef.HandoverRequestRecord('1.2', 0x1234, (1, '1')),
       ndef.HandoverCarrierRecord('a/b', None, '1')]),
 ]
+
 
 class TestHandoverRequestMessage:
     @pytest.mark.parametrize("encoded, message", handover_request_messages)
@@ -620,6 +637,7 @@ class TestHandoverRequestMessage:
         print(list(ndef.message_encoder(message)))
         assert b''.join(list(ndef.message_encoder(message))) == octets
 
+
 handover_select_messages = [
     ('d102014873 13',
      [ndef.HandoverSelectRecord('1.3')]),
@@ -632,6 +650,7 @@ handover_select_messages = [
      [ndef.HandoverSelectRecord('1.3', (1, 255), (1, '1')),
       ndef.Record('a/b', '1', b'\x00\x01')]),
 ]
+
 
 class TestHandoverSelectMessage:
     @pytest.mark.parametrize("encoded, message", handover_select_messages)
@@ -646,6 +665,7 @@ class TestHandoverSelectMessage:
         print(list(ndef.message_encoder(message)))
         assert b''.join(list(ndef.message_encoder(message))) == octets
 
+
 handover_mediation_messages = [
     ('d10201486d 13',
      [ndef.HandoverMediationRecord('1.3')]),
@@ -653,6 +673,7 @@ handover_mediation_messages = [
      [ndef.HandoverMediationRecord('1.3', (1, '1')),
       ndef.Record('a/b', '1', b'\x00\x01')]),
 ]
+
 
 class TestHandoverMediationMessage:
     @pytest.mark.parametrize("encoded, message", handover_mediation_messages)
@@ -667,6 +688,7 @@ class TestHandoverMediationMessage:
         print(list(ndef.message_encoder(message)))
         assert b''.join(list(ndef.message_encoder(message))) == octets
 
+
 handover_initiate_messages = [
     ('d102014869 13',
      [ndef.HandoverInitiateRecord('1.3')]),
@@ -674,6 +696,7 @@ handover_initiate_messages = [
      [ndef.HandoverInitiateRecord('1.3', (1, '1')),
       ndef.Record('a/b', '1', b'\x00\x01')]),
 ]
+
 
 class TestHandoverInitiateMessage:
     @pytest.mark.parametrize("encoded, message", handover_initiate_messages)
@@ -687,4 +710,3 @@ class TestHandoverInitiateMessage:
         octets = bytes(bytearray.fromhex(encoded))
         print(list(ndef.message_encoder(message)))
         assert b''.join(list(ndef.message_encoder(message))) == octets
-

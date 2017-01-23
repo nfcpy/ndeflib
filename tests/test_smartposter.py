@@ -6,8 +6,10 @@ import ndef
 import pytest
 import _test_record_base
 
+
 def pytest_generate_tests(metafunc):
     _test_record_base.generate_tests(metafunc)
+
 
 class TestActionRecord(_test_record_base._TestRecordBase):
     RECORD = ndef.smartposter.ActionRecord
@@ -53,6 +55,7 @@ class TestActionRecord(_test_record_base._TestRecordBase):
         (('save',), "NDEF Smartposter Action Record ID '' Action 'save'"),
     ]
 
+
 class TestSizeRecord(_test_record_base._TestRecordBase):
     RECORD = ndef.smartposter.SizeRecord
     ATTRIB = "resource_size"
@@ -87,6 +90,7 @@ class TestSizeRecord(_test_record_base._TestRecordBase):
          "NDEF Smartposter Size Record ID '' Resource Size '1234 byte'"),
     ]
 
+
 class TestTypeRecord(_test_record_base._TestRecordBase):
     RECORD = ndef.smartposter.TypeRecord
     ATTRIB = "resource_type"
@@ -120,6 +124,7 @@ class TestTypeRecord(_test_record_base._TestRecordBase):
         (('text/html',),
          "NDEF Smartposter Type Record ID '' Resource Type 'text/html'"),
     ]
+
 
 class TestSmartposterRecord(_test_record_base._TestRecordBase):
     RECORD = ndef.smartposter.SmartposterRecord
@@ -192,18 +197,19 @@ class TestSmartposterRecord(_test_record_base._TestRecordBase):
         (('http://nfcpy.org',),
          "NDEF Smartposter Record ID '' Resource 'http://nfcpy.org'"),
         (('http://nfcpy.org', "nfcpy project"),
-         "NDEF Smartposter Record ID '' Resource 'http://nfcpy.org' "\
+         "NDEF Smartposter Record ID '' Resource 'http://nfcpy.org' "
          "Title 'nfcpy project'"),
         (('http://nfcpy.org', 'nfcpy project', 'exec'),
-         "NDEF Smartposter Record ID '' Resource 'http://nfcpy.org' "\
+         "NDEF Smartposter Record ID '' Resource 'http://nfcpy.org' "
          "Title 'nfcpy project' Action 'exec'"),
         (('http://nfcpy.org', 'nfcpy', 'exec', {'image/png': b''}),
-         "NDEF Smartposter Record ID '' Resource 'http://nfcpy.org' "\
+         "NDEF Smartposter Record ID '' Resource 'http://nfcpy.org' "
          "Title 'nfcpy' Icon 'image/png' Action 'exec'"),
         (('http://nfcpy.org', 'nfcpy', None, None, 999, 'text/html'),
-         "NDEF Smartposter Record ID '' Resource 'http://nfcpy.org' "\
+         "NDEF Smartposter Record ID '' Resource 'http://nfcpy.org' "
          "Title 'nfcpy' Resource Size '999 byte' Resource Type 'text/html'"),
     ]
+
     def test_embedded_record_lists(self):
         record = ndef.smartposter.SmartposterRecord(None)
         assert record.uri_records == []
@@ -223,6 +229,7 @@ def test_set_title():
     record.set_title("Deutscher Text", "de")
     assert record.titles == {'en': 'English Text', 'de': 'Deutscher Text'}
 
+
 smartposter_messages = [
     ('d102055370 d101015500',
      [ndef.SmartposterRecord('')]),
@@ -235,6 +242,7 @@ smartposter_messages = [
      [ndef.SmartposterRecord('http://nfcpy.org', 'nfcpy', 'exec')]),
 ]
 
+
 @pytest.mark.parametrize("encoded, message", smartposter_messages + [
     ('d102085370 9101015500 500000',
      [ndef.SmartposterRecord('')]),
@@ -244,11 +252,13 @@ def test_message_decode(encoded, message):
     print(list(ndef.message_decoder(octets)))
     assert list(ndef.message_decoder(octets)) == message
 
+
 @pytest.mark.parametrize("encoded, message", smartposter_messages)
 def test_message_encode(encoded, message):
     octets = bytes(bytearray.fromhex(encoded))
     print(list(ndef.message_encoder(message)))
     assert b''.join(list(ndef.message_encoder(message))) == octets
+
 
 @pytest.mark.parametrize("encoded, errstr", [
     ('d1020c5370 9101015500 51030061637400',
@@ -267,4 +277,3 @@ def test_message_decode_fail(encoded, errstr):
     with pytest.raises(ndef.DecodeError) as excinfo:
         print(list(ndef.message_decoder(octets)))
     assert str(excinfo.value) == "ndef.smartposter." + errstr
-

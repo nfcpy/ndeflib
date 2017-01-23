@@ -4,7 +4,6 @@ from __future__ import absolute_import, division
 
 import ndef
 import pytest
-import _test_record_base
 
 from ndef.record import Record
 from io import BytesIO
@@ -29,8 +28,10 @@ wrong_record_types = [
     ('http:', "can not convert the record type string 'http:'"),
     ('http:/', "can not convert the record type string 'http:/'"),
     ('http:/a.b', "can not convert the record type string 'http:/a.b'"),
-    ('urn:nfc:wkt:'+256*'a',"an NDEF Record TYPE can not be more than 255 octet"),
+    ('urn:nfc:wkt:'+256*'a',
+     "an NDEF Record TYPE can not be more than 255 octet"),
 ]
+
 
 class TestDecodeType:
     @pytest.mark.parametrize("record_type, TNF, TYPE", valid_record_types)
@@ -44,6 +45,7 @@ class TestDecodeType:
             Record._decode_type(7, b'')
         assert str(excinfo.value) == errstr
 
+
 class TestEncodeType:
     @pytest.mark.parametrize("record_type, TNF, TYPE", valid_record_types)
     def test_pass(self, record_type, TNF, TYPE):
@@ -55,6 +57,7 @@ class TestEncodeType:
         with pytest.raises((TypeError, ValueError)) as excinfo:
             Record._encode_type(record_type)
         assert str(excinfo.value) == "ndef.record.Record " + errstr
+
 
 valid_init_args = [
     ((),                           '', '', b''),
@@ -80,6 +83,7 @@ valid_init_args = [
     ((None, 255*'a', None),        '', 255*'a', b''),
 ]
 
+
 wrong_init_args = [
     ((int(),), " record type string may be str or bytes, but not int"),
     (('ab',), " can not convert the record type string 'ab'"),
@@ -87,6 +91,8 @@ wrong_init_args = [
     (('', 256*'a'), ".name can not be more than 255 octets NDEF Record ID"),
     (('', '', int()), ".data may be sequence or None, but not int"),
 ]
+
+
 class TestInitArguments:
     @pytest.mark.parametrize("args, _type, _name, _data", valid_init_args)
     def test_pass(self, args, _type, _name, _data):
@@ -101,6 +107,7 @@ class TestInitArguments:
             Record(*args)
         assert str(excinfo.value) == "ndef.record.Record" + errstr
 
+
 class TestInitKeywords:
     def test_pass(self):
         record_1 = Record(type='text/plain', name='name', data='hello')
@@ -110,16 +117,18 @@ class TestInitKeywords:
         assert record_1.data == record_2.data
 
     def test_fail(self):
-        with pytest.raises(TypeError) as excinfo:
+        with pytest.raises(TypeError):
             Record(undefined_keyword='abc')
+
 
 class TestTypeAttribute:
     def test_instance(self):
         assert isinstance(Record().type, str)
 
     def test_update(self):
-        with pytest.raises(AttributeError) as excinfo:
+        with pytest.raises(AttributeError):
             Record().type = ''
+
 
 class TestNameAttribute:
     def test_instance(self):
@@ -135,6 +144,7 @@ class TestNameAttribute:
         with pytest.raises(ValueError):
             record.name = 256 * 'a'
 
+
 class TestDataAttribute:
     def test_instance(self):
         assert isinstance(Record().data, bytearray)
@@ -146,6 +156,7 @@ class TestDataAttribute:
         assert record.data == b'abcdef'
         with pytest.raises(AttributeError):
             Record().data = bytearray(b'')
+
 
 class TestStringFormat:
     format_args_data = [
@@ -164,8 +175,10 @@ class TestStringFormat:
         (('text/plain', '', '0123456789'),
          "TYPE 'text/plain' ID '' PAYLOAD 10 byte '30313233343536373839'"),
         (('text/plain', '', '012345678901'),
-         "TYPE 'text/plain' ID '' PAYLOAD 12 byte '30313233343536373839' ... 2 more"),
+         "TYPE 'text/plain' ID '' PAYLOAD 12 byte"
+         " '30313233343536373839' ... 2 more"),
     ]
+
     @pytest.mark.parametrize("args, string", format_args_data)
     def test_format_args(self, args, string):
         assert "{:args}".format(Record(*args)) == string
@@ -178,7 +191,8 @@ class TestStringFormat:
     @pytest.mark.parametrize("args, string", format_str_data)
     def test_format_str(self, args, string):
         assert "{!s}".format(Record(*args)) == "NDEF Record " + string
-        assert "{}".format(Record(*args)) ==  "NDEF Record " + string
+        assert "{}".format(Record(*args)) == "NDEF Record " + string
+
 
 class TestCompare:
     compare_data = [
@@ -187,13 +201,16 @@ class TestCompare:
         ('', 'abc', ''),
         ('', '', 'abc'),
     ]
+
     @pytest.mark.parametrize("args", compare_data)
     def test_equal(self, args):
         assert Record(*args) == Record(*args)
 
-    @pytest.mark.parametrize("args1,args2",zip(compare_data, compare_data[1:]))
+    @pytest.mark.parametrize("args1, args2",
+                             zip(compare_data, compare_data[1:]))
     def test_noteq(self, args1, args2):
         assert Record(*args1) != Record(*args2)
+
 
 class TestEncode:
     valid_encode_data = [
@@ -208,6 +225,7 @@ class TestEncode:
         (('urn:nfc:wkt:X', 'id', b'payload'), '19010702 5869647061796c6f6164'),
         (('urn:nfc:wkt:X', 'id', 256*b'p'), '09010000010002 586964'+256*'70'),
     ]
+
     @pytest.mark.parametrize("args, encoded", valid_encode_data)
     def test_pass(self, args, encoded):
         stream = BytesIO()
@@ -221,7 +239,7 @@ class TestEncode:
         record = Record('unknown', '', 0x100000 * b'\0')
         octets = bytearray.fromhex('050000100000') + 0x100000 * b'\0'
         assert record._encode(stream=stream) == len(octets)
-        assert stream.getvalue() == octets        
+        assert stream.getvalue() == octets
         record = Record('unknown', '', 0x100001 * b'\0')
         errstr = "payload of more than 1048576 octets can not be encoded"
         with pytest.raises(ndef.EncodeError) as excinfo:
@@ -242,6 +260,7 @@ class TestEncode:
         (">HH+(H)", (1, (1, 2, 3)), "00010003000100020003"),
         (">HH+(H)*", (1, (1, 2, 3), b'123'), "00010003000100020003313233"),
     ]
+
     @pytest.mark.parametrize("fmt, values, octets", valid_struct_data)
     def test_struct(self, fmt, values, octets):
         octets = bytearray.fromhex(octets)
@@ -250,14 +269,19 @@ class TestEncode:
     def test_derived_record(self):
         class MyRecord(Record):
             _type = 'urn:nfc:wkt:x'
-            def __init__(self): pass
-            def _encode_payload(self): return b'\0'
+
+            def __init__(self):
+                pass
+
+            def _encode_payload(self):
+                return b'\0'
 
         stream = BytesIO()
         octets = bytearray.fromhex('1101017800')
         assert MyRecord()._encode(stream=stream) == len(octets)
         assert stream.getvalue() == octets
-        
+
+
 class TestDecode:
     valid_decode_data = TestEncode.valid_encode_data + [
         (('', '', b''), '00 00 00 00 00 00'),
@@ -293,6 +317,7 @@ class TestDecode:
         ('a00000000000', 1, 0, 1),
         ('e00000000000', 1, 1, 1),
     ]
+
     @pytest.mark.parametrize("args, encoded", valid_decode_data)
     def test_pass(self, args, encoded):
         stream = BytesIO(bytearray.fromhex(encoded))
@@ -338,14 +363,16 @@ class TestDecode:
             _type = 'urn:nfc:wkt:x'
             _decode_min_payload_length = 1
             _decode_max_payload_length = 1
+
             @classmethod
-            def _decode_payload(cls, octets, errors): return MyRecord()
+            def _decode_payload(cls, octets, errors):
+                return MyRecord()
 
         known_types = {MyRecord._type: MyRecord}
         stream = BytesIO(bytearray.fromhex('1101017800'))
         record = Record._decode(stream, 'strict', known_types)[0]
         assert type(record) == MyRecord
-        
+
         errstr = 'payload length can not be less than 1'
         stream = BytesIO(bytearray.fromhex('11010078'))
         with pytest.raises(ndef.DecodeError) as excinfo:
@@ -373,10 +400,12 @@ class TestDecode:
         (">HH+(H)", "0001000200010002", 0, (1, (1, 2))),
         ("BB+BB+", "010231320203313233", 0, (1, b'12', 2, b'123')),
     ]
+
     @pytest.mark.parametrize("fmt, octets, offset, values", valid_struct_data)
     def test_struct(self, fmt, octets, offset, values):
         octets = bytearray.fromhex(octets)
         assert Record._decode_struct(fmt, octets, offset) == values
+
 
 class TestValueToAscii:
     pass_values = [
@@ -396,6 +425,7 @@ class TestValueToAscii:
         with pytest.raises((TypeError, ValueError)) as excinfo:
             Record._value_to_ascii(value, 'value')
         assert str(excinfo.value) == "ndef.record.Record value " + errstr
+
 
 class TestValueToLatin:
     pass_values = [
@@ -417,6 +447,7 @@ class TestValueToLatin:
             Record._value_to_latin(value, 'value')
         assert str(excinfo.value) == "ndef.record.Record value " + errstr
 
+
 class TestValueToUnicode:
     pass_values = [
         'abc', u'abc', b'abc', bytearray(b'abc')
@@ -436,4 +467,3 @@ class TestValueToUnicode:
         with pytest.raises((TypeError, ValueError)) as excinfo:
             Record._value_to_unicode(value, 'value')
         assert str(excinfo.value) == "ndef.record.Record value " + errstr
-

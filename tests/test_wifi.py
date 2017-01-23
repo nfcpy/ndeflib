@@ -6,8 +6,13 @@ import uuid
 import ndef
 import pytest
 
-B = lambda s: ('' if ndef.record._PY2 else 'b') + s
-U = lambda s: ('u' if ndef.record._PY2 else '') + s
+
+def B(s):
+    return ('' if ndef.record._PY2 else 'b') + s
+
+
+def U(s):
+    return ('u' if ndef.record._PY2 else '') + s
 
 
 class TestAttribute:
@@ -22,7 +27,7 @@ class TestAttribute:
         with pytest.raises(ndef.DecodeError) as excinfo:
             cls.decode(bytearray.fromhex(octets))
         assert str(excinfo.value) == errstr
-        
+
     @pytest.mark.parametrize("cls, values, errstr", [
         (ndef.wifi.ModelName, (33*'a',),
          "data length is out of limits 0 <= 33 <= 32"),
@@ -32,7 +37,7 @@ class TestAttribute:
         with pytest.raises(ndef.EncodeError) as excinfo:
             cls(*values).encode()
         assert str(excinfo.value) == errstr
-        
+
 
 class TestAttribute_APChannel:
     @pytest.mark.parametrize("args, value", [
@@ -266,8 +271,8 @@ class TestAttribute_KeyProvidedAutomatically:
         assert ndef.wifi.KeyProvidedAutomatically(attr).value == value
 
     def test_decode(self):
-        assert ndef.wifi.KeyProvidedAutomatically.decode(b'\x00').value is False
-        assert ndef.wifi.KeyProvidedAutomatically.decode(b'\x01').value is True
+        assert ndef.wifi.KeyProvidedAutomatically.decode(b'\0').value is False
+        assert ndef.wifi.KeyProvidedAutomatically.decode(b'\1').value is True
         assert ndef.wifi.KeyProvidedAutomatically.decode(b'\xFF').value is True
 
     def test_encode(self):
@@ -496,7 +501,7 @@ class TestAttribute_OutOfBandPassword:
         pkhash = bytearray(range(20))
         attr = ndef.wifi.OutOfBandPassword(pkhash, 7, b'')
         assert "{:args}".format(attr) == \
-            B("'\\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07\\x08\\t\\n\\x0b"\
+            B("'\\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07\\x08\\t\\n\\x0b"
               "\\x0c\\r\\x0e\\x0f\\x10\\x11\\x12\\x13'") + ", 7, " + B("''")
         assert "{:data}".format(attr) == \
             "HASH 000102030405060708090a0b0c0d0e0f10111213 ID 7 PWD "
@@ -533,15 +538,15 @@ class TestAttribute_PrimaryDeviceType:
         attr = ndef.wifi.PrimaryDeviceType(0x00010050F2040001)
         assert "{:args}".format(attr) == "0x00010050F2040001"
         assert "{:data}".format(attr) == "Computer::PC"
-        assert "{}".format(attr) == "Primary Device Type Computer::PC"
+        assert format(attr) == "Primary Device Type Computer::PC"
         attr = ndef.wifi.PrimaryDeviceType(0x0001FFFFFFFF0001)
         assert "{:args}".format(attr) == "0x0001FFFFFFFF0001"
         assert "{:data}".format(attr) == "Computer::FFFFFFFF0001"
-        assert "{}".format(attr) == "Primary Device Type Computer::FFFFFFFF0001"
+        assert format(attr) == "Primary Device Type Computer::FFFFFFFF0001"
         attr = ndef.wifi.PrimaryDeviceType(0x0101FFFFFFFF0001)
         assert "{:args}".format(attr) == "0x0101FFFFFFFF0001"
         assert "{:data}".format(attr) == "0101::FFFFFFFF0001"
-        assert "{}".format(attr) == "Primary Device Type 0101::FFFFFFFF0001"
+        assert format(attr) == "Primary Device Type 0101::FFFFFFFF0001"
 
     def test_undefined_name(self):
         with pytest.raises((ValueError)) as excinfo:
@@ -621,7 +626,8 @@ class TestAttribute_SecondaryDeviceTypeList:
 
     def test_encode(self):
         octets = bytearray.fromhex('00010050F2040001 00050050F2040001')
-        attr = ndef.wifi.SecondaryDeviceTypeList("Computer::PC", "Storage::NAS")
+        args = ("Computer::PC", "Storage::NAS")
+        attr = ndef.wifi.SecondaryDeviceTypeList(*args)
         assert attr.encode() == octets
 
     def test_format(self):
@@ -901,12 +907,12 @@ class TestAttribute_Credential:
 
     def test_decode(self):
         data = bytearray.fromhex('100F00020001')  # encryption-type
-        data+= bytearray.fromhex('100300020001')  # authentication-type
-        data+= bytearray.fromhex('1061000101')  # key-provided-automatically
-        data+= bytearray.fromhex('104500076d792d73736964')  # ssid
-        data+= bytearray.fromhex('10270006736563726574')  # network-key
-        data+= bytearray.fromhex('10200006010203040506')  # mac-address
-        data+= bytearray.fromhex('1049000600372A313233')  # vendor-extension
+        data += bytearray.fromhex('100300020001')  # authentication-type
+        data += bytearray.fromhex('1061000101')  # key-provided-automatically
+        data += bytearray.fromhex('104500076d792d73736964')  # ssid
+        data += bytearray.fromhex('10270006736563726574')  # network-key
+        data += bytearray.fromhex('10200006010203040506')  # mac-address
+        data += bytearray.fromhex('1049000600372A313233')  # vendor-extension
         attr = ndef.wifi.Credential.decode(data)
         assert attr.get(0x1003) == [b'\x00\x01']
         assert attr.get(0x100F) == [b'\x00\x01']
@@ -938,14 +944,14 @@ class TestAttribute_Credential:
         attr[0x1045] = [b'my-ssid']  # ssid
         attr[0x1027] = [b'secret']  # network-key
         attr[0x1020] = [b'\1\2\3\4\5\6']  # mac-address
-        attr[0x1049] = [b'\x00\x37\x2A123']  # vendor-extension      
+        attr[0x1049] = [b'\x00\x37\x2A123']  # vendor-extension
         data = bytearray.fromhex('100300020001')  # authentication-type
-        data+= bytearray.fromhex('100F00020001')  # encryption-type
-        data+= bytearray.fromhex('10200006010203040506')  # mac-address
-        data+= bytearray.fromhex('10270006736563726574')  # network-key
-        data+= bytearray.fromhex('104500076d792d73736964')  # ssid
-        data+= bytearray.fromhex('1049000600372A313233')  # vendor-extension
-        data+= bytearray.fromhex('1061000101')  # key-provided-automatically
+        data += bytearray.fromhex('100F00020001')  # encryption-type
+        data += bytearray.fromhex('10200006010203040506')  # mac-address
+        data += bytearray.fromhex('10270006736563726574')  # network-key
+        data += bytearray.fromhex('104500076d792d73736964')  # ssid
+        data += bytearray.fromhex('1049000600372A313233')  # vendor-extension
+        data += bytearray.fromhex('1061000101')  # key-provided-automatically
         assert attr.encode() == bytes(data)  # encoding is sorted by keys
         attr = ndef.wifi.Credential()
         attr.set_attribute('authentication-type', 'Open')
@@ -968,10 +974,10 @@ class TestAttribute_Credential:
         assert "{:data}".format(attr) == "Attributes 0x1045 0x1027"
         assert "{}".format(attr) == "Credential Attributes 0x1045 0x1027"
 
+
 #
 # P2P Attributes
 #
-
 class TestAttribute_PeerToPeerCapability:
     @pytest.mark.parametrize("args, device_capability, group_capability", [
         ((0x00, 0x00), (0x00,), (0x00,)),
@@ -1055,7 +1061,7 @@ class TestAttribute_ChannelList:
         for index, channel_entry in enumerate(channel_entry_list):
             assert attr[index].operating_class == channel_entry[0]
             assert attr[index].channel_numbers == channel_entry[1]
-    
+
     @pytest.mark.parametrize("octets, country_string, channel_entry_list", [
         ('646504 5100', b'de\x04', [(81, ())]),
         ('646504 510106', b'de\x04', [(81, (6,))]),
@@ -1086,7 +1092,7 @@ class TestAttribute_PeerToPeerDeviceInfo:
     @pytest.mark.parametrize("args", [
         (b'\1\2\3\4\5\6', ('Label', 'NFC Interface'), 'Computer::Tablet',
          ('Telephone::DualModeSmartphone', 'Audio::Speaker'), 'abc'),
-        (b'\1\2\3\4\5\6', 68, 281822634442761, 
+        (b'\1\2\3\4\5\6', 68, 281822634442761,
          (2815097424838661, 3096572401549314), 'abc'),
     ])
     def test_init(self, args):
@@ -1097,15 +1103,15 @@ class TestAttribute_PeerToPeerDeviceInfo:
         assert attr.secondary_device_type_list == (
             'Telephone::DualModeSmartphone', 'Audio::Speaker')
         assert attr.device_name == 'abc'
-    
+
     def test_decode(self):
-        data = bytearray.fromhex('010203040506')      # device address
-        data+= bytearray.fromhex('00C0')              # config methods
-        data+= bytearray.fromhex('00010050F2040007')  # primary device type
-        data+= bytearray.fromhex('02')                # secondary device type N
-        data+= bytearray.fromhex('000A0050F2040005')  # secondary device type
-        data+= bytearray.fromhex('000B0050F2040003')  # secondary device type
-        data+= bytearray.fromhex('10110003616263')    # device name 'abc'
+        data = bytearray.fromhex('010203040506')       # device address
+        data += bytearray.fromhex('00C0')              # config methods
+        data += bytearray.fromhex('00010050F2040007')  # primary device type
+        data += bytearray.fromhex('02')                # secondary device types
+        data += bytearray.fromhex('000A0050F2040005')  # secondary device type
+        data += bytearray.fromhex('000B0050F2040003')  # secondary device type
+        data += bytearray.fromhex('10110003616263')    # device name 'abc'
         attr = ndef.wifi.PeerToPeerDeviceInfo.decode(data)
         assert attr.device_address == b'\1\2\3\4\5\6'
         assert attr.config_methods == (0x00C0, 'NFC Interface', 'Push Button')
@@ -1115,13 +1121,13 @@ class TestAttribute_PeerToPeerDeviceInfo:
         assert attr.device_name == 'abc'
 
     def test_encode(self):
-        data = bytearray.fromhex('010203040506')      # device address
-        data+= bytearray.fromhex('0044')              # config methods
-        data+= bytearray.fromhex('00010050F2040009')  # primary device type
-        data+= bytearray.fromhex('02')                # secondary device type N
-        data+= bytearray.fromhex('000A0050F2040005')  # secondary device type
-        data+= bytearray.fromhex('000B0050F2040002')  # secondary device type
-        data+= bytearray.fromhex('10110003616263')    # device name 'abc'
+        data = bytearray.fromhex('010203040506')     # device address
+        data += bytearray.fromhex('0044')              # config methods
+        data += bytearray.fromhex('00010050F2040009')  # primary device type
+        data += bytearray.fromhex('02')                # secondary device types
+        data += bytearray.fromhex('000A0050F2040005')  # secondary device type
+        data += bytearray.fromhex('000B0050F2040002')  # secondary device type
+        data += bytearray.fromhex('10110003616263')    # device name 'abc'
         attr = ndef.wifi.PeerToPeerDeviceInfo(
             b'\1\2\3\4\5\6', ('Label', 'NFC Interface'), 'Computer::Tablet',
             ('Telephone::DualModeSmartphone', 'Audio::Speaker'), 'abc')
@@ -1141,23 +1147,26 @@ class TestAttribute_PeerToPeerDeviceInfo:
 
 class TestAttribute_PeerToPeerGroupInfo:
     @pytest.mark.parametrize("octets, values", [
-        ('010203040506 060504030201 01 0040 00010050F2040009 00 10110003616263',
-         ((b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', (1, 'Service Discovery'),
-           (64, 'NFC Interface'), "Computer::Tablet", (), 'abc'),)
-        ),
-        ('010203040506 060504030201 01 0040 00010050F2040009 00 10110003616263'
-         '010203040506 060504030201 01 0040 00010050F2040009 00 10110003646566',
-         ((b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', (1, 'Service Discovery'),
-           (64, 'NFC Interface'), "Computer::Tablet", (), 'abc'),
-         (b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', (1, 'Service Discovery'),
-           (64, 'NFC Interface'), "Computer::Tablet", (), 'def'))
-        ),
+        ('010203040506 060504030201 01 0040'
+         '00010050F2040009 00 10110003616263',
+         (
+             (b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', (1, 'Service Discovery'),
+              (64, 'NFC Interface'), "Computer::Tablet", (), 'abc'),)),
+        ('010203040506 060504030201 01 0040'
+         '00010050F2040009 00 10110003616263'
+         '010203040506 060504030201 01 0040'
+         '00010050F2040009 00 10110003646566',
+         (
+             (b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', (1, 'Service Discovery'),
+              (64, 'NFC Interface'), "Computer::Tablet", (), 'abc'),
+             (b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', (1, 'Service Discovery'),
+              (64, 'NFC Interface'), "Computer::Tablet", (), 'def'))),
         ('010203040506 060504030201 01 0040 00010050F2040009 '
          '02 00090050F2040005 00070050F2040004 10110003616263',
-         ((b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', (1, 'Service Discovery'),
-           (64, 'NFC Interface'), "Computer::Tablet",
-           ("Gaming::Portable", "Display::Monitor"), 'abc'),)
-        ),
+         (
+             (b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', (1, 'Service Discovery'),
+              (64, 'NFC Interface'), "Computer::Tablet",
+              ("Gaming::Portable", "Display::Monitor"), 'abc'),)),
     ])
     def test_decode(self, octets, values):
         data = bytearray.fromhex(octets)
@@ -1174,23 +1183,23 @@ class TestAttribute_PeerToPeerGroupInfo:
             assert attr[index].device_name == value[6]
 
     @pytest.mark.parametrize("octets, args", [
-        ('010203040506 060504030201 01 0040 00010050F2040009 00 10110003616263',
-         ((b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', ('Service Discovery',),
-           ('NFC Interface',), "Computer::Tablet", (), 'abc'),)
-        ),
-        ('010203040506 060504030201 01 0040 00010050F2040009 00 10110003616263'
-         '010203040506 060504030201 01 0040 00010050F2040009 00 10110003646566',
-         ((b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', ('Service Discovery',),
-           ('NFC Interface',), "Computer::Tablet", (), 'abc'),
-         (b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', ('Service Discovery',),
-           ('NFC Interface',), "Computer::Tablet", (), 'def'))
-        ),
+        ('010203040506 060504030201 01 0040'
+         '00010050F2040009 00 10110003616263', (
+             (b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', ('Service Discovery',),
+              ('NFC Interface',), "Computer::Tablet", (), 'abc'),)),
+        ('010203040506 060504030201 01 0040'
+         '00010050F2040009 00 10110003616263'
+         '010203040506 060504030201 01 0040'
+         '00010050F2040009 00 10110003646566', (
+             (b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', ('Service Discovery',),
+              ('NFC Interface',), "Computer::Tablet", (), 'abc'),
+             (b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', ('Service Discovery',),
+              ('NFC Interface',), "Computer::Tablet", (), 'def'))),
         ('010203040506 060504030201 01 0040 00010050F2040009 '
-         '02 00090050F2040005 00070050F2040004 10110003616263',
-         ((b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', ('Service Discovery',),
-           ('NFC Interface',), "Computer::Tablet",
-           ("Gaming::Portable", "Display::Monitor"), 'abc'),)
-        ),
+         '02 00090050F2040005 00070050F2040004 10110003616263', (
+             (b'\1\2\3\4\5\6', b'\6\5\4\3\2\1', ('Service Discovery',),
+              ('NFC Interface',), "Computer::Tablet",
+              ("Gaming::Portable", "Display::Monitor"), 'abc'),)),
     ])
     def test_encode(self, octets, args):
         data = bytearray.fromhex(octets)
@@ -1397,7 +1406,7 @@ class TestWifiSimpleConfigRecord:
         assert len(record['mac-address']) == 2
         assert record._encode_payload() == bytearray.fromhex(octets)
 
-    def test_add_attribute(self):
+    def test_set_attribute(self):
         octets = '10200006010203040506 10200006060504030201'
         record = ndef.wifi.WifiSimpleConfigRecord((0x1020, b'\1\2\3\4\5\6'))
         record.add_attribute('mac-address', b'\6\5\4\3\2\1')
@@ -1536,7 +1545,7 @@ class TestWifiConfigTokenFormat:
         assert cred.get_attribute('network-index').value == 1
         assert cred.get_attribute('network-key').value == b'1234567890'
         assert cred.get_attribute('ssid').value == b'abcdefghij'
-    
+
     def test_encode_one_credential_payload(self):
         octets = bytes(bytearray.fromhex(self.one_credential_payload))
         record = ndef.wifi.WifiSimpleConfigRecord()
@@ -1551,7 +1560,7 @@ class TestWifiConfigTokenFormat:
         record.set_attribute('credential', cred)
         assert record._encode_payload() == octets
 
-    def test_decode_one_credential_payload(self):
+    def test_decode_two_credential_payload(self):
         RECORD = ndef.wifi.WifiSimpleConfigRecord
         octets = bytes(bytearray.fromhex(self.two_credential_payload))
         record = RECORD._decode_payload(octets, 'strict')
@@ -1570,7 +1579,7 @@ class TestWifiConfigTokenFormat:
             assert cred.get_attribute('network-index').value == 1
             assert cred.get_attribute('network-key').value == b'1234567890'
             assert cred.get_attribute('ssid').value == b'abcdefghij'
-    
+
     def test_encode_two_credential_payload(self):
         octets = bytes(bytearray.fromhex(self.two_credential_payload))
         record = ndef.wifi.WifiSimpleConfigRecord()
@@ -1590,50 +1599,56 @@ class TestWifiConfigTokenFormat:
 class TestWifiPeerToPeerRecord:
     CLASSNAME = "ndef.wifi.WifiPeerToPeerRecord"
     hp_printer_payload = (
-        '0089'                                        # 000: WSC Data Length
-        '1021 0002 4850'                              # 002: Manufacturer
-        '1023 001a 4850204f66666963 656a65742050726f' # 008: Model Name
+        '0089'                                         # 000: WSC Data Length
+        '1021 0002 4850'                               # 002: Manufacturer
+        '1023 001a 4850204f66666963 656a65742050726f'  # 008: Model Name
         '          203237366477204d 4650'
-        '1024 0006 513132333454'                      # 038: Model Number
-        '102c 0026 0000000000000000 0000000000000000' # 048: OOB Password
+        '1024 0006 513132333454'                       # 038: Model Number
+        '102c 0026 0000000000000000 0000000000000000'  # 048: OOB Password
         '          00000000787a100a 200b300c400d500e'
         '          600f70018002'
-        '103c 0001 01'                                # 090: RF Bands
-        '1042 000a 5858585858585858 5858'             # 095: Serial Number
-        '1047 0010 dc1281ef012c4839 831ee9f1e8944393' # 109: UUID-E
-        '1049 0006 00372a 000120'                     # 129: WFA Extension
-        '0051'                                        # 139: P2P Data Length
-        '02 0002 0783'                                # 141: P2P Capability
-        '0d 001d 02bad0f8f0e00098 00030050f2040005'   # 146: P2p Device Info
+        '103c 0001 01'                                 # 090: RF Bands
+        '1042 000a 5858585858585858 5858'              # 095: Serial Number
+        '1047 0010 dc1281ef012c4839 831ee9f1e8944393'  # 109: UUID-E
+        '1049 0006 00372a 000120'                      # 129: WFA Extension
+        '0051'                                         # 139: P2P Data Length
+        '02 0002 0783'                                 # 141: P2P Capability
+        '0d 001d 02bad0f8f0e00098 00030050f2040005'    # 146: P2p Device Info
         '        0010110008485020 50686f746f'
-        '0f 0020 d89d675302474449 524543542d34362d'   # 178: P2P Group ID
+        '0f 0020 d89d675302474449 524543542d34362d'    # 178: P2P Group ID
         '        454e565920353530 3020736572696573'
-        '13 0006 4b5204510602'                        # 213: Negotiation Channel
-    )                                                 # 222: end
+        '13 0006 4b5204510602'                         # 213: Negotiation Chan
+    )                                                  # 222: end
 
     def test_hp_printer_payload(self):
         RECORD = ndef.wifi.WifiPeerToPeerRecord
         octets = bytes(bytearray.fromhex(self.hp_printer_payload))
         record = RECORD._decode_payload(octets, 'strict')
         assert record.get_attribute('manufacturer').value == "HP"
-        assert record.get_attribute('model-name').value == "HP Officejet Pro 276dw MFP"
+        assert record.get_attribute('model-name').value == \
+            "HP Officejet Pro 276dw MFP"
         assert record.get_attribute('model-number').value == "Q1234T"
         oobpwd = record.get_attribute('oob-password')
         assert oobpwd.public_key_hash == 20 * b'\x00'
         assert oobpwd.password_id == 30842
-        assert oobpwd.device_password == b'\x10\n \x0b0\x0c@\rP\x0e`\x0fp\x01\x80\x02'
+        assert oobpwd.device_password == \
+            b'\x10\n \x0b0\x0c@\rP\x0e`\x0fp\x01\x80\x02'
         assert record.get_attribute('rf-bands').value == (1, '2.4GHz')
         assert record.get_attribute('serial-number').value == "XXXXXXXXXX"
-        assert record.get_attribute('uuid-enrollee').value == "dc1281ef-012c-4839-831e-e9f1e8944393"
+        assert record.get_attribute('uuid-enrollee').value == \
+            "dc1281ef-012c-4839-831e-e9f1e8944393"
         wfaext = record.get_attribute('wfa-vendor-extension')
         assert wfaext.get_attribute('version-2').value == (2, 0)
         assert record.get_attribute('p2p-capability').device_capability == \
-            (7, 'Service Discovery', 'P2P Client Discoverability', 'Concurrent Operation')
+            (7, 'Service Discovery', 'P2P Client Discoverability',
+             'Concurrent Operation')
         assert record.get_attribute('p2p-capability').group_capability == \
-            (131, 'P2P Group Owner', 'Persistent P2P Group', 'IP Address Allocation')
+            (131, 'P2P Group Owner', 'Persistent P2P Group',
+             'IP Address Allocation')
         dvinfo = record.get_attribute('p2p-device-info')
         assert dvinfo.device_address == b'\x02\xba\xd0\xf8\xf0\xe0'
-        assert dvinfo.config_methods == (152, 'Display', 'External NFC Token', 'Push Button')
+        assert dvinfo.config_methods == \
+            (152, 'Display', 'External NFC Token', 'Push Button')
         assert dvinfo.primary_device_type == "Printer::Multifunction"
         assert dvinfo.secondary_device_type_list == ()
         assert dvinfo.device_name == "HP Photo"
@@ -1647,47 +1662,54 @@ class TestWifiPeerToPeerRecord:
         assert record._encode_payload() == octets
 
     password_id_seven_payload = (
-        '0079'                                        # 000: WSC Data Length
-        '1021 0002 4850'                              # 002: Manufacturer
-        '1023 001a 4850204f66666963 656a65742050726f' # 008: Model Name
+        '0079'                                         # 000: WSC Data Length
+        '1021 0002 4850'                               # 002: Manufacturer
+        '1023 001a 4850204f66666963 656a65742050726f'  # 008: Model Name
         '          203237366477204d 4650'
-        '1024 0006 513132333454'                      # 038: Model Number
-        '102c 0016 0000000000000000 0000000000000000' # 048: OOB Password
+        '1024 0006 513132333454'                       # 038: Model Number
+        '102c 0016 0000000000000000 0000000000000000'  # 048: OOB Password
         '          000000000007'
-        '103c 0001 01'                                # 074: RF Bands
-        '1042 000a 5858585858585858 5858'             # 079: Serial Number
-        '1047 0010 dc1281ef012c4839 831ee9f1e8944393' # 093: UUID-E
-        '1049 0006 00372a 000120'                     # 113: WFA Extension
-        '0051'                                        # 123: P2P Data Length
-        '02 0002 0783'                                # 125: P2P Capability
-        '0d 001d 02bad0f8f0e00098 00030050f2040005'   # 130: P2p Device Info
+        '103c 0001 01'                                 # 074: RF Bands
+        '1042 000a 5858585858585858 5858'              # 079: Serial Number
+        '1047 0010 dc1281ef012c4839 831ee9f1e8944393'  # 093: UUID-E
+        '1049 0006 00372a 000120'                      # 113: WFA Extension
+        '0051'                                         # 123: P2P Data Length
+        '02 0002 0783'                                 # 125: P2P Capability
+        '0d 001d 02bad0f8f0e00098 00030050f2040005'    # 130: P2p Device Info
         '        0010110008485020 50686f746f'
-        '0f 0020 d89d675302474449 524543542d34362d'   # 162: P2P Group ID
+        '0f 0020 d89d675302474449 524543542d34362d'    # 162: P2P Group ID
         '        454e565920353530 3020736572696573'
-        '13 0006 4b5204510602'                        # 197: Negotiation Channel
-    )                                                 # 206: end
+        '13 0006 4b5204510602'                         # 197: Negotiation Chan
+    )                                                  # 206: end
+
     def test_password_id_seven_payload(self):
         RECORD = ndef.wifi.WifiPeerToPeerRecord
         octets = bytes(bytearray.fromhex(self.password_id_seven_payload))
         record = RECORD._decode_payload(octets, 'strict')
         assert record.get_attribute('manufacturer').value == "HP"
-        assert record.get_attribute('model-name').value == "HP Officejet Pro 276dw MFP"
+        assert record.get_attribute('model-name').value == \
+            "HP Officejet Pro 276dw MFP"
         assert record.get_attribute('model-number').value == "Q1234T"
         oobpwd = record.get_attribute('oob-password')
         assert oobpwd.public_key_hash == 20 * b'\x00'
         assert oobpwd.password_id == 7
         assert record.get_attribute('rf-bands').value == (1, '2.4GHz')
         assert record.get_attribute('serial-number').value == "XXXXXXXXXX"
-        assert record.get_attribute('uuid-enrollee').value == "dc1281ef-012c-4839-831e-e9f1e8944393"
+        assert record.get_attribute('uuid-enrollee').value == \
+            "dc1281ef-012c-4839-831e-e9f1e8944393"
         wfaext = record.get_attribute('wfa-vendor-extension')
         assert wfaext.get_attribute('version-2').value == (2, 0)
         assert record.get_attribute('p2p-capability').device_capability == \
-            (7, 'Service Discovery', 'P2P Client Discoverability', 'Concurrent Operation')
+            (7, 'Service Discovery', 'P2P Client Discoverability',
+             'Concurrent Operation')
         assert record.get_attribute('p2p-capability').group_capability == \
-            (131, 'P2P Group Owner', 'Persistent P2P Group', 'IP Address Allocation')
+            (131, 'P2P Group Owner', 'Persistent P2P Group',
+             'IP Address Allocation')
         dvinfo = record.get_attribute('p2p-device-info')
-        assert dvinfo.device_address == b'\x02\xba\xd0\xf8\xf0\xe0'
-        assert dvinfo.config_methods == (152, 'Display', 'External NFC Token', 'Push Button')
+        assert dvinfo.device_address == \
+            b'\x02\xba\xd0\xf8\xf0\xe0'
+        assert dvinfo.config_methods == \
+            (152, 'Display', 'External NFC Token', 'Push Button')
         assert dvinfo.primary_device_type == "Printer::Multifunction"
         assert dvinfo.secondary_device_type_list == ()
         assert dvinfo.device_name == "HP Photo"
@@ -1699,7 +1721,6 @@ class TestWifiPeerToPeerRecord:
         assert p2pgrp.device_address == b'\xd8\x9dgS\x02G'
         assert p2pgrp.ssid == b'DIRECT-46-ENVY 5500 series'
         assert record._encode_payload() == octets
-
 
     def test_missing_wsc_data(self):
         RECORD = ndef.wifi.WifiPeerToPeerRecord
@@ -1721,6 +1742,3 @@ class TestWifiPeerToPeerRecord:
         with pytest.raises(ndef.EncodeError) as excinfo:
             RECORD()._encode_payload()
         assert str(excinfo.value) == self.CLASSNAME + " " + errstr
-
-
-

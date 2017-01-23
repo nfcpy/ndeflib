@@ -3,11 +3,12 @@
 from __future__ import absolute_import, division
 
 import ndef
-import pytest
 import _test_record_base
+
 
 def pytest_generate_tests(metafunc):
     _test_record_base.generate_tests(metafunc)
+
 
 class TestDeviceInformationRecord(_test_record_base._TestRecordBase):
     RECORD = ndef.deviceinfo.DeviceInformationRecord
@@ -56,7 +57,8 @@ class TestDeviceInformationRecord(_test_record_base._TestRecordBase):
          ("Company", 'Device', 'Name')),
         ('0007436f6d70616e79 0106446576696365 02044e616d65'
          '0310123e4567e89b12d3a456426655440000',
-         ("Company", 'Device', 'Name', '123e4567-e89b-12d3-a456-426655440000')),
+         ("Company", 'Device', 'Name',
+          '123e4567-e89b-12d3-a456-426655440000')),
         ('0007436f6d70616e79 0106446576696365 02044e616d65 040631302e312e35',
          ("Company", 'Device', 'Name', None, '10.1.5')),
         ('0007436f6d70616e79 0106446576696365 02044e616d65 ff03313233',
@@ -78,15 +80,17 @@ class TestDeviceInformationRecord(_test_record_base._TestRecordBase):
          " '1.1.1', (255, b'123'), (10, b'')"),
     ]
     test_format_str_data = [
-        (('Company', 'Device'),
-         "NDEF Device Information Record ID '' Vendor 'Company' Model 'Device'"
-        ),
-        (('Company', 'Device', 'Name', '123e4567e89b12d3a456426655440000',
-          '1.1.1', (255, b'123'), (10, b'')),
-         "NDEF Device Information Record ID '' Vendor 'Company' Model 'Device'"
-         " Name 'Name' UUID '123e4567-e89b-12d3-a456-426655440000'"
-         " Version '1.1.1' DataElement(data_type=255, data_bytes=b'123')"
-         " DataElement(data_type=10, data_bytes=b'')"
-        ),
+        (
+            ('Company', 'Device'),
+            "NDEF Device Information Record ID ''"
+            " Vendor 'Company' Model 'Device'"
+        ), (
+            ('Company', 'Device', 'Name', '123e4567e89b12d3a456426655440000',
+             '1.1.1', (255, b'123'), (10, b'')),
+            "NDEF Device Information Record ID ''"
+            " Vendor 'Company' Model 'Device'"
+            " Name 'Name' UUID '123e4567-e89b-12d3-a456-426655440000'"
+            " Version '1.1.1' DataElement(data_type=255, data_bytes=b'123')"
+            " DataElement(data_type=10, data_bytes=b'')"
+        )
     ]
-

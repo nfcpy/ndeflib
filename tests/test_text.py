@@ -6,8 +6,10 @@ import ndef
 import pytest
 import _test_record_base
 
+
 def pytest_generate_tests(metafunc):
     _test_record_base.generate_tests(metafunc)
+
 
 class TestTextRecord(_test_record_base._TestRecordBase):
     RECORD = ndef.text.TextRecord
@@ -55,15 +57,16 @@ class TestTextRecord(_test_record_base._TestRecordBase):
         ((), "'', 'en', 'UTF-8'"),
         (('a',), "'a', 'en', 'UTF-8'"),
         (('a', 'de'), "'a', 'de', 'UTF-8'"),
-    ]    
+    ]
     test_format_str_data = [
         ((),
          "NDEF Text Record ID '' Text '' Language 'en' Encoding 'UTF-8'"),
         (('T'),
          "NDEF Text Record ID '' Text 'T' Language 'en' Encoding 'UTF-8'"),
-        (('T','de'),
+        (('T', 'de'),
          "NDEF Text Record ID '' Text 'T' Language 'de' Encoding 'UTF-8'"),
     ]
+
 
 text_messages = [
     ('D101075402656e54455854',
@@ -73,15 +76,16 @@ text_messages = [
       ndef.TextRecord('TXT2', 'en', 'UTF-8')]),
 ]
 
+
 @pytest.mark.parametrize("encoded, message", text_messages)
 def test_message_decode(encoded, message):
     octets = bytes(bytearray.fromhex(encoded))
     print(list(ndef.message_decoder(octets)))
     assert list(ndef.message_decoder(octets)) == message
 
+
 @pytest.mark.parametrize("encoded, message", text_messages)
 def test_message_encode(encoded, message):
     octets = bytes(bytearray.fromhex(encoded))
     print(list(ndef.message_encoder(message)))
     assert b''.join(list(ndef.message_encoder(message))) == octets
-

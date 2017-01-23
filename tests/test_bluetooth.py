@@ -7,6 +7,7 @@ import ndef
 import pytest
 import uuid
 
+
 class TestDeviceAddress:
     cls = 'ndef.bluetooth.DeviceAddress'
 
@@ -60,12 +61,14 @@ class TestDeviceAddress:
         assert obj.type == address_type
 
     @pytest.mark.parametrize("octets, errstr", [
-        (b'\x06\x05\x04\x03\x02', "can't be decoded from 5 octets"),
-        (b'\x06\x05\x04\x03\x02\x01\x00\x00', "can't be decoded from 8 octets"),
+        (b'\x06\x05\x04\x03\x02',
+         "can't be decoded from 5 octets"),
+        (b'\x06\x05\x04\x03\x02\x01\x00\x00',
+         "can't be decoded from 8 octets"),
     ])
     def test_decode_fail(self, octets, errstr):
         with pytest.raises(ndef.DecodeError) as excinfo:
-            obj = ndef.bluetooth.DeviceAddress.decode(octets)
+            ndef.bluetooth.DeviceAddress.decode(octets)
         assert str(excinfo.value) == self.cls + ' ' + errstr
 
 
@@ -84,7 +87,8 @@ class TestDeviceClass:
         (0x010000, "Miscellaneous", "Uncategorized", ("Positioning",)),
         (0x008000, "Miscellaneous", "Uncategorized", ("Reserved (bit 15)",)),
         (0x004000, "Miscellaneous", "Uncategorized", ("Reserved (bit 14)",)),
-        (0x002000, "Miscellaneous", "Uncategorized", ("Limited Discoverable Mode",)),
+        (0x002000, "Miscellaneous", "Uncategorized",
+         ("Limited Discoverable Mode",)),
         (0x001000, "Reserved 10000b", "Undefined 000000b", ()),
         (0x000800, "Toy", "Reserved 000000b", ()),
         (0x000400, "Audio / Video", "Uncategorized", ()),
@@ -145,7 +149,7 @@ class TestDeviceClass:
             obj.encode()
         assert str(excinfo.value) == self.cls + ' ' + errstr
 
-    @pytest.mark.parametrize("octets", [b'\x00\x00\x00', b'\x56\x34\x12',])
+    @pytest.mark.parametrize("octets", [b'\x00\x00\x00', b'\x56\x34\x12'])
     def test_decode(self, octets):
         obj = ndef.bluetooth.DeviceClass.decode(octets)
         assert obj.encode() == octets
@@ -176,7 +180,8 @@ class TestServiceClass:
 
     def test_format_repr(self):
         obj = ndef.bluetooth.ServiceClass(0x1101)
-        assert repr(obj) == self.cls + "('00001101-0000-1000-8000-00805f9b34fb')"
+        assert repr(obj) == \
+            self.cls + "('00001101-0000-1000-8000-00805f9b34fb')"
 
     @pytest.mark.parametrize("sc, strstr", [
         (0x00000000, "00000000-0000-1000-8000-00805f9b34fb"),
@@ -258,9 +263,11 @@ class TestServiceClass:
     def test_uuid_name(self):
         obj = ndef.bluetooth.ServiceClass(0x1101)
         assert obj.name == "Serial Port"
-        obj = ndef.bluetooth.ServiceClass('00000000-0000-1000-8000-00805f9b34fb')
+        obj = ndef.bluetooth.ServiceClass(
+            '00000000-0000-1000-8000-00805f9b34fb')
         assert obj.name == '00000000-0000-1000-8000-00805f9b34fb'
-        obj = ndef.bluetooth.ServiceClass('00000000-0000-0000-0000-000000000000')
+        obj = ndef.bluetooth.ServiceClass(
+            '00000000-0000-0000-0000-000000000000')
         assert obj.name == '00000000-0000-0000-0000-000000000000'
 
     def test_get_uuid_names(self):
@@ -284,10 +291,14 @@ class TestServiceClass:
         assert obj.encode() == octets
 
     @pytest.mark.parametrize("octets, errstr", [
-        (b'\x01', "can't decode service class uuid from 1 octets"),
-        (b'\x01\x11\x00', "can't decode service class uuid from 3 octets"),
-        (b'dcba1032456789A', "can't decode service class uuid from 15 octets"),
-        (b'dcba1032456789ABC', "can't decode service class uuid from 17 octets"),
+        (b'\x01',
+         "can't decode service class uuid from 1 octets"),
+        (b'\x01\x11\x00',
+         "can't decode service class uuid from 3 octets"),
+        (b'dcba1032456789A',
+         "can't decode service class uuid from 15 octets"),
+        (b'dcba1032456789ABC',
+         "can't decode service class uuid from 17 octets"),
     ])
     def test_decode_fail(self, octets, errstr):
         with pytest.raises(ndef.DecodeError) as excinfo:
@@ -383,7 +394,8 @@ class TestBluetoothEasyPairingRecord:
         obj.device_class = ndef.bluetooth.DeviceClass(0x0C06C0)
         assert obj.device_class.major_device_class == 'Imaging'
         assert obj.device_class.minor_device_class == 'Scanner/Printer'
-        assert obj.device_class.major_service_class == ('Rendering', 'Capturing')
+        assert obj.device_class.major_service_class == \
+            ('Rendering', 'Capturing')
 
     def test_attr_service_class_list(self):
         obj = ndef.BluetoothEasyPairingRecord('01:02:03:04:05:06')
@@ -395,12 +407,18 @@ class TestBluetoothEasyPairingRecord:
         obj[0x06] = b'\0\0\0\0\1\1\2\2\3\3\4\4\4\4\4\4'
         obj[0x07] = b'\1\0\0\0\1\1\2\2\3\3\4\4\4\4\4\4'
         assert obj.service_class_list == [
-            ndef.bluetooth.ServiceClass('00001101-0000-1000-8000-00805f9b34fb'),
-            ndef.bluetooth.ServiceClass('00001102-0000-1000-8000-00805f9b34fb'),
-            ndef.bluetooth.ServiceClass('10001101-0000-1000-8000-00805f9b34fb'),
-            ndef.bluetooth.ServiceClass('10001102-0000-1000-8000-00805f9b34fb'),
-            ndef.bluetooth.ServiceClass('00000000-0101-0202-0303-040404040404'),
-            ndef.bluetooth.ServiceClass('00000001-0101-0202-0303-040404040404'),
+            ndef.bluetooth.ServiceClass(
+                '00001101-0000-1000-8000-00805f9b34fb'),
+            ndef.bluetooth.ServiceClass(
+                '00001102-0000-1000-8000-00805f9b34fb'),
+            ndef.bluetooth.ServiceClass(
+                '10001101-0000-1000-8000-00805f9b34fb'),
+            ndef.bluetooth.ServiceClass(
+                '10001102-0000-1000-8000-00805f9b34fb'),
+            ndef.bluetooth.ServiceClass(
+                '00000000-0101-0202-0303-040404040404'),
+            ndef.bluetooth.ServiceClass(
+                '00000001-0101-0202-0303-040404040404'),
         ]
 
     def test_meth_add_service_class(self):
@@ -471,14 +489,16 @@ class TestBluetoothEasyPairingRecord:
         obj = ndef.BluetoothEasyPairingRecord('01:02:03:04:05:06')
         assert obj.type == 'application/vnd.bluetooth.ep.oob'
         assert obj.data == b'\x08\x00\x06\x05\x04\x03\x02\x01'
-        obj = ndef.BluetoothEasyPairingRecord('01:02:03:04:05:06', (255, b'ab'))
+        obj = ndef.BluetoothEasyPairingRecord('01:02:03:04:05:06', (255, b'a'))
         assert obj.type == 'application/vnd.bluetooth.ep.oob'
-        assert obj.data == b'\x0c\x00\x06\x05\x04\x03\x02\x01\x03\xffab'
+        assert obj.data == b'\x0b\x00\x06\x05\x04\x03\x02\x01\x02\xffa'
 
     @pytest.mark.parametrize("octets", [
-        'd2200c6170706c69636174696f6e2f766e642e626c7565746f6f74682e65702e6f6f62'
+        'd2200c6170706c69636174696f6e2f766e642'
+        'e626c7565746f6f74682e65702e6f6f62'
         '0c0006050403020103ff6162',
-        'd2200d6170706c69636174696f6e2f766e642e626c7565746f6f74682e65702e6f6f62'
+        'd2200d6170706c69636174696f6e2f766e642'
+        'e626c7565746f6f74682e65702e6f6f62'
         '0d000605040302010003ff6162',
     ])
     def test_decode(self, octets):
@@ -491,10 +511,12 @@ class TestBluetoothEasyPairingRecord:
         assert record.get(0xFF) == b'ab'
 
     @pytest.mark.parametrize("octets, errstr", [
-        ('d2200c6170706c69636174696f6e2f766e642e626c7565746f6f74682e65702e6f6f62'
+        ('d2200c6170706c69636174696f6e2f766e64'
+         '2e626c7565746f6f74682e65702e6f6f62'
          '0d0006050403020103ff6162',
          'oob data length 13 exceeds payload size 12'),
-        ('d2200d6170706c69636174696f6e2f766e642e626c7565746f6f74682e65702e6f6f62'
+        ('d2200d6170706c69636174696f6e2f766e64'
+         '2e626c7565746f6f74682e65702e6f6f62'
          '0c0006050403020103ff616200',
          'payload size 13 exceeds oob data length 12'),
     ])
@@ -517,7 +539,6 @@ class TestBluetoothEasyPairingRecord:
         assert format(obj, 'data') == txt
         txt = "NDEF Bluetooth Easy Pairing Record ID '' Attributes 0x08 0x09"
         assert format(obj) == txt
-            
 
 
 class TestBluetoothLowEnergyRecord:
@@ -594,9 +615,11 @@ class TestBluetoothLowEnergyRecord:
         assert obj.data == b'\x08\x1b\x06\x05\x04\x03\x02\x01\x00\x04\xffabc'
 
     @pytest.mark.parametrize("octets", [
-        'd2200d6170706c69636174696f6e2f766e642e626c7565746f6f74682e6c652e6f6f62'
+        'd2200d6170706c69636174696f6e2f766e64'
+        '2e626c7565746f6f74682e6c652e6f6f62'
         '081b0605040302010003ff6162',
-        'd2200e6170706c69636174696f6e2f766e642e626c7565746f6f74682e6c652e6f6f62'
+        'd2200e6170706c69636174696f6e2f766e64'
+        '2e626c7565746f6f74682e6c652e6f6f62'
         '081b060504030201000003ff6162',
     ])
     def test_decode(self, octets):
@@ -607,7 +630,3 @@ class TestBluetoothLowEnergyRecord:
         assert record.device_address.addr == '01:02:03:04:05:06'
         assert len(record.items()) == 2
         assert record.get(0xFF) == b'ab'
-
-
-
-
