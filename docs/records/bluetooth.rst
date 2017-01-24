@@ -484,6 +484,23 @@ Low Energy Record
       >>> record.role_capabilities = "Central"
       >>> assert record['LE Role'] == b'\x01'
 
+   .. attribute:: security_manager_tk_value
+               
+      Get or set the Security Manager TK Value.
+
+      The Security Manager TK Value is used by the LE Security Manager in the
+      OOB association model with LE Legacy pairing. Reading this attribute
+      returns an unsigned integer converted from the 16 byte 'Security Manager
+      TK Value' AD type octets, or None if the AD type is not found. An unsigned
+      integer assigned to this attribute is written as the 16 byte 'Security
+      Manager TK Value' AD type after conversion.
+
+      >>> record.security_manager_tk_value = 0x1234567890ABCDEF1234567890ABCDEF
+      >>> record.get('Security Manager TK Value').hex()
+      'efcdab9078563412efcdab9078563412'
+      >>> record.security_manager_tk_value
+      24197857200151252728969465429440056815
+
    .. method:: set_confirmation_value(value)
 
       Set the LE Secure Connections Confirmation Value. The *value* argument is

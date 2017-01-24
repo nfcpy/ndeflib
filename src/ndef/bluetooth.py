@@ -1084,6 +1084,30 @@ class BluetoothLowEnergyRecord(BluetoothRecord):
 
         self['Appearance'] = self._encode_struct('<H', value)
 
+    @property
+    def security_manager_tk_value(self):
+        """Get or set the Security Manager TK Value.
+
+        The Security Manager TK Value is used by the LE Security
+        Manager in the OOB association model with LE Legacy
+        pairing. Reading this attribute returns an unsigned integer
+        converted from the 16 byte 'Security Manager TK Value' AD type
+        octets, or None if the AD type is not found. An unsigned
+        integer assigned to this attribute is written as the 16 byte
+        'Security Manager TK Value' AD type after conversion.
+
+        """
+        octets = self.get('Security Manager TK Value')
+        if octets is not None:
+            return (int((octets[::-1]).encode('hex'), base=16) if _PY2
+                    else int.from_bytes(octets, byteorder='little'))
+
+    @security_manager_tk_value.setter
+    def security_manager_tk_value(self, value):
+        octets = ('{:032x}'.format(value).decode('hex')[::-1] if _PY2
+                  else value.to_bytes(16, byteorder='little'))
+        self['Security Manager TK Value'] = octets
+
     def get_confirmation_value(self):
         """Get the LE Secure Connections Confirmation Value.
 

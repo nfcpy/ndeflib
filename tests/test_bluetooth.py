@@ -653,6 +653,14 @@ class TestBluetoothLowEnergyRecord:
         assert len(obj.appearance_strings) == 49
         assert obj.appearance_strings[0:2] == ["Unknown", "Phone"]
 
+    def test_attr_security_manager_tk_value(self):
+        obj = ndef.BluetoothLowEnergyRecord()
+        assert obj.security_manager_tk_value is None
+        obj[0x10] = b'\1' + 15 * b'\0'
+        assert obj.security_manager_tk_value == 1
+        obj.security_manager_tk_value = 2
+        assert obj[0x10] == b'\2' + 15 * b'\0'
+
     def test_meth_get_confirmation_value(self):
         obj = ndef.BluetoothLowEnergyRecord()
         assert obj.get_confirmation_value() is None
