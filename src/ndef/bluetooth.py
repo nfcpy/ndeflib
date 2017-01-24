@@ -1089,8 +1089,8 @@ class BluetoothLowEnergyRecord(BluetoothRecord):
         """Get or set the Security Manager TK Value.
 
         The Security Manager TK Value is used by the LE Security
-        Manager in the OOB association model with LE Legacy
-        pairing. Reading this attribute returns an unsigned integer
+        Manager if the OOB association model with LE Legacy pairing is
+        used. Reading this attribute returns an unsigned integer
         converted from the 16 byte 'Security Manager TK Value' AD type
         octets, or None if the AD type is not found. An unsigned
         integer assigned to this attribute is written as the 16 byte
@@ -1108,12 +1108,18 @@ class BluetoothLowEnergyRecord(BluetoothRecord):
                   else value.to_bytes(16, byteorder='little'))
         self['Security Manager TK Value'] = octets
 
-    def get_confirmation_value(self):
-        """Get the LE Secure Connections Confirmation Value.
+    @property
+    def secure_connections_confirmation_value(self):
+        """Get or set the LE Secure Connections Confirmation Value.
 
-        The value returned is the 128-bit integer converted from the
-        'LE Secure Connections Confirmation Value' bytes if present,
-        otherwise None.
+        The LE Secure Connections Confirmation Value is used by the LE
+        Security Manager if the OOB association model with LE Secure
+        Connections pairing is used. Reading this attribute returns an
+        unsigned integer converted from the 16 byte 'LE Secure
+        Connections Confirmation Value' AD type octets, or None if the
+        AD type is not found. An unsigned integer assigned to this
+        attribute is written as the 16 byte 'LE Secure Connections
+        Confirmation Value' AD type after conversion.
 
         """
         octets = self.get('LE Secure Connections Confirmation Value')
@@ -1121,13 +1127,8 @@ class BluetoothLowEnergyRecord(BluetoothRecord):
             return (int((octets[::-1]).encode('hex'), base=16) if _PY2
                     else int.from_bytes(octets, byteorder='little'))
 
-    def set_confirmation_value(self, value):
-        """Set the LE Secure Connections Confirmation Value.
-
-        The *value* must be the 128-bit integer that shall be send as
-        the 'LE Secure Connections Confirmation Value' octets.
-
-        """
+    @secure_connections_confirmation_value.setter
+    def secure_connections_confirmation_value(self, value):
         octets = ('{:032x}'.format(value).decode('hex')[::-1] if _PY2
                   else value.to_bytes(16, byteorder='little'))
         self['LE Secure Connections Confirmation Value'] = octets

@@ -661,16 +661,13 @@ class TestBluetoothLowEnergyRecord:
         obj.security_manager_tk_value = 2
         assert obj[0x10] == b'\2' + 15 * b'\0'
 
-    def test_meth_get_confirmation_value(self):
+    def test_attr_secure_connections_confirmation_value(self):
         obj = ndef.BluetoothLowEnergyRecord()
-        assert obj.get_confirmation_value() is None
+        assert obj.secure_connections_confirmation_value is None
         obj[0x22] = b'\1' + 15 * b'\0'
-        assert obj.get_confirmation_value() == 1
-
-    def test_meth_set_confirmation_value(self):
-        obj = ndef.BluetoothLowEnergyRecord()
-        obj.set_confirmation_value(1)
-        assert obj[0x22] == b'\1' + 15 * b'\0'
+        assert obj.secure_connections_confirmation_value == 1
+        obj.secure_connections_confirmation_value = 2
+        assert obj[0x22] == b'\2' + 15 * b'\0'
 
     def test_meth_get_random_value(self):
         obj = ndef.BluetoothLowEnergyRecord()
