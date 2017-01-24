@@ -669,16 +669,13 @@ class TestBluetoothLowEnergyRecord:
         obj.secure_connections_confirmation_value = 2
         assert obj[0x22] == b'\2' + 15 * b'\0'
 
-    def test_meth_get_random_value(self):
+    def test_attr_secure_connections_random_value(self):
         obj = ndef.BluetoothLowEnergyRecord()
-        assert obj.get_random_value() is None
+        assert obj.secure_connections_random_value is None
         obj[0x23] = b'\1' + 15 * b'\0'
-        assert obj.get_random_value() == 1
-
-    def test_meth_set_random_value(self):
-        obj = ndef.BluetoothLowEnergyRecord()
-        obj.set_random_value(1)
-        assert obj[0x23] == b'\1' + 15 * b'\0'
+        assert obj.secure_connections_random_value == 1
+        obj.secure_connections_random_value = 2
+        assert obj[0x23] == b'\2' + 15 * b'\0'
 
     def test_encode(self):
         obj = ndef.BluetoothLowEnergyRecord()

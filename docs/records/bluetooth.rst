@@ -519,23 +519,22 @@ Low Energy Record
       >>> record.secure_connections_confirmation_value
       24197857200151252728969465429440056815
 
-   .. method:: set_random_value(value)
+   .. attribute:: secure_connections_random_value
 
-      Set the LE Secure Connections Random Value. The *value* argument is the
-      128-bit integer that shall be send as the 'LE Secure Connections Random
-      Value' octets after conversion to bytes.
+      Get the LE Secure Connections Random Value.
 
-      >>> record.set_random_value(0x1234567890ABCDEF1234567890ABCDEF)
+      The LE Secure Connections Random Value is used by the LE Security Manager
+      if the OOB association model with LE Secure Connections pairing is
+      used. Reading this attribute returns an unsigned integer converted from
+      the 16 byte 'LE Secure Connections Random Value' AD type octets, or None
+      if the AD type is not found. An unsigned integer assigned to this
+      attribute is written as the 16 byte 'LE Secure Connections Random Value'
+      AD type after conversion.
+
+      >>> record.secure_connections_random_value = 0x1234567890ABCDEF1234567890ABCDEF
       >>> record.get('LE Secure Connections Random Value').hex()
       'efcdab9078563412efcdab9078563412'
-
-   .. method:: get_random_value()
-
-      Retrieve the LE Secure Connections Random Value as a 128-bit integer
-      converted from the 'LE Secure Connections Random Value' AD type
-      octets. :const:`None` is returned if the AD type is not present.
-
-      >>> record.get_random_value()
+      >>> record.secure_connections_random_value
       24197857200151252728969465429440056815
 
 
