@@ -166,6 +166,7 @@ NDEF Records
 
       >>> import ndef
       >>> print('\n'.join(sorted(ndef.bluetooth.BluetoothRecord().attribute_names)))
+      Appearance
       Class of Device
       Complete List of 128-bit Service Class UUIDs
       Complete List of 16-bit Service Class UUIDs
@@ -387,6 +388,87 @@ Low Energy Record
       >>> record.device_address = ('01:02:03:04:05:06', 'random')
       >>> record.device_address
       ndef.bluetooth.DeviceAddress('01:02:03:04:05:06', 'random')
+
+   .. attribute:: appearance
+
+      Get or set the representation of the external appearance of the device,
+      used by the discovering device to represent an icon, string, or similar to
+      the user. The returned value is a tuple with the numeric value and a
+      textual description, or None if the 'Appearance' AD type is not found. The
+      appearance attribute accepts either a numeric value or a description
+      string.
+
+      Appearance strings consist of a generic category and an optional
+      subtype. If a subtype is present it follows the generic category text
+      after a colon.
+
+      >>> record['Appearance'] = b'\x81\x03'
+      >>> print(record.appearance)
+      (897, 'Blood Pressure: Arm')
+      >>> print("category '{0[0]}' subtype '{0[1]}'".format(record.appearance[1].split(': ')))
+      category 'Blood Pressure' subtype 'Arm'
+      >>> record.appearance = "Thermometer"
+      >>> record['Appearance']
+      b'\x00\x03'
+      >>> record.appearance = 0x0280
+      >>> print(record.appearance)
+      (640, 'Media Player')
+
+   .. attribute:: appearance_strings
+
+      A list of all known appearance strings that may be assigned to
+      :attr:`appearance`.
+
+      >>> print('\n'.join(record.appearance_strings))
+      Unknown
+      Phone
+      Computer
+      Watch
+      Watch: Sports Watch
+      Clock
+      Display
+      Remote Control
+      Eye-glasses
+      Tag
+      Keyring
+      Media Player
+      Barcode Scanner
+      Thermometer
+      Thermometer: Ear
+      Heart Rate Sensor
+      Heart Rate Sensor: Belt
+      Blood Pressure
+      Blood Pressure: Arm
+      Blood Pressure: Wrist
+      Human Interface Device
+      Human Interface Device: Keyboard
+      Human Interface Device: Mouse
+      Human Interface Device: Joystick
+      Human Interface Device: Gamepad
+      Human Interface Device: Digitizer Tablet
+      Human Interface Device: Card Reader
+      Human Interface Device: Digital Pen
+      Human Interface Device: Barcode Scanner
+      Glucose Meter
+      Running Walking Sensor
+      Running Walking Sensor: In-Shoe
+      Running Walking Sensor: On-Shoe
+      Running Walking Sensor: On-Hip
+      Cycling
+      Cycling: Cycling Computer
+      Cycling: Speed Sensor
+      Cycling: Cadence Sensor
+      Cycling: Power Sensor
+      Cycling: Speed and Cadence Sensor
+      Pulse Oximeter
+      Pulse Oximeter: Fingertip
+      Pulse Oximeter: Wrist Worn
+      Weight Scale
+      Outdoor Sports
+      Outdoor Sports: Location Display Device
+      Outdoor Sports: Location and Navigation Display Device
+      Outdoor Sports: Location Pod
+      Outdoor Sports: Location and Navigation Pod
 
    .. attribute:: role_capabilities
 

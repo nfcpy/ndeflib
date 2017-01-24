@@ -586,6 +586,7 @@ class BluetoothRecord(GlobalRecord):
         'Simple Pairing Randomizer R-192': 0x0F,
         'Security Manager TK Value': 0x10,
         'Security Manager Out of Band Flags': 0x11,
+        'Appearance': 0x19,
         'LE Secure Connections Confirmation Value': 0x22,
         'LE Secure Connections Random Value': 0x23,
         'LE Bluetooth Device Address': 0x1B,
@@ -992,6 +993,96 @@ class BluetoothLowEnergyRecord(BluetoothRecord):
         else:
             errmsg = "undefined role capability {!r}"
             raise self._value_error(errmsg, value)
+
+    _appearance_map = {
+        0x0000: "Unknown",
+        0x0040: "Phone",
+        0x0080: "Computer",
+        0x00c0: "Watch",
+        0x00c1: "Watch: Sports Watch",
+        0x0100: "Clock",
+        0x0140: "Display",
+        0x0180: "Remote Control",
+        0x01c0: "Eye-glasses",
+        0x0200: "Tag",
+        0x0240: "Keyring",
+        0x0280: "Media Player",
+        0x02c0: "Barcode Scanner",
+        0x0300: "Thermometer",
+        0x0301: "Thermometer: Ear",
+        0x0340: "Heart Rate Sensor",
+        0x0341: "Heart Rate Sensor: Belt",
+        0x0380: "Blood Pressure",
+        0x0381: "Blood Pressure: Arm",
+        0x0382: "Blood Pressure: Wrist",
+        0x03c0: "Human Interface Device",
+        0x03c1: "Human Interface Device: Keyboard",
+        0x03c2: "Human Interface Device: Mouse",
+        0x03c3: "Human Interface Device: Joystick",
+        0x03c4: "Human Interface Device: Gamepad",
+        0x03c5: "Human Interface Device: Digitizer Tablet",
+        0x03c6: "Human Interface Device: Card Reader",
+        0x03c7: "Human Interface Device: Digital Pen",
+        0x03c8: "Human Interface Device: Barcode Scanner",
+        0x0400: "Glucose Meter",
+        0x0440: "Running Walking Sensor",
+        0x0441: "Running Walking Sensor: In-Shoe",
+        0x0442: "Running Walking Sensor: On-Shoe",
+        0x0443: "Running Walking Sensor: On-Hip",
+        0x0480: "Cycling",
+        0x0481: "Cycling: Cycling Computer",
+        0x0482: "Cycling: Speed Sensor",
+        0x0483: "Cycling: Cadence Sensor",
+        0x0484: "Cycling: Power Sensor",
+        0x0485: "Cycling: Speed and Cadence Sensor",
+        0x0c40: "Pulse Oximeter",
+        0x0c41: "Pulse Oximeter: Fingertip",
+        0x0c42: "Pulse Oximeter: Wrist Worn",
+        0x0c80: "Weight Scale",
+        0x1440: "Outdoor Sports",
+        0x1441: "Outdoor Sports: Location Display Device",
+        0x1442: "Outdoor Sports: Location and Navigation Display Device",
+        0x1443: "Outdoor Sports: Location Pod",
+        0x1444: "Outdoor Sports: Location and Navigation Pod",
+    }
+
+    @property
+    def appearance_strings(self):
+        """List of all known appearance strings.
+
+        """
+        return [self._appearance_map[k] for k in sorted(self._appearance_map)]
+
+    @property
+    def appearance(self):
+        """Get or set the representation of the external appearance of the
+        device, used by the discovering device to represent an icon,
+        string, or similar to the user. The returned value is a tuple
+        with the numeric value and a textual description, or None if
+        the 'Appearance' AD type is not found. The appearance
+        attribute accepts either a numeric value or a description
+        string.
+
+        Appearance strings consist of a generic category and an
+        optional subtype. If a subtype is present it follows the generic
+        category text after a colon.
+
+        """
+        if 'Appearance' in self:
+            value = self._decode_struct('<H', self['Appearance'])
+            return (value, self._appearance_map.get(value, ""))
+
+    @appearance.setter
+    def appearance(self, value):
+        if isinstance(value, str):
+            try:
+                items = self._appearance_map.items()
+                value = [v for v, s in items if s == value][0]
+            except IndexError:
+                errmsg = "unknown appearance value string {!r}"
+                raise self._value_error(errmsg, value)
+
+        self['Appearance'] = self._encode_struct('<H', value)
 
     def get_confirmation_value(self):
         """Get the LE Secure Connections Confirmation Value.

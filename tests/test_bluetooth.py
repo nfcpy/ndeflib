@@ -4,8 +4,9 @@ from __future__ import absolute_import, division
 
 import sys
 import ndef
-import pytest
 import uuid
+import struct
+import pytest
 
 
 class TestDeviceAddress:
@@ -625,6 +626,32 @@ class TestBluetoothLowEnergyRecord:
             with pytest.raises(ValueError) as excinfo:
                 obj.role_capabilities = string
             assert "undefined role capability" in str(excinfo.value)
+
+    def test_attr_appearance(self):
+        obj = ndef.BluetoothLowEnergyRecord()
+        assert obj.appearance is None
+        for number, string in obj._appearance_map.items():
+            obj['Appearance'] = struct.pack('<H', number)
+            assert obj.appearance == (number, string)
+        for number, string in obj._appearance_map.items():
+            obj.appearance = number
+            assert obj['Appearance'] == struct.pack('<H', number)
+        for number, string in obj._appearance_map.items():
+            obj.appearance = string
+            assert obj['Appearance'] == struct.pack('<H', number)
+        with pytest.raises(ValueError) as excinfo:
+            obj.appearance = "abcdef"
+        assert "unknown appearance value string 'abcdef'" in str(excinfo.value)
+        with pytest.raises(ndef.EncodeError):
+            obj.appearance = -1
+        with pytest.raises(ndef.EncodeError):
+            obj.appearance = tuple()
+
+    def test_attr_appearance_strings(self):
+        obj = ndef.BluetoothLowEnergyRecord()
+        assert isinstance(obj.appearance_strings, list)
+        assert len(obj.appearance_strings) == 49
+        assert obj.appearance_strings[0:2] == ["Unknown", "Phone"]
 
     def test_meth_get_confirmation_value(self):
         obj = ndef.BluetoothLowEnergyRecord()
