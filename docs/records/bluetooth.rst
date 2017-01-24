@@ -484,6 +484,25 @@ Low Energy Record
       >>> record.role_capabilities = "Central"
       >>> assert record['LE Role'] == b'\x01'
 
+   .. attribute:: flags
+
+      Get or set the Flags bitmap.
+
+      The 'Flags' AD type contains information on which discoverable mode to use
+      and BR/EDR support and capability. The attribute returns the numerical
+      flags value and descriptions for raised bits as an N-tuple. The attribute
+      accepts either a numerical flags value or a tuple of description strings.
+
+      >>> record['Flags'] = b'\x05'
+      >>> print(record.flags)
+      (5, 'LE Limited Discoverable Mode', 'BR/EDR Not Supported')
+      >>> record.flags = ("LE General Discoverable Mode",)
+      >>> record['Flags']
+      b'\x02'
+      >>> record.flags = 8
+      >>> print(record.flags)
+      (8, 'Simultaneous LE and BR/EDR to Same Device Capable (Controller)')
+
    .. attribute:: security_manager_tk_value
                
       Get or set the Security Manager TK Value.

@@ -1084,6 +1084,35 @@ class BluetoothLowEnergyRecord(BluetoothRecord):
 
         self['Appearance'] = self._encode_struct('<H', value)
 
+    _flags = (
+        "LE Limited Discoverable Mode",
+        "LE General Discoverable Mode",
+        "BR/EDR Not Supported",
+        "Simultaneous LE and BR/EDR to Same Device Capable (Controller)",
+        "Simultaneous LE and BR/EDR to Same Device Capable (Host)",
+    )
+
+    @property
+    def flags(self):
+        """Get or set the Flags bitmap.
+
+        The 'Flags' AD type contains information on which discoverable
+        mode to use and BR/EDR support and capability. This attribute
+        returns the numerical flags value and descriptions for raised
+        bits as an N-tuple.
+
+        """
+        if 'Flags' in self:
+            value = self._decode_struct('B', self['Flags'])
+            names = [s for i, s in enumerate(self._flags) if value >> i & 1]
+            return tuple([value] + names)
+
+    @flags.setter
+    def flags(self, value):
+        if isinstance(value, (tuple, list)):
+            value = sum(1 << self._flags.index(s) for s in value)
+        self['Flags'] = self._encode_struct('B', value)
+
     @property
     def security_manager_tk_value(self):
         """Get or set the Security Manager TK Value.

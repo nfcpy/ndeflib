@@ -653,6 +653,22 @@ class TestBluetoothLowEnergyRecord:
         assert len(obj.appearance_strings) == 49
         assert obj.appearance_strings[0:2] == ["Unknown", "Phone"]
 
+    def test_attr_flags(self):
+        obj = ndef.BluetoothLowEnergyRecord()
+        assert obj.flags is None
+        for index, string in enumerate(obj._flags):
+            obj['Flags'] = struct.pack('B', 1 << index)
+            assert obj.flags == (1 << index, string)
+        for index, string in enumerate(obj._flags):
+            obj.flags = 1 << index
+            assert obj['Flags'] == struct.pack('B', 1 << index)
+        for index, string in enumerate(obj._flags):
+            obj.flags = (string,)
+            assert obj['Flags'] == struct.pack('B', 1 << index)
+        obj.flags = int(len(obj._flags) * '1', 2)
+        assert obj.flags == (int(len(obj._flags) * '1', 2),) + obj._flags
+        assert obj['Flags'] == struct.pack('B', int(len(obj._flags) * '1', 2))
+
     def test_attr_security_manager_tk_value(self):
         obj = ndef.BluetoothLowEnergyRecord()
         assert obj.security_manager_tk_value is None
