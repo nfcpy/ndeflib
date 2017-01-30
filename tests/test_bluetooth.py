@@ -606,6 +606,22 @@ class TestBluetoothLowEnergyRecord:
         assert obj.device_address.addr == "01:02:03:04:05:06"
         assert obj.device_address.type == "public"
 
+    def test_attr_device_name(self):
+        obj = ndef.BluetoothLowEnergyRecord()
+        assert obj.device_name == ''
+        obj[0x08] = b'My Blue'
+        assert 0x08 in obj and 0x09 not in obj
+        assert obj.device_name == 'My Blue'
+        obj[0x09] = b'My Bluetooth Device'
+        assert 0x08 in obj and 0x09 in obj
+        assert obj.device_name == 'My Bluetooth Device'
+        obj.device_name = 'My Bluetooth Device'
+        assert obj[0x09] == b'My Bluetooth Device'
+        assert 0x08 not in obj
+        obj.device_name = 'My Device'
+        assert obj[0x09] == b'My Device'
+        assert 0x08 not in obj
+
     @pytest.mark.parametrize("octets, string", [
         (b"\x00", "Peripheral"),
         (b"\x01", "Central"),

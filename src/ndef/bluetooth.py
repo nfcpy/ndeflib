@@ -659,6 +659,17 @@ class BluetoothRecord(GlobalRecord):
         else:
             return super(BluetoothRecord, self).__format__(format_spec)
 
+    def _get_device_name(self):
+        return (
+            self.get('Complete Local Name') or
+            self.get('Shortened Local Name', b'')
+        ).decode('utf-8')
+
+    def _set_device_name(self, value):
+        self['Complete Local Name'] = value.encode('utf-8')
+        if 'Shortened Local Name' in self:
+            del self['Shortened Local Name']
+
 
 class BluetoothEasyPairingRecord(BluetoothRecord):
     """Decoder/Encoder for Bluetooth Easy Pairing out-of-band data.
@@ -703,26 +714,28 @@ class BluetoothEasyPairingRecord(BluetoothRecord):
     def device_name(self):
         """Get or set the Bluetooth Local Device Name.
 
-        If present, this attribute returns the 'Complete Local Name'
-        as a text string. Otherwise it returns the 'Shortened Local
-        Name' or None if that doesn't exist.
+        The Local Name, if configured on the Bluetooth device, is the
+        name that may be displayed to the device user as part of the
+        UI involving operations with Bluetooth devices. It may be
+        encoded as either 'Complete Local name' or 'Shortened Local
+        Name' EIR data type.
 
-        A device name assigned to this attribute sets the 'Complete
-        Local Name' and removes the 'Shortened Local Name' if that
-        exists.
+        This attribute provides the Local Name as a text string. The
+        value returned is the 'Complete Local Name' or 'Shortened
+        Local Name' evaluated in that order. None is returned if
+        neither EIR data type exists.
+
+        A device name assigned to this attribute is always stored as
+        the 'Complete Local Name' and removes a 'Shortened Local
+        Name' EIR data type if formerly present.
 
         """
-        return (
-            self.get('Complete Local Name') or
-            self.get('Shortened Local Name', b'')
-        ).decode('utf-8')
+        return self._get_device_name()
 
     @device_name.setter
     @convert('value_to_unicode')
     def device_name(self, value):
-        self['Complete Local Name'] = value.encode('utf-8')
-        if 'Shortened Local Name' in self:
-            del self['Shortened Local Name']
+        self._set_device_name(value)
 
     @property
     def device_class(self):
@@ -931,6 +944,33 @@ class BluetoothLowEnergyRecord(BluetoothRecord):
             else:
                 value = DeviceAddress(value)
         self['LE Bluetooth Device Address'] = value.encode('LE')
+
+    @property
+    def device_name(self):
+        """Get or set the Bluetooth Local Device Name.
+
+        The Local Name, if configured on the Bluetooth device, is the
+        name that may be displayed to the device user as part of the
+        UI involving operations with Bluetooth devices. It may be
+        encoded as either 'Complete Local name' or 'Shortened Local
+        Name' AD type.
+
+        This attribute provides the Local Name as a text string. The
+        value returned is the 'Complete Local Name' or 'Shortened
+        Local Name' evaluated in that order. None is returned if
+        neither AD type exists.
+
+        A device name assigned to this attribute is always stored as
+        the 'Complete Local Name' and removes a 'Shortened Local
+        Name' AD type if formerly present.
+
+        """
+        return self._get_device_name()
+
+    @device_name.setter
+    @convert('value_to_unicode')
+    def device_name(self, value):
+        self._set_device_name(value)
 
     # Bluetooth LE out-of-band payload is coded as Advertising or Scan
     # Response Data (AD) format (only significant part). The format

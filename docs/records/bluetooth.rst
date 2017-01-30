@@ -257,19 +257,30 @@ Easy Pairing Record
 
    .. attribute:: device_name
 
-      Get or set the Bluetooth Local Name. The value is get from the 'Complete
-      Local Name' if it exists or the 'Shortened Local Name' if not. If neither
-      exists an empty string is returned. A set value is stored as 'Complete
-      Local Name' and removes a 'Shortened Local Name' if present.
+      Get or set the Bluetooth Local Name.
+      
+      The Local Name, if configured on the Bluetooth device, is the name that
+      may be displayed to the device user as part of the UI involving operations
+      with Bluetooth devices. It may be encoded as either 'Complete Local name'
+      or 'Shortened Local Name' EIR data type.
 
-      >>> assert record.get('Shortened Local Name') == b'My Blue'
-      >>> assert record.get('Complete Local Name') is None
+      This attribute provides the Local Name as a text string. The value
+      returned is the 'Complete Local Name' or 'Shortened Local Name' evaluated
+      in that order. None is returned if neither EIR data type exists.
+
+      A device name assigned to this attribute is always stored as the 'Complete
+      Local Name' and removes a 'Shortened Local Name' EIR data type if formerly
+      present.
+
+      >>> record['Shortened Local Name'] = b'shortened name'
       >>> record.device_name
-      'My Blue'
-      >>> record.device_name = "My Bluetooth Device"
+      'shortened name'
+      >>> record.device_name = "My \u2039BR/EDR\u203a Device"
+      >>> record.device_name
+      'My ‹BR/EDR› Device'
       >>> assert record.get('Shortened Local Name') is None
-      >>> record.get('Complete Local Name')
-      b'My Bluetooth Device'
+      >>> record['Complete Local Name']
+      b'My \xe2\x80\xb9BR/EDR\xe2\x80\xba Device'
 
    .. attribute:: service_class_list
 
@@ -388,6 +399,33 @@ Low Energy Record
       >>> record.device_address = ('01:02:03:04:05:06', 'random')
       >>> record.device_address
       ndef.bluetooth.DeviceAddress('01:02:03:04:05:06', 'random')
+
+   .. attribute:: device_name
+
+      Get or set the Bluetooth Local Device Name.
+
+      The Local Name, if configured on the Bluetooth device, is the name that
+      may be displayed to the device user as part of the UI involving operations
+      with Bluetooth devices. It may be encoded as either 'Complete Local name'
+      or 'Shortened Local Name' AD type.
+
+      This attribute provides the Local Name as a text string. The value
+      returned is the 'Complete Local Name' or 'Shortened Local Name' evaluated
+      in that order. None is returned if neither AD type exists.
+
+      A device name assigned to this attribute is always stored as the 'Complete
+      Local Name' and removes a 'Shortened Local Name' AD type if formerly
+      present.
+
+      >>> record['Shortened Local Name'] = b'shortened name'
+      >>> record.device_name
+      'shortened name'
+      >>> record.device_name = "My \u2039BLE\u203a Device"
+      >>> record.device_name
+      'My ‹BLE› Device'
+      >>> assert record.get('Shortened Local Name') is None
+      >>> record.get('Complete Local Name')
+      b'My \xe2\x80\xb9BLE\xe2\x80\xba Device'
 
    .. attribute:: appearance
 
