@@ -241,20 +241,6 @@ Easy Pairing Record
       >>> record.device_address
       ndef.bluetooth.DeviceAddress('01:02:03:04:05:06', 'public')
 
-   .. attribute:: device_class
-
-      Get or set the Bluetooth Class of Device information. Reading returns a
-      `~ndef.bluetooth.DeviceClass` object. The attribute may be set to either a
-      `~ndef.bluetooth.DeviceClass` object or the 24-bit Class of Device integer
-      value. If the Bluetooth Class of Device EIR data type is not present when
-      reading, the attribute is ``ndef.bluetooth.DeviceClass(0x000000)``.
-
-      >>> record.device_class
-      ndef.bluetooth.DeviceClass(0x120104)
-      >>> ndef.bluetooth.DeviceClass.decode(record.get('Class of Device'))
-      ndef.bluetooth.DeviceClass(0x120104)
-      >>> record.device_class = 0x120104
-
    .. attribute:: device_name
 
       Get or set the Bluetooth Local Name.
@@ -281,6 +267,20 @@ Easy Pairing Record
       >>> assert record.get('Shortened Local Name') is None
       >>> record['Complete Local Name']
       b'My \xe2\x80\xb9BR/EDR\xe2\x80\xba Device'
+
+   .. attribute:: device_class
+
+      Get or set the Bluetooth Class of Device information. Reading returns a
+      `~ndef.bluetooth.DeviceClass` object. The attribute may be set to either a
+      `~ndef.bluetooth.DeviceClass` object or the 24-bit Class of Device integer
+      value. If the Bluetooth Class of Device EIR data type is not present when
+      reading, the attribute is ``ndef.bluetooth.DeviceClass(0x000000)``.
+
+      >>> record.device_class
+      ndef.bluetooth.DeviceClass(0x120104)
+      >>> ndef.bluetooth.DeviceClass.decode(record.get('Class of Device'))
+      ndef.bluetooth.DeviceClass(0x120104)
+      >>> record.device_class = 0x120104
 
    .. attribute:: service_class_list
 
