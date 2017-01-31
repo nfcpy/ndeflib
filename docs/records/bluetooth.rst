@@ -306,62 +306,93 @@ Easy Pairing Record
       >>> [sc.name for sc in record.service_class_list]
       ['Audio Source', 'Audio Sink']
 
-   .. method:: set_simple_pairing_hash(value, variant='C-192')
+   .. attribute:: simple_pairing_hash_192
 
-      Set the Simple Pairing Hash C for the Elliptic Curve P-192 or P-256 Public
-      Key. The hash *value* is a 128-bit integer. If *variant* is 'C-192' then
-      the 'Simple pairing Hash C-192' EIR data type is set. If *variant* is
-      'C-256' then the 'Simple Pairing Hash C-256' EIR data type is set.
+      Get or set the Simple Pairing Hash C-192.
 
-      >>> record.set_simple_pairing_hash(0x1234567890ABCDEF1234567890ABCDEF)
+      The Simple Pairing Hash C-192 is a commitment of the device's public key
+      computed as HMAC-SHA-256 for the Curve-192 ECPK and Randomizer R-192. The
+      Hash C should be generated anew for each pairing.
+
+      This attribute returns either the 128-bit integer converted from the
+      16-octet 'Simple Pairing Hash C-192' EIR value or None if the EIR data
+      type is not present. When set, it stores a 128-bit integer as the 16-octet
+      value of the 'Simple Pairing Hash C-192' EIR data type.
+
+      >>> record.simple_pairing_hash_192 = 0x1234567890ABCDEF1234567890ABCDEF
       >>> record.get('Simple Pairing Hash C-192').hex()
       'efcdab9078563412efcdab9078563412'
-      >>> record.set_simple_pairing_hash(0xFEDCBA0987654321FEDCBA0987654321, 'C-256')
-      >>> record.get('Simple Pairing Hash C-256').hex()
-      '2143658709badcfe2143658709badcfe'
 
-   .. method:: get_simple_pairing_hash(variant='C-192')
+   .. attribute:: simple_pairing_randomizer_192
 
-      Retrieve the Simple Pairing Hash C for Elliptic Curve P-192 or P-256
-      Public Key. The value is returned as a 128-bit integer. If *variant* is
-      'C-192' then the value represents the 'Simple Pairing Hash C-192' EIR data
-      type. If *variant* is 'C-256' then the value represents the 'Simple
-      Pairing Hash C-256' EIR data type. :const:`None` is returned if the EIR
-      data type is not present.
+      Get or set the Simple Pairing Randomizer R-192.
 
-      >>> record.get_simple_pairing_hash('C-192')
-      24197857200151252728969465429440056815
-      >>> record.get_simple_pairing_hash('C-256')
-      338769989521388930494245921488005055265
+      If both devices transmit and receive data over NFC, then mutual
+      authentication is based on the commitments of the public keys by Hash C
+      exchanged out-of-band. If one device can only send information (typically
+      an NFC Tag that is read by the other device), then authentication of the
+      reading device will be based on that device knowing a random number R read
+      from the NFC Tag. In this case, R must be secret: it can be created afresh
+      every time (if the NFC Tag content can be modified by the host), or access
+      to the device sending R must be restricted. Generally, if R is not sent by
+      a device it is assumed to be 0 by the device receiving the out-of-band
+      information.
 
-   .. method:: set_simple_pairing_randomizer(value, variant='R-192')
+      The Simple Pairing Randomizer R-192 is used with P192 Elliptic Curve
+      Diffie Hellmann.
 
-      Set the Simple Pairing Randomizer R for the Elliptic Curve P-192 or P-256
-      Public Key. The randomizer *value* is a 128-bit integer. If *variant* is
-      'R-192' then the 'Simple Pairing Randomizer R-192' EIR data type is
-      set. If *variant* is 'R-256' then the 'Simple Pairing Randomizer R-256'
-      EIR data type is set.
+      This attribute returns either the 128-bit integer converted from the
+      16-octet 'Simple Pairing Randomizer R-192' EIR value or None if the EIR
+      data type is not present. When set, it stores a 128-bit integer as the
+      16-octet value of the 'Simple Pairing Randomizer R-192' EIR data type.
 
-      >>> record.set_simple_pairing_randomizer(0x010203040506070809000A0B0C0D0E0F)
+      >>> record.simple_pairing_randomizer_192 = 0x010203040506070809000A0B0C0D0E0F
       >>> record.get('Simple Pairing Randomizer R-192').hex()
       '0f0e0d0c0b0a00090807060504030201'
-      >>> record.set_simple_pairing_randomizer(0xF0E0D0C0B0A000908070605040302010, 'R-256')
+
+   .. attribute:: simple_pairing_hash_256
+
+      Get or set the Simple Pairing Hash C-256.
+
+      The Simple Pairing Hash C-256 is a commitment of the device's public key
+      computed as HMAC-SHA-256 for the Curve-256 ECPK and Randomizer R-256. The
+      Hash C should be generated anew for each pairing.
+
+      This attribute returns either the 128-bit integer converted from the
+      16-octet 'Simple Pairing Hash C-256' EIR value or None if the EIR data
+      type is not present. When set, it stores a 128-bit integer as the 16-octet
+      value of the 'Simple Pairing Hash C-256' EIR data type.
+
+      >>> record.simple_pairing_hash_256 = 0x1234567890ABCDEF1234567890ABCDEF
+      >>> record.get('Simple Pairing Hash C-256').hex()
+      'efcdab9078563412efcdab9078563412'
+
+   .. attribute:: simple_pairing_randomizer_256
+
+      Get or set the Simple Pairing Randomizer R-256.
+
+      If both devices transmit and receive data over NFC, then mutual
+      authentication is based on the commitments of the public keys by Hash C
+      exchanged out-of-band. If one device can only send information (typically
+      an NFC Tag that is read by the other device), then authentication of the
+      reading device will be based on that device knowing a random number R read
+      from the NFC Tag. In this case, R must be secret: it can be created afresh
+      every time (if the NFC Tag content can be modified by the host), or access
+      to the device sending R must be restricted. Generally, if R is not sent by
+      a device it is assumed to be 0 by the device receiving the out-of-band
+      information.
+
+      The Simple Pairing Randomizer R-256 is used with P256 Elliptic Curve
+      Diffie Hellmann.
+
+      This attribute returns either the 128-bit integer converted from the
+      16-octet 'Simple Pairing Randomizer R-256' EIR value or None if the EIR
+      data type is not present. When set, it stores a 128-bit integer as the
+      16-octet value of the 'Simple Pairing Randomizer R-256' EIR data type.
+
+      >>> record.simple_pairing_randomizer_256 = 0x010203040506070809000A0B0C0D0E0F
       >>> record.get('Simple Pairing Randomizer R-256').hex()
-      '10203040506070809000a0b0c0d0e0f0'
-
-   .. method:: get_simple_pairing_randomizer(variant='R-192')
-
-      Retrieve the Simple Pairing Randomizer R for Elliptic Curve P-192 or P-256
-      Public Key. The value is returned as a 128-bit integer. If *variant* is
-      'R-192' then the value represents the 'Simple Pairing Randomizer R-192'
-      EIR data type. If *variant* is 'R-256' then the value represents the
-      'Simple Pairing Randomizer R-256' EIR data type. :const:`None` is returned
-      if the EIR data type is not present.
-
-      >>> record.get_simple_pairing_randomizer('R-192')
-      1339673755198158349041765453637946895
-      >>> record.get_simple_pairing_randomizer('R-256')
-      320182027492359165697186747143460757520
+      '0f0e0d0c0b0a00090807060504030201'
 
 
 Low Energy Record

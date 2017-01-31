@@ -670,6 +670,17 @@ class BluetoothRecord(GlobalRecord):
         if 'Shortened Local Name' in self:
             del self['Shortened Local Name']
 
+    def _get_integer_value(self, bluetooth_attribute_name):
+        octets = self.get(bluetooth_attribute_name)
+        if octets is not None:
+            return (int((octets[::-1]).encode('hex'), base=16) if _PY2
+                    else int.from_bytes(octets, byteorder='little'))
+
+    def _set_integer_value(self, bluetooth_attribute_name, value):
+        octets = ('{:032x}'.format(value).decode('hex')[::-1] if _PY2
+                  else value.to_bytes(16, byteorder='little'))
+        self[bluetooth_attribute_name] = octets
+
 
 class BluetoothEasyPairingRecord(BluetoothRecord):
     """Decoder/Encoder for Bluetooth Easy Pairing out-of-band data.
@@ -820,62 +831,73 @@ class BluetoothEasyPairingRecord(BluetoothRecord):
             except KeyError:
                 pass
 
-    def get_simple_pairing_hash(self, variant='C-192'):
-        """Get the Simple Pairing Hash C-192 or C-256.
+    @property
+    def simple_pairing_hash_192(self):
+        """Get or set the Simple Pairing Hash C-192.
 
-        The hash value is returned as a 128-bit integer converted from
-        the 'Simple Pairing Hash C-192' or 'Simple Pairing Hash C-256'
-        bytes depending on the variant. It is None if the requested
-        hash is not present.
-
-        """
-        assert variant in ('C-192', 'C-256')
-        octets = self.get('Simple Pairing Hash {}'.format(variant))
-        if octets is not None:
-            return (int((octets[::-1]).encode('hex'), base=16) if _PY2
-                    else int.from_bytes(octets, byteorder='little'))
-
-    def set_simple_pairing_hash(self, value, variant='C-192'):
-        """Set the Simple Pairing Hash C-192 or C-256.
-
-        The hash value must be a 128-bit integer that is written to
-        either 'Simple Pairing Hash C-192' or 'Simple Pairing Hash
-        C-256' depending on the variant.
+        This attribute returns either the 128-bit integer converted
+        from the 16-octet 'Simple Pairing Hash C-192' EIR value or
+        None if the EIR data type is not present. When set, it stores
+        a 128-bit integer as the 16-octet value of the 'Simple Pairing
+        Hash C-192' EIR data type.
 
         """
-        assert variant in ('C-192', 'C-256')
-        octets = ('{:032x}'.format(value).decode('hex')[::-1] if _PY2
-                  else value.to_bytes(16, byteorder='little'))
-        self['Simple Pairing Hash {}'.format(variant)] = octets
+        return self._get_integer_value('Simple Pairing Hash C-192')
 
-    def get_simple_pairing_randomizer(self, variant='R-192'):
-        """Get the Simple Pairing Randomize R-192 or R-256.
+    @simple_pairing_hash_192.setter
+    def simple_pairing_hash_192(self, value):
+        self._set_integer_value('Simple Pairing Hash C-192', value)
 
-        The randomizer value is returned as a 128-bit integer
-        converted from the 'Simple Pairing Randomizer R-192' or
-        'Simple Pairing Randomizer R-256' bytes depending on the
-        variant. It is None if the requested randomizer is not
-        present.
+    @property
+    def simple_pairing_randomizer_192(self):
+        """Get or set the Simple Pairing Randomizer R-192.
 
-        """
-        assert variant in ('R-192', 'R-256')
-        octets = self.get('Simple Pairing Randomizer {}'.format(variant))
-        if octets is not None:
-            return (int((octets[::-1]).encode('hex'), base=16) if _PY2
-                    else int.from_bytes(octets, byteorder='little'))
-
-    def set_simple_pairing_randomizer(self, value, variant='R-192'):
-        """Set the Simple Pairing Randomize R-192 or R-256.
-
-        The randomizer value must be a 128-bit integer that is written
-        to either 'Simple Pairing Randomizer R-192' or 'Simple Pairing
-        Randomizer R-256' depending on the variant.
+        This attribute returns either the 128-bit integer converted
+        from the 16-octet 'Simple Pairing Randomizer R-192' EIR value
+        or None if the EIR data type is not present. When set, it
+        stores a 128-bit integer as the 16-octet value of the 'Simple
+        Pairing Randomizer R-192' EIR data type.
 
         """
-        assert variant in ('R-192', 'R-256')
-        octets = ('{:032x}'.format(value).decode('hex')[::-1] if _PY2
-                  else value.to_bytes(16, byteorder='little'))
-        self['Simple Pairing Randomizer {}'.format(variant)] = octets
+        return self._get_integer_value('Simple Pairing Randomizer R-192')
+
+    @simple_pairing_randomizer_192.setter
+    def simple_pairing_randomizer_192(self, value):
+        self._set_integer_value('Simple Pairing Randomizer R-192', value)
+
+    @property
+    def simple_pairing_hash_256(self):
+        """Get or set the Simple Pairing Hash C-256.
+
+        This attribute returns either the 128-bit integer converted
+        from the 16-octet 'Simple Pairing Hash C-256' EIR value or
+        None if the EIR data type is not present. When set, it stores
+        a 128-bit integer as the 16-octet value of the 'Simple Pairing
+        Hash C-256' EIR data type.
+
+        """
+        return self._get_integer_value('Simple Pairing Hash C-256')
+
+    @simple_pairing_hash_256.setter
+    def simple_pairing_hash_256(self, value):
+        self._set_integer_value('Simple Pairing Hash C-256', value)
+
+    @property
+    def simple_pairing_randomizer_256(self):
+        """Get or set the Simple Pairing Randomizer R-256.
+
+        This attribute returns either the 128-bit integer converted
+        from the 16-octet 'Simple Pairing Randomizer R-256' EIR value
+        or None if the EIR data type is not present. When set, it
+        stores a 128-bit integer as the 16-octet value of the 'Simple
+        Pairing Randomizer R-256' EIR data type.
+
+        """
+        return self._get_integer_value('Simple Pairing Randomizer R-256')
+
+    @simple_pairing_randomizer_256.setter
+    def simple_pairing_randomizer_256(self, value):
+        self._set_integer_value('Simple Pairing Randomizer R-256', value)
 
     # BR/EDR out-of-band payload is OOB data length (2 octets), BDADDR
     # (6 octets), and a sequence of Extended Inquiry Response (EIR)
@@ -1185,16 +1207,11 @@ class BluetoothLowEnergyRecord(BluetoothRecord):
         'Security Manager TK Value' AD type after conversion.
 
         """
-        octets = self.get('Security Manager TK Value')
-        if octets is not None:
-            return (int((octets[::-1]).encode('hex'), base=16) if _PY2
-                    else int.from_bytes(octets, byteorder='little'))
+        return self._get_integer_value('Security Manager TK Value')
 
     @security_manager_tk_value.setter
     def security_manager_tk_value(self, value):
-        octets = ('{:032x}'.format(value).decode('hex')[::-1] if _PY2
-                  else value.to_bytes(16, byteorder='little'))
-        self['Security Manager TK Value'] = octets
+        self._set_integer_value('Security Manager TK Value', value)
 
     @property
     def secure_connections_confirmation_value(self):
@@ -1210,16 +1227,13 @@ class BluetoothLowEnergyRecord(BluetoothRecord):
         Confirmation Value' AD type after conversion.
 
         """
-        octets = self.get('LE Secure Connections Confirmation Value')
-        if octets is not None:
-            return (int((octets[::-1]).encode('hex'), base=16) if _PY2
-                    else int.from_bytes(octets, byteorder='little'))
+        attribute_name = 'LE Secure Connections Confirmation Value'
+        return self._get_integer_value(attribute_name)
 
     @secure_connections_confirmation_value.setter
     def secure_connections_confirmation_value(self, value):
-        octets = ('{:032x}'.format(value).decode('hex')[::-1] if _PY2
-                  else value.to_bytes(16, byteorder='little'))
-        self['LE Secure Connections Confirmation Value'] = octets
+        attribute_name = 'LE Secure Connections Confirmation Value'
+        self._set_integer_value(attribute_name, value)
 
     @property
     def secure_connections_random_value(self):
@@ -1235,16 +1249,11 @@ class BluetoothLowEnergyRecord(BluetoothRecord):
         Random Value' AD type after conversion.
 
         """
-        octets = self.get('LE Secure Connections Random Value')
-        if octets is not None:
-            return (int((octets[::-1]).encode('hex'), base=16) if _PY2
-                    else int.from_bytes(octets, byteorder='little'))
+        return self._get_integer_value('LE Secure Connections Random Value')
 
     @secure_connections_random_value.setter
     def secure_connections_random_value(self, value):
-        octets = ('{:032x}'.format(value).decode('hex')[::-1] if _PY2
-                  else value.to_bytes(16, byteorder='little'))
-        self['LE Secure Connections Random Value'] = octets
+        self._set_integer_value('LE Secure Connections Random Value', value)
 
 
 Record.register_type(BluetoothEasyPairingRecord)

@@ -446,45 +446,37 @@ class TestBluetoothEasyPairingRecord:
         assert obj.get(0x06) is None
         assert obj.get(0x07) == sc_1.uuid.bytes_le + sc_2.uuid.bytes_le
 
-    def test_meth_get_simple_pairing_hash(self):
+    def test_attr_simple_pairing_hash_192(self):
         obj = ndef.BluetoothEasyPairingRecord('01:02:03:04:05:06')
-        assert obj.get_simple_pairing_hash() is None
-        assert obj.get_simple_pairing_hash('C-192') is None
-        assert obj.get_simple_pairing_hash('C-256') is None
+        assert obj.simple_pairing_hash_192 is None
         obj[0x0E] = b'\1' + 15 * b'\0'
-        obj[0x1D] = b'\2' + 15 * b'\0'
-        assert obj.get_simple_pairing_hash() == 1
-        assert obj.get_simple_pairing_hash('C-192') == 1
-        assert obj.get_simple_pairing_hash('C-256') == 2
+        assert obj.simple_pairing_hash_192 == 1
+        obj.simple_pairing_hash_192 = 2
+        assert obj[0x0E] == b'\2' + 15 * b'\0'
 
-    def test_meth_set_simple_pairing_hash(self):
+    def test_attr_simple_pairing_hash_256(self):
         obj = ndef.BluetoothEasyPairingRecord('01:02:03:04:05:06')
-        obj.set_simple_pairing_hash(1, 'C-192')
-        assert obj[0x0E] == b'\1' + 15 * b'\0'
-        obj.set_simple_pairing_hash(2, 'C-256')
+        assert obj.simple_pairing_hash_256 is None
+        obj[0x1D] = b'\1' + 15 * b'\0'
+        assert obj.simple_pairing_hash_256 == 1
+        obj.simple_pairing_hash_256 = 2
         assert obj[0x1D] == b'\2' + 15 * b'\0'
-        obj.set_simple_pairing_hash(3)
-        assert obj[0x0E] == b'\3' + 15 * b'\0'
 
-    def test_meth_get_simple_pairing_randomizer(self):
+    def test_attr_simple_pairing_randomizer_192(self):
         obj = ndef.BluetoothEasyPairingRecord('01:02:03:04:05:06')
-        assert obj.get_simple_pairing_randomizer() is None
-        assert obj.get_simple_pairing_randomizer('R-192') is None
-        assert obj.get_simple_pairing_randomizer('R-256') is None
+        assert obj.simple_pairing_randomizer_192 is None
         obj[0x0F] = b'\1' + 15 * b'\0'
-        obj[0x1E] = b'\2' + 15 * b'\0'
-        assert obj.get_simple_pairing_randomizer() == 1
-        assert obj.get_simple_pairing_randomizer('R-192') == 1
-        assert obj.get_simple_pairing_randomizer('R-256') == 2
+        assert obj.simple_pairing_randomizer_192 == 1
+        obj.simple_pairing_randomizer_192 = 2
+        assert obj[0x0F] == b'\2' + 15 * b'\0'
 
-    def test_meth_set_simple_pairing_randomizer(self):
+    def test_attr_simple_pairing_randomizer_256(self):
         obj = ndef.BluetoothEasyPairingRecord('01:02:03:04:05:06')
-        obj.set_simple_pairing_randomizer(1, 'R-192')
-        assert obj[0x0F] == b'\1' + 15 * b'\0'
-        obj.set_simple_pairing_randomizer(2, 'R-256')
+        assert obj.simple_pairing_randomizer_256 is None
+        obj[0x1E] = b'\1' + 15 * b'\0'
+        assert obj.simple_pairing_randomizer_256 == 1
+        obj.simple_pairing_randomizer_256 = 2
         assert obj[0x1E] == b'\2' + 15 * b'\0'
-        obj.set_simple_pairing_randomizer(3)
-        assert obj[0x0F] == b'\3' + 15 * b'\0'
 
     def test_encode(self):
         obj = ndef.BluetoothEasyPairingRecord('01:02:03:04:05:06')
