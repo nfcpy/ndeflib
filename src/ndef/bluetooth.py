@@ -930,6 +930,25 @@ class BluetoothLowEnergyRecord(BluetoothRecord):
 
     @property
     def device_address(self):
+        """Get or set the LE Bluetooth Device Address.
+
+        The LE Bluetooth Device Address data value consists of 7
+        octets made up from the 48 bit address that is used for
+        Bluetooth pairing over the LE transport and a flags octet that
+        defines the address type. The address type distinguishes a
+        Public Device Address versus a Random Device Address. A Random
+        Device Address sent with BLE out-of-band data should be used
+        on the LE transport for at least ten minutes after the NFC
+        data exchange.
+
+        This attribute returns a DeviceAddress object or None,
+        depending on whether the 'LE Bluetooth Device Address' AD type
+        is present (under rare circumstances or just by failure it may
+        not be). It may be set from either another DeviceAddress
+        object, the tuple of address and address type strings, or just
+        an address string for an implicitly public address.
+
+        """
         try:
             octets = self['LE Bluetooth Device Address']
             return DeviceAddress.decode(octets)

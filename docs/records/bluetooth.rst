@@ -391,11 +391,27 @@ Low Energy Record
 
    .. attribute:: device_address
 
-      The `~ndef.bluetooth.DeviceAddress` decoded from or to be encoded into the
-      'LE Bluetooth Device Address' AD structure. Note that unlike the BD_ADDR
-      field of Bluetooth Easy Pairing OOB data the 'LE Bluetooth Device Address'
-      may not be present and read :const:`None`.
+      Get or set the LE Bluetooth Device Address.
 
+      The LE Bluetooth Device Address data value consists of 7 octets made up
+      from the 48 bit address that is used for Bluetooth pairing over the LE
+      transport and a flags octet that defines the address type. The address
+      type distinguishes a Public Device Address versus a Random Device
+      Address. A Random Device Address sent with BLE out-of-band data should be
+      used on the LE transport for at least ten minutes after the NFC data
+      exchange.
+
+      This attribute returns a :class:`~ndef.bluetooth.DeviceAddress` or `None`,
+      depending on whether the 'LE Bluetooth Device Address' AD type is present
+      or not (under rare circumstances or just by failure it may not be). The
+      *device_address* attribute may be set by assigning it another
+      :class:`~ndef.bluetooth.DeviceAddress`, a tuple of address and address
+      type strings, or a sole address string which implies a public address
+      type.
+
+      >>> record.device_address = '01:02:03:04:05:06'
+      >>> record.device_address
+      ndef.bluetooth.DeviceAddress('01:02:03:04:05:06', 'public')
       >>> record.device_address = ('01:02:03:04:05:06', 'random')
       >>> record.device_address
       ndef.bluetooth.DeviceAddress('01:02:03:04:05:06', 'random')
@@ -601,7 +617,7 @@ Data Types
 Device Address
 --------------
 
-.. class:: DeviceAddress(address, address_type='public')
+.. class:: ndef.bluetooth.DeviceAddress(address, address_type='public')
 
    Representation of a Bluetooth device address, either initialized with
    *address* and *address_type* or decoded from octets. The *address* argument
