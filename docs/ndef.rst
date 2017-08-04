@@ -23,7 +23,7 @@ Message Decoder
 ---------------
 
 .. function:: message_decoder(stream_or_bytes, errors='strict', \
-              known_records=Record._known_types)
+              known_types=Record._known_types)
 
    Returns a generator function that decodes NDEF Records from a file-like,
    byte-oriented stream or a bytes object given by the *stream_or_bytes*
@@ -32,16 +32,16 @@ Message Decoder
    the first and last record and decoding of known record types will fail for
    any format errors. Minor format errors are accepted when *errors* is set to
    'relax'. With *errors* set to 'ignore' the decoder silently stops when a
-   non-correctable error is encountered. The *known_records* argument provides
+   non-correctable error is encountered. The *known_types* argument provides
    the mapping of record type strings to class implementations. It defaults to
    all global records implemented by `ndeflib` or additionally registered from
    user code. It's main use would probably be to force decoding into only
-   generic records with `known_records={}`.
+   generic records with `known_types={}`.
 
    :param stream_or_bytes: message data octets
    :type stream_or_bytes: byte stream or bytes object
    :param str errors: error handling strategy, may be 'strict', 'relax' or 'ignore'
-   :param dict known_records: mapping of known record types to implementation classes
+   :param dict known_types: mapping of known record types to implementation classes
    :raises ndef.DecodeError: for data format errors (unless *errors* is set to 'ignore')
 
    >>> import ndef
