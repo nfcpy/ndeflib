@@ -9,6 +9,10 @@ import struct
 import pytest
 
 
+def HEX(s):
+    return bytearray.fromhex(s)
+
+
 class TestDeviceAddress:
     cls = 'ndef.bluetooth.DeviceAddress'
 
@@ -51,9 +55,9 @@ class TestDeviceAddress:
         assert obj.encode() == b'\x06\x05\x04\x03\x02\x01\x01'
 
     @pytest.mark.parametrize("octets, address_type", [
-        (b'\x06\x05\x04\x03\x02\x01', 'public'),
-        (b'\x06\x05\x04\x03\x02\x01\x00', 'public'),
-        (b'\x06\x05\x04\x03\x02\x01\x01', 'random'),
+        (HEX('060504030201'), 'public'),
+        (HEX('06050403020100'), 'public'),
+        (HEX('06050403020101'), 'random'),
     ])
     def test_decode(self, octets, address_type):
         obj = ndef.bluetooth.DeviceAddress.decode(octets)
@@ -62,9 +66,9 @@ class TestDeviceAddress:
         assert obj.type == address_type
 
     @pytest.mark.parametrize("octets, errstr", [
-        (b'\x06\x05\x04\x03\x02',
+        (HEX('0605040302'),
          "can't be decoded from 5 octets"),
-        (b'\x06\x05\x04\x03\x02\x01\x00\x00',
+        (HEX('0605040302010000'),
          "can't be decoded from 8 octets"),
     ])
     def test_decode_fail(self, octets, errstr):
@@ -133,8 +137,8 @@ class TestDeviceClass:
         assert repr(obj) == self.cls + "(0x123456)"
 
     @pytest.mark.parametrize("cod, octets", [
-        (0x000000, b'\x00\x00\x00'),
-        (0x123456, b'\x56\x34\x12'),
+        (0x000000, HEX('000000')),
+        (0x123456, HEX('563412')),
     ])
     def test_encode(self, cod, octets):
         obj = ndef.bluetooth.DeviceClass(cod)
@@ -150,14 +154,14 @@ class TestDeviceClass:
             obj.encode()
         assert str(excinfo.value) == self.cls + ' ' + errstr
 
-    @pytest.mark.parametrize("octets", [b'\x00\x00\x00', b'\x56\x34\x12'])
+    @pytest.mark.parametrize("octets", [HEX('000000'), HEX('563412')])
     def test_decode(self, octets):
         obj = ndef.bluetooth.DeviceClass.decode(octets)
         assert obj.encode() == octets
 
     @pytest.mark.parametrize("octets, errstr", [
-        (2 * b'\x00', "can't decode class of device from 2 octets"),
-        (4 * b'\x00', "can't decode class of device from 4 octets"),
+        (HEX('0000'), "can't decode class of device from 2 octets"),
+        (HEX('00000000'), "can't decode class of device from 4 octets"),
     ])
     def test_decode_fail(self, octets, errstr):
         with pytest.raises(ndef.DecodeError) as excinfo:
@@ -276,8 +280,8 @@ class TestServiceClass:
         assert len(ndef.bluetooth.ServiceClass.get_uuid_names()) == 68
 
     @pytest.mark.parametrize("arg, octets", [
-        (0x1101, b'\x01\x11'),
-        (0x10001101, b'\x01\x11\x00\x10'),
+        (0x1101, HEX('0111')),
+        (0x10001101, HEX('01110010')),
         ('61626364-3031-3233-3435-363738394142', b'dcba1032456789AB'),
     ])
     def test_encode(self, arg, octets):
@@ -285,16 +289,16 @@ class TestServiceClass:
         assert obj.encode() == octets
 
     @pytest.mark.parametrize("octets", [
-        b'\x01\x11', b'\x01\x11\x00\x10', b'dcba1032456789AB',
+        HEX('0111'), HEX('01110010'), b'dcba1032456789AB',
     ])
     def test_decode(self, octets):
         obj = ndef.bluetooth.ServiceClass.decode(octets)
         assert obj.encode() == octets
 
     @pytest.mark.parametrize("octets, errstr", [
-        (b'\x01',
+        (HEX('01'),
          "can't decode service class uuid from 1 octets"),
-        (b'\x01\x11\x00',
+        (HEX('011100'),
          "can't decode service class uuid from 3 octets"),
         (b'dcba1032456789A',
          "can't decode service class uuid from 15 octets"),
@@ -615,11 +619,11 @@ class TestBluetoothLowEnergyRecord:
         assert 0x08 not in obj
 
     @pytest.mark.parametrize("octets, string", [
-        (b"\x00", "Peripheral"),
-        (b"\x01", "Central"),
-        (b"\x02", "Peripheral/Central"),
-        (b"\x03", "Central/Peripheral"),
-        (b"\x04", "Reserved 0x04"),
+        (HEX("00"), "Peripheral"),
+        (HEX("01"), "Central"),
+        (HEX("02"), "Peripheral/Central"),
+        (HEX("03"), "Central/Peripheral"),
+        (HEX("04"), "Reserved 0x04"),
     ])
     def test_attr_role_capabilities(self, octets, string):
         obj = ndef.BluetoothLowEnergyRecord()

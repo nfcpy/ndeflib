@@ -15,6 +15,10 @@ def U(s):
     return ('u' if ndef.record._PY2 else '') + s
 
 
+def HEX(s):
+    return bytearray.fromhex(s)
+
+
 class TestAttribute:
     @pytest.mark.parametrize("cls, octets, errstr", [
         (ndef.wifi.APChannel, '00',
@@ -292,8 +296,8 @@ class TestAttribute_KeyProvidedAutomatically:
 
 class TestAttribute_MacAddress:
     @pytest.mark.parametrize("args, value", [
-        ([b'\1\2\3\4\5\6'], b'\1\2\3\4\5\6'),
-        ([list(range(6))], b'\0\1\2\3\4\5'),
+        ([b'\1\2\3\4\5\6'], HEX('010203040506')),
+        ([list(range(6))], HEX('000102030405')),
     ])
     def test_init(self, args, value):
         attr = ndef.wifi.MacAddress(*args)
@@ -405,8 +409,8 @@ class TestAttribute_NetworkIndex:
 
 class TestAttribute_NetworkKey:
     @pytest.mark.parametrize("args, value", [
-        ([b'\1\2\3\4\5\6'], b'\1\2\3\4\5\6'),
-        ([list(range(6))], b'\0\1\2\3\4\5'),
+        ([b'\1\2\3\4\5\6'], HEX('010203040506')),
+        ([list(range(6))], HEX('000102030405')),
     ])
     def test_init(self, args, value):
         attr = ndef.wifi.NetworkKey(*args)
@@ -672,8 +676,8 @@ class TestAttribute_SerialNumber:
 
 class TestAttribute_SSID:
     @pytest.mark.parametrize("args, value", [
-        ([b'\1\2\3\4\5\6'], b'\1\2\3\4\5\6'),
-        ([list(range(6))], b'\0\1\2\3\4\5'),
+        ([b'\1\2\3\4\5\6'], HEX('010203040506')),
+        ([list(range(6))], HEX('000102030405')),
     ])
     def test_init(self, args, value):
         attr = ndef.wifi.SSID(*args)
