@@ -98,6 +98,7 @@ else:
     from . import handover
     from . import bluetooth
     from . import wifi
+    from . import signature
 
 message_decoder = message.message_decoder
 message_encoder = message.message_encoder
@@ -118,6 +119,7 @@ WifiSimpleConfigRecord = wifi.WifiSimpleConfigRecord
 WifiPeerToPeerRecord = wifi.WifiPeerToPeerRecord
 BluetoothEasyPairingRecord = bluetooth.BluetoothEasyPairingRecord
 BluetoothLowEnergyRecord = bluetooth.BluetoothLowEnergyRecord
+SignatureRecord = signature.SignatureRecord
 
 # METADATA ####################################################################
 
