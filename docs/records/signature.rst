@@ -49,6 +49,7 @@ store and an option URI to the next certificate in the chain.
 
       The signature type used in the signature algorithm.
 
+      >>> import ndef
       >>> print('\n'.join([str(x[1]) for x in ndef.signature.SignatureRecord()._mapping_signature_type]))
       None
       RSASSA-PSS-1024
@@ -67,6 +68,7 @@ store and an option URI to the next certificate in the chain.
 
       The hash type used in the signature algorithm.
 
+      >>> import ndef
       >>> print("\n".join([str(x[1]) for x in ndef.signature.SignatureRecord()._mapping_hash_type]))
       SHA-256
 
@@ -83,6 +85,7 @@ store and an option URI to the next certificate in the chain.
 
       The format of the certificates in the chain.
 
+      >>> import ndef
       >>> print("\n".join([str(x[1]) for x in ndef.signature.SignatureRecord()._mapping_certificate_format]))
       X.509
       M2M
@@ -98,6 +101,7 @@ store and an option URI to the next certificate in the chain.
 
    This is default usage:
 
+   >>> import ndef
    >>> signature_record = ndef.SignatureRecord(None, 'SHA-256', b'', '', 'X.509', [], '')
 
    This is a full example creating records, signing them and verifying them:

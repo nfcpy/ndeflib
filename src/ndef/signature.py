@@ -21,12 +21,15 @@ from collections import namedtuple
 
 VersionTuple = namedtuple('Version', 'major, minor')
 
+
 class SignatureRecord(GlobalRecord):
     """The SignatureRecord class decodes or encodes an NDEF Signature Record.
 
     This is default usage:
 
-    >>> signature_record = ndef.SignatureRecord(None, 'SHA-256', b'', '', 'X.509', [], '')
+    >>> import ndef
+    >>> signature_record = ndef.SignatureRecord(
+    ... None, 'SHA-256', b'', '', 'X.509', [], '')
 
     This is a full example creating records, signing them and verifying them:
 
@@ -39,7 +42,8 @@ class SignatureRecord(GlobalRecord):
     >>> from cryptography.exceptions import InvalidSignature
     >>> from asn1crypto.algos import DSASignature
 
-    >>> private_key = ec.generate_private_key(ec.SECP256K1(), default_backend())
+    >>> private_key = ec.generate_private_key(
+    ... ec.SECP256K1(), default_backend())
     >>> public_key = private_key.public_key()
 
     >>> r1 = ndef.UriRecord("https://example.com")
@@ -50,8 +54,10 @@ class SignatureRecord(GlobalRecord):
     >>> encoder = ndef.message_encoder(records, stream)
     >>> for _ in range(len(records) - 1): next(encoder)
 
-    >>> signature = private_key.sign(stream.getvalue(), ec.ECDSA(hashes.SHA256()))
-    >>> records[-1].signature = DSASignature.load(signature, strict=True).to_p1363()
+    >>> signature = private_key.sign(
+    ... stream.getvalue(), ec.ECDSA(hashes.SHA256()))
+    >>> records[-1].signature = DSASignature.load(
+    ... signature, strict=True).to_p1363()
     >>> next(encoder)
     >>> octets = stream.getvalue()
 
@@ -63,20 +69,24 @@ class SignatureRecord(GlobalRecord):
     ...         records_to_verify.append(record)
     ...     else:
     ...         stream_to_verify = io.BytesIO()
-    ...         encoder_to_verify = ndef.message_encoder(records_to_verify + [record], stream_to_verify)
+    ...         encoder_to_verify = ndef.message_encoder(
+    ...         records_to_verify + [record], stream_to_verify)
     ...         for _ in range(len(records_to_verify)): next(encoder_to_verify)
     ...         try:
-    ...             public_key.verify(DSASignature.from_p1363(record.signature).dump(), stream_to_verify.getvalue(), ec.ECDSA(hashes.SHA256()))
+    ...             public_key.verify(DSASignature.from_p1363(
+    ...             record.signature).dump(), stream_to_verify.getvalue(
+    ...             ), ec.ECDSA(hashes.SHA256()))
     ...             records_verified.extend(records_to_verify)
     ...             records_to_verify = []
     ...         except InvalidSignature:
     ...             pass
 
-    >>> records_verified = list(ndef.message_decoder(b''.join(ndef.message_encoder(records_verified))))
+    >>> records_verified = list(ndef.message_decoder(b''.join(
+    ... ndef.message_encoder(records_verified))))
 
     """
     _type = 'urn:nfc:wkt:Sig'
-    _version = 0x20 # this class implements v2.0 of the Signature RTD
+    _version = 0x20  # this class implements v2.0 of the Signature RTD
     _mapping_signature_type = (
         (0x00, None),
         (0x01, "RSASSA-PSS-1024"),
@@ -99,7 +109,9 @@ class SignatureRecord(GlobalRecord):
         (0x01, "M2M"),
     )
 
-    def __init__(self, signature_type=None, hash_type=None, signature=None, signature_uri=None, certificate_format=None, certificate_store=None, certificate_uri=None):
+    def __init__(self, signature_type=None, hash_type=None, signature=None,
+                 signature_uri=None, certificate_format=None,
+                 certificate_store=None, certificate_uri=None):
         """Initialize the record with signature type, hash type, signature,
         signature URI, certificate format, certificate store and/or certificate
         URI. All parameters are optional. The default value is an empty
@@ -110,12 +122,18 @@ class SignatureRecord(GlobalRecord):
         self.hash_type = hash_type if hash_type is not None else 'SHA-256'
         self.signature = signature if signature is not None else b''
         self.signature_uri = signature_uri if signature_uri is not None else ''
-        self.certificate_format = certificate_format if certificate_format is not None else 'X.509'
+        if certificate_format is not None:
+            self.certificate_format = certificate_format
+        else:
+            self.certificate_format = 'X.509'
         self._certificate_store = []
         if isinstance(certificate_store, list):
             for certificate in certificate_store:
                 self.add_certificate_to_store(certificate)
-        self.certificate_uri = certificate_uri if certificate_uri is not None else ''
+        if certificate_uri is not None:
+            self.certificate_uri = certificate_uri
+        else:
+            self.certificate_uri = ''
 
     @property
     def version(self):
@@ -135,7 +153,8 @@ class SignatureRecord(GlobalRecord):
         for enum, name in self._mapping_signature_type:
             if value == name:
                 return enum
-        errstr = "{!r} does not have a known Signature Type mapping".format(value)
+        errstr = ("{!r} does not have a known "
+                  "Signature Type mapping").format(value)
         raise self._value_error(errstr)
 
     def _get_name_signature_type(self, value):
@@ -211,7 +230,8 @@ class SignatureRecord(GlobalRecord):
         for enum, name in self._mapping_certificate_format:
             if value == name:
                 return enum
-        errstr = "{!r} does not have a known Certificate Format mapping".format(value)
+        errstr = ("{!r} does not have a known "
+                  "Certificate Format mapping").format(value)
         raise self._value_error(errstr)
 
     def _get_name_certificate_format(self, value):
@@ -232,7 +252,8 @@ class SignatureRecord(GlobalRecord):
             errstr = "certificate cannot be more than 2^16 octets, got {}"
             raise self._value_error(errstr, len(value))
         if len(self._certificate_store)+1 >= 2**4:
-            errstr = "certificate store cannot hold more than 2^4 certificates, got {}"
+            errstr = ("certificate store cannot hold "
+                      "more than 2^4 certificates, got {}")
             raise self._value_error(errstr, len(self._certificate_store)+1)
         self._certificate_store.append(value)
 
@@ -258,12 +279,10 @@ class SignatureRecord(GlobalRecord):
             if self.signature:
                 s.append("Signature Type '{r.signature_type}'")
                 s.append("Hash Type '{r.hash_type}'")
-                #s.append("Signature '{r.signature}'")
             if self.signature_uri:
                 s.append("Signature URI '{r.signature_uri}'")
             if self.certificate_store:
                 s.append("Certificate Format '{r.certificate_format}'")
-                #s.append(" ".join(["Certificate '{}'".format(c) for c in self.certificate_store]))
             if self.certificate_uri:
                 self.append("Certificate URI '{r.certificate_uri}'")
             return ' '.join(s).format(r=self)
@@ -283,7 +302,7 @@ class SignatureRecord(GlobalRecord):
             SIGURI = self.signature_uri.encode('utf-8')
         else:
             SIGURI = self.signature
-        SIGNATURE = self._encode_struct('BBB+', SUP|SST, SHT, SIGURI)
+        SIGNATURE = self._encode_struct('BBB+', SUP | SST, SHT, SIGURI)
 
         # Certificate Field
         CUP = 0b10000000 if self.certificate_uri else 0
@@ -293,7 +312,8 @@ class SignatureRecord(GlobalRecord):
         for certificate in self._certificate_store:
             CST += self._encode_struct('B+', certificate)
         CERTURI = self._certificate_uri.encode('utf-8')
-        CERTIFICATE = self._encode_struct('BsB+', CUP|CCF|CNC, CST, CERTURI)
+        CERTIFICATE = self._encode_struct(
+            'BsB+', CUP | CCF | CNC, CST, CERTURI)
 
         return VERSION + SIGNATURE + CERTIFICATE
 
@@ -306,7 +326,8 @@ class SignatureRecord(GlobalRecord):
         # the decoded data fields. Raises a DecodeError if any of the
         # decoding steps failed.
 
-        VERSION, SUP_SST, SHT, SIGURI, CUP_CCF_CNC, CST, CERTURI = cls._decode_struct('BBBB+BsB+', octets)
+        (VERSION, SUP_SST, SHT, SIGURI,
+         CUP_CCF_CNC, CST, CERTURI) = cls._decode_struct('BBBB+BsB+', octets)
 
         # Version Field
         if not VERSION == cls._version and errors == 'strict':
@@ -315,39 +336,47 @@ class SignatureRecord(GlobalRecord):
 
         # Signature Field
         signature_uri_present = SUP_SST & 0b10000000
-        signature_type = cls._get_name_signature_type(SignatureRecord(), SUP_SST & 0b01111111)
+        signature_type = cls._get_name_signature_type(
+                         SignatureRecord(), SUP_SST & 0b01111111)
         hash_type = cls._get_name_hash_type(SignatureRecord(), SHT)
         if signature_uri_present:
             signature = None
             try:
                 signature_uri = SIGURI.decode('utf-8')
             except UnicodeDecodeError:
-                raise cls._decode_error("Signature URI field is not valid UTF-8 data")
+                raise cls._decode_error("Signature URI field is "
+                                        "not valid UTF-8 data")
             if any([ord(char) <= 31 for char in signature_uri]):
-                raise cls._decode_error("Signature URI field contains invalid characters")
+                raise cls._decode_error("Signature URI field contains "
+                                        "invalid characters")
         else:
             signature_uri = None
             signature = SIGURI
 
         # Certificate Field
         certificate_uri_present = CUP_CCF_CNC & 0b10000000
-        certificate_format = cls._get_name_certificate_format(SignatureRecord(), (CUP_CCF_CNC & 0b01110000) >> 4)
+        certificate_format = cls._get_name_certificate_format(
+            SignatureRecord(), (CUP_CCF_CNC & 0b01110000) >> 4)
         certificate_number_of_certificates = CUP_CCF_CNC & 0b00001111
         certificate_store = []
         for certificate_number in range(certificate_number_of_certificates):
-            certificate_store[certificate_number] = cls._decode_struct('B+', CST)
+            certificate_store[
+                certificate_number] = cls._decode_struct('B+', CST)
             CST = CST[len(certificate_store[certificate_number]):]
         if certificate_uri_present:
             try:
                 certificate_uri = CERTURI.decode('utf-8')
             except UnicodeDecodeError:
-                raise cls._decode_error("Certificate URI field is not valid UTF-8 data")
+                raise cls._decode_error("Certificate URI field is "
+                                        "not valid UTF-8 data")
             if any([ord(char) <= 31 for char in certificate_uri]):
-                raise cls._decode_error("Certificate URI field contains invalid characters")
+                raise cls._decode_error("Certificate URI field contains "
+                                        "invalid characters")
         else:
             certificate_uri = None
 
-        return cls(signature_type, hash_type, signature, signature_uri, certificate_format, certificate_store, certificate_uri)
+        return cls(signature_type, hash_type, signature, signature_uri,
+                   certificate_format, certificate_store, certificate_uri)
 
 
 Record.register_type(SignatureRecord)
