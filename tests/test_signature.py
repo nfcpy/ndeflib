@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import, division
 
+import pytest
 import ndef
 import _test_record_base
 
@@ -11,6 +12,7 @@ def pytest_generate_tests(metafunc):
 
 
 class TestSignatureRecord(_test_record_base._TestRecordBase):
+    cls = 'ndef.signature.SignatureRecord'
     RECORD = ndef.signature.SignatureRecord
     ATTRIB = ("signature_type, hash_type, signature, signature_uri,"
               "certificate_format, certificate_store, certificate_uri")
@@ -45,22 +47,41 @@ class TestSignatureRecord(_test_record_base._TestRecordBase):
          " certificate cannot be more than 2^16 octets, got 65536"),
         ((None, None, None, None, None, [b'1' for x in range(2**4)], None),
          " certificate store cannot hold more than 2^4 certificates, got 16"),
-
+        (('1', None, None, None, None, None, None),
+         " '1' does not have a known Signature Type mapping"),
+        ((None, '1', None, None, None, None, None),
+         " '1' does not have a known Hash Type mapping"),
+        ((None, None, None, None, '1', None, None),
+         " '1' does not have a known Certificate Format mapping"),
     ]
     test_decode_valid_data = [
-        ('20000200000000',
+        ('200002000000',
          (None, 'SHA-256', b'', '', 'X.509', [], '')),
         (('200b02473045022100a410c28fd9437fd24f6656f121e62bcc5f65e36257f5faadf'
           '68e3e83d40d481a0220335b1dff8d6fe722fcf7018be9684d2de5670b256fdfc02a'
-          'a25bdae16f624b80000000'),
+          'a25bdae16f624b800000'),
          ('ECDSA-P256', 'SHA-256',
           (b'0E\x02!\x00\xa4\x10\xc2\x8f\xd9C\x7f\xd2OfV\xf1!\xe6+\xcc_e\xe3bW'
            b'\xf5\xfa\xad\xf6\x8e>\x83\xd4\rH\x1a\x02 3[\x1d\xff\x8do\xe7"\xfc'
            b'\xf7\x01\x8b\xe9hM-\xe5g\x0b%o\xdf\xc0*\xa2[\xda\xe1obK\x80'),
           '', 'X.509', [], '')),
+        (('2080020d7369676e61747572655f757269800f63657274696669636174655f75726'
+          '9'),
+         (None, 'SHA-256', b'', 'signature_uri', 'X.509', [],
+          'certificate_uri')),
+        ('20000200020131013200',
+         (None, None, None, None, None, [b'1', b'2'], None)),
+        ('200b02001000',
+         ('ECDSA-P256', 'SHA-256', None, None, 'M2M', None, None)),
     ]
     test_decode_error_data = [
-        ('10000200000000', "decoding of version 16 is not supported"),
+        ('100002000000', "decoding of version 16 is not supported"),
+        ('20800201800000', "Signature URI field is not valid UTF-8 data"),
+        ('20800201000000', ("Signature URI field contains "
+                            "invalid characters")),
+        ('20000200800180', "Certificate URI field is not valid UTF-8 data"),
+        ('20000200800100', ("Certificate URI field contains "
+                            "invalid characters")),
     ]
     test_decode_relax = None
     test_encode_error = None
@@ -90,4 +111,25 @@ class TestSignatureRecord(_test_record_base._TestRecordBase):
          ('NDEF Signature Record ID \'\' Signature RTD '
           '\'Version(major=2, minor=0)\' Signature Type '
           '\'ECDSA-P256\' Hash Type \'SHA-256\'')),
+        (('ECDSA-P256', 'SHA-256', b'', 'signature_uri', 'X.509', [b'1', b'2'],
+          'certificate_uri'),
+         ('NDEF Signature Record ID \'\' Signature RTD '
+          '\'Version(major=2, minor=0)\' Signature URI '
+          '\'signature_uri\' Certificate Format \'X.509\' '
+          'Certificate URI \'certificate_uri\'')),
     ]
+
+    def test_signature_signature_uri(self):
+        obj = ndef.signature.SignatureRecord(
+            None, None, None, '1', None, None, None)
+        with pytest.raises(ValueError) as excinfo:
+            obj.signature = b'1'
+        errstr = "cannot set both signature and signature_uri"
+        assert str(excinfo.value) == self.cls + ' ' + errstr
+
+    def test_signature_enum_names(self):
+        obj = ndef.signature.SignatureRecord(
+            'ECDSA-P256', 'SHA-256', None, None, 'M2M', None, None)
+        obj._get_name_signature_type('ECDSA-P256')
+        obj._get_name_hash_type('SHA-256')
+        obj._get_name_certificate_format('M2M')

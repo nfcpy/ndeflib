@@ -124,11 +124,11 @@ store and an option URI to the next certificate in the chain.
    >>> stream = io.BytesIO()
    >>> records = [r1, r2, ndef.SignatureRecord("ECDSA-P256", "SHA-256")]
    >>> encoder = ndef.message_encoder(records, stream)
-   >>> for _ in range(len(records) - 1): next(encoder)
+   >>> for _ in range(len(records) - 1): e=next(encoder)
 
    >>> signature = private_key.sign(stream.getvalue(), ec.ECDSA(hashes.SHA256()))
    >>> records[-1].signature = DSASignature.load(signature, strict=True).to_p1363()
-   >>> next(encoder)
+   >>> e=next(encoder)
    >>> octets = stream.getvalue()
 
    >>> records_verified = []
@@ -140,7 +140,7 @@ store and an option URI to the next certificate in the chain.
    ...     else:
    ...         stream_to_verify = io.BytesIO()
    ...         encoder_to_verify = ndef.message_encoder(records_to_verify + [record], stream_to_verify)
-   ...         for _ in range(len(records_to_verify)): next(encoder_to_verify)
+   ...         for _ in range(len(records_to_verify)): e=next(encoder_to_verify)
    ...         try:
    ...             public_key.verify(DSASignature.from_p1363(record.signature).dump(), stream_to_verify.getvalue(), ec.ECDSA(hashes.SHA256()))
    ...             records_verified.extend(records_to_verify)
