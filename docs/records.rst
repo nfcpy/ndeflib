@@ -17,4 +17,4 @@ known record types.
    records/handover
    records/bluetooth
    records/wifi
-
+   records/signature
