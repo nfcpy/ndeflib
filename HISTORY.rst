@@ -2,6 +2,12 @@
 History
 =======
 
+0.3.0 (2017-11-17)
+------------------
+
+* Support for decoding and encoding of the NFC Forum Signature Record,
+  contributed by `Nick Knudson <https://github.com/nickaknudson>`_.
+
 0.2.0 (2016-11-16)
 ------------------
 

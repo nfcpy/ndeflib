@@ -3,11 +3,9 @@
 #
 # python setup.py sdist bdist_wheel
 #
-# python setup.py register -r test
-# twine upload -r test -s dist/ndeftool-x.y.z*
+# twine upload -r test -s dist/ndeflib-x.y.z*
 #
-# python setup.py register -r pypi
-# twine upload -r pypi -s dist/ndeftool-x.y.z*
+# twine upload -r pypi -s dist/ndeflib-x.y.z*
 #
 setuptools
 wheel
