@@ -55,33 +55,35 @@ class TestSignatureRecord(_test_record_base._TestRecordBase):
          " '1' does not have a known Certificate Format mapping"),
     ]
     test_decode_valid_data = [
-        ('200002000000',
+        ('2000020000000000',
          (None, 'SHA-256', b'', '', 'X.509', [], '')),
-        (('200b02473045022100a410c28fd9437fd24f6656f121e62bcc5f65e36257f5faadf'
-          '68e3e83d40d481a0220335b1dff8d6fe722fcf7018be9684d2de5670b256fdfc02a'
-          'a25bdae16f624b800000'),
+        (('200b0200473045022100a410c28fd9437fd24f6656f121e62bcc5f65e36257f5faa'
+          'df68e3e83d40d481a0220335b1dff8d6fe722fcf7018be9684d2de5670b256fdfc0'
+          '2aa25bdae16f624b80000000'),
          ('ECDSA-P256', 'SHA-256',
           (b'0E\x02!\x00\xa4\x10\xc2\x8f\xd9C\x7f\xd2OfV\xf1!\xe6+\xcc_e\xe3bW'
            b'\xf5\xfa\xad\xf6\x8e>\x83\xd4\rH\x1a\x02 3[\x1d\xff\x8do\xe7"\xfc'
            b'\xf7\x01\x8b\xe9hM-\xe5g\x0b%o\xdf\xc0*\xa2[\xda\xe1obK\x80'),
           '', 'X.509', [], '')),
-        (('2080020d7369676e61747572655f757269800f63657274696669636174655f75726'
-          '9'),
+        (('208002000d7369676e61747572655f75726980000f63657274696669636174655f7'
+          '57269'),
          (None, 'SHA-256', b'', 'signature_uri', 'X.509', [],
           'certificate_uri')),
-        ('20000200020131013200',
+        ('2000020000020001310001320000',
          (None, None, None, None, None, [b'1', b'2'], None)),
-        ('200b02001000',
+        ('200b020000100000',
          ('ECDSA-P256', 'SHA-256', None, None, 'M2M', None, None)),
     ]
     test_decode_error_data = [
-        ('100002000000', "decoding of version 16 is not supported"),
-        ('20800201800000', "Signature URI field is not valid UTF-8 data"),
-        ('20800201000000', ("Signature URI field contains "
-                            "invalid characters")),
-        ('20000200800180', "Certificate URI field is not valid UTF-8 data"),
-        ('20000200800100', ("Certificate URI field contains "
-                            "invalid characters")),
+        ('10000200000000', "decoding of version 16 is not supported"),
+        ('2080020001800000', ("Signature URI field is "
+                              "not valid UTF-8 data")),
+        ('2080020001000000', ("Signature URI field contains "
+                              "invalid characters")),
+        ('200002000080000180', ("Certificate URI field is "
+                                "not valid UTF-8 data")),
+        ('200002000080000100', ("Certificate URI field contains "
+                                "invalid characters")),
     ]
     test_decode_relax = None
     test_encode_error = None
