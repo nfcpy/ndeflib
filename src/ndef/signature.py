@@ -302,7 +302,7 @@ class SignatureRecord(GlobalRecord):
             SIGURI = self.signature_uri.encode('utf-8')
         else:
             SIGURI = self.signature
-        SIGNATURE = self._encode_struct('BBB+', SUP | SST, SHT, SIGURI)
+        SIGNATURE = self._encode_struct('BBH+', SUP | SST, SHT, SIGURI)
 
         # Certificate Field
         CUP = 0b10000000 if self.certificate_uri else 0
@@ -310,14 +310,14 @@ class SignatureRecord(GlobalRecord):
         CNC = len(self.certificate_store) & 0b00001111
         CST = b''
         for certificate in self._certificate_store:
-            CST += self._encode_struct('B+', certificate)
+            CST += self._encode_struct('H+', certificate)
         CERTURI = self._certificate_uri.encode('utf-8')
         if len(CST):
             CERTIFICATE = self._encode_struct(
-                'B'+str(len(CST))+'sB+', CUP | CCF | CNC, CST, CERTURI)
+                'B'+str(len(CST))+'sH+', CUP | CCF | CNC, CST, CERTURI)
         else:
             CERTIFICATE = self._encode_struct(
-                'BB+', CUP | CCF | CNC, CERTURI)
+                'BH+', CUP | CCF | CNC, CERTURI)
 
         return VERSION + SIGNATURE + CERTIFICATE
 
@@ -331,7 +331,7 @@ class SignatureRecord(GlobalRecord):
         # decoding steps failed.
 
         (VERSION, SUP_SST, SHT, SIGURI,
-         CUP_CCF_CNC, CST_CERTURI) = cls._decode_struct('BBBB+B*', octets)
+         CUP_CCF_CNC, CST_CERTURI) = cls._decode_struct('BBBH+B*', octets)
 
         # Version Field
         if not VERSION == cls._version and errors == 'strict':
@@ -364,10 +364,10 @@ class SignatureRecord(GlobalRecord):
         certificate_number_of_certificates = CUP_CCF_CNC & 0b00001111
         certificate_store = []
         for certificate_number in range(certificate_number_of_certificates):
-            certificate, CST_CERTURI = cls._decode_struct('B+*', CST_CERTURI)
+            certificate, CST_CERTURI = cls._decode_struct('H+*', CST_CERTURI)
             certificate_store.append(certificate)
         if certificate_uri_present:
-            CERTURI = cls._decode_struct('B+', CST_CERTURI)
+            CERTURI = cls._decode_struct('H+', CST_CERTURI)
             try:
                 certificate_uri = CERTURI.decode('utf-8')
             except UnicodeDecodeError:
