@@ -2,6 +2,11 @@
 History
 =======
 
+0.3.1 (2017-11-21)
+------------------
+
+* Fixes the signature record to encode lengths as 16-bits.
+
 0.3.0 (2017-11-17)
 ------------------
 
