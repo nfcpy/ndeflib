@@ -55,11 +55,11 @@ class TestSignatureRecord(_test_record_base._TestRecordBase):
          " '1' does not have a known Certificate Format mapping"),
     ]
     test_decode_valid_data = [
-        ('2000020000000000',
+        ('200002000000',
          (None, 'SHA-256', b'', '', 'X.509', [], '')),
         (('200b0200473045022100a410c28fd9437fd24f6656f121e62bcc5f65e36257f5faa'
           'df68e3e83d40d481a0220335b1dff8d6fe722fcf7018be9684d2de5670b256fdfc0'
-          '2aa25bdae16f624b80000000'),
+          '2aa25bdae16f624b8000'),
          ('ECDSA-P256', 'SHA-256',
           (b'0E\x02!\x00\xa4\x10\xc2\x8f\xd9C\x7f\xd2OfV\xf1!\xe6+\xcc_e\xe3bW'
            b'\xf5\xfa\xad\xf6\x8e>\x83\xd4\rH\x1a\x02 3[\x1d\xff\x8do\xe7"\xfc'
@@ -69,17 +69,17 @@ class TestSignatureRecord(_test_record_base._TestRecordBase):
           '57269'),
          (None, 'SHA-256', b'', 'signature_uri', 'X.509', [],
           'certificate_uri')),
-        ('2000020000020001310001320000',
+        ('200002000002000131000132',
          (None, None, None, None, None, [b'1', b'2'], None)),
-        ('200b020000100000',
+        ('200b02000010',
          ('ECDSA-P256', 'SHA-256', None, None, 'M2M', None, None)),
     ]
     test_decode_error_data = [
-        ('10000200000000', "decoding of version 16 is not supported"),
-        ('2080020001800000', ("Signature URI field is "
-                              "not valid UTF-8 data")),
-        ('2080020001000000', ("Signature URI field contains "
-                              "invalid characters")),
+        ('100002000000', "decoding of version 16 is not supported"),
+        ('208002000180000000', ("Signature URI field is "
+                                "not valid UTF-8 data")),
+        ('208002000100000000', ("Signature URI field contains "
+                                "invalid characters")),
         ('200002000080000180', ("Certificate URI field is "
                                 "not valid UTF-8 data")),
         ('200002000080000100', ("Certificate URI field contains "

@@ -305,19 +305,18 @@ class SignatureRecord(GlobalRecord):
         SIGNATURE = self._encode_struct('BBH+', SUP | SST, SHT, SIGURI)
 
         # Certificate Field
-        CUP = 0b10000000 if self.certificate_uri else 0
+        CUP = 0b10000000 if len(self.certificate_uri) else 0
         CCF = (self._certificate_format << 4) & 0b01110000
         CNC = len(self.certificate_store) & 0b00001111
         CST = b''
         for certificate in self._certificate_store:
             CST += self._encode_struct('H+', certificate)
-        CERTURI = self._certificate_uri.encode('utf-8')
+        CERTIFICATE = self._encode_struct('B', CUP | CCF | CNC)
         if len(CST):
-            CERTIFICATE = self._encode_struct(
-                'B'+str(len(CST))+'sH+', CUP | CCF | CNC, CST, CERTURI)
-        else:
-            CERTIFICATE = self._encode_struct(
-                'BH+', CUP | CCF | CNC, CERTURI)
+            CERTIFICATE += self._encode_struct(str(len(CST))+'s', CST)
+        if len(self.certificate_uri):
+            CERTURI = self._certificate_uri.encode('utf-8')
+            CERTIFICATE += self._encode_struct('H+', CERTURI)
 
         return VERSION + SIGNATURE + CERTIFICATE
 
