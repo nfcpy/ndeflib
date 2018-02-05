@@ -2,6 +2,12 @@
 History
 =======
 
+0.3.2 (2018-02-05)
+------------------
+
+* Bugfix to not encode the Certificate URI if it is None or empty,
+  contributed by `Nick Knudson <https://github.com/nickaknudson>`_.
+
 0.3.1 (2017-11-21)
 ------------------
 
