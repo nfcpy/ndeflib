@@ -170,7 +170,7 @@ class TypeRecord(LocalRecord):
     def _decode_payload(cls, octets, errors):
         try:
             TYPE = octets.decode('utf-8')
-        except UnicodeDecodeError as error:
+        except UnicodeDecodeError:
             errstr = "can't decode payload as utf-8"
             raise cls._decode_error(errstr.format(errstr))
         return TypeRecord(TYPE)

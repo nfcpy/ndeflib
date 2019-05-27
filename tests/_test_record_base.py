@@ -62,10 +62,10 @@ class _TestRecordBase:
         result = str(excinfo.value)
         if sys.version_info < (3,):
             # remove b'..' literals but reinsert them for bytearray
-            ERRSTR = re.sub("b'([^']*)'", r"'\1'", ERRSTR)
-            ERRSTR = re.sub("(bytearray)\(('[^']*?')\)", r"\1(b\2)", ERRSTR)
+            ERRSTR = re.sub(r"b'([^']*)'", r"'\1'", ERRSTR)
+            ERRSTR = re.sub(r"(bytearray)\(('[^']*?')\)", r"\1(b\2)", ERRSTR)
             # remove u'..' literals
-            result = re.sub("u'([^']*)'", r"'\1'", result)
+            result = re.sub(r"u'([^']*)'", r"'\1'", result)
         assert result == ERRSTR
 
     def test_decode_valid(self, payload, args):
@@ -146,11 +146,11 @@ class _TestRecordBase:
         result = format(record, 'args')
         if sys.version_info < (3,):
             # remove b'..' literals but reinsert them for bytearray
-            formatted = re.sub("b'([^']*)'", r"'\1'", formatted)
-            formatted = re.sub("(bytearray)\(('[^']*?')\)",
+            formatted = re.sub(r"b'([^']*)'", r"'\1'", formatted)
+            formatted = re.sub(r"(bytearray)\(('[^']*?')\)",
                                r"\1(b\2)", formatted)
             # remove u'..' literals
-            result = re.sub("u'([^']*)'", r"'\1'", result)
+            result = re.sub(r"u'([^']*)'", r"'\1'", result)
         assert result == formatted
 
     def test_format_str(self, args, formatted):
@@ -161,6 +161,6 @@ class _TestRecordBase:
         record = RECORD(*args)
         result = format(record, '')
         if sys.version_info < (3,):
-            formatted = re.sub("b'([^']*)'", r"'\1'", formatted)
-            result = re.sub("u'([^']*)'", r"'\1'", result)
+            formatted = re.sub(r"b'([^']*)'", r"'\1'", formatted)
+            result = re.sub(r"u'([^']*)'", r"'\1'", result)
         assert result == formatted

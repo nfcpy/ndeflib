@@ -114,7 +114,7 @@ class TextRecord(GlobalRecord):
         LANG = octets[1:1+(FLAG & 0x3F)]
         try:
             TEXT = octets[1+len(LANG):].decode(UTFX)
-        except UnicodeDecodeError as error:
+        except UnicodeDecodeError:
             raise cls._decode_error("can't be decoded as {}".format(UTFX))
         return cls(TEXT, LANG, UTFX)
 

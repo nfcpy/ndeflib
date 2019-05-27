@@ -86,7 +86,8 @@ class AttributeContainer(AttributeBase):
             args = [afmt.format(k, v) for k in self for v in self[k]]
             return ', '.join(args)
         elif format_spec == 'data':
-            keys = ["0x{:02X}".format(k) for k in sorted(self) for v in self[k]]
+            keys = ["0x{:02X}".format(k) for k in sorted(self)
+                    for v in self[k]]
             return "Attributes {}".format(' '.join(keys))
         else:
             return super(AttributeContainer, self).__format__(format_spec)
