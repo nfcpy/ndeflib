@@ -64,9 +64,14 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.todo',
 ]
-intersphinx_mapping = {'python': ('https://docs.python.org/3.5', None)}
+intersphinx_mapping = {
+    'python': ('https://docs.python.org/3', None)
+}
 autodoc_member_order = 'bysource'
-autodoc_default_flags = ['members', 'show-inheritance']
+autodoc_default_options = {
+    'members': True,
+    'show-inheritance': True
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
