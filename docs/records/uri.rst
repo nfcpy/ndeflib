@@ -49,7 +49,7 @@ IRI as well as a converted URI (if a netloc part is present in the IRI).
    >>> record.iri
    'http://www.hääyö.com/~user/'
    >>> record.uri
-   'http://www.xn--hy-viaa5g.com/%7Euser/'
+   'http://www.xn--hy-viaa5g.com/~user/'
    >>> record = ndef.UriRecord("http://www.example.com")
    >>> b''.join(ndef.message_encoder([record]))
    b'\xd1\x01\x0cU\x01example.com'

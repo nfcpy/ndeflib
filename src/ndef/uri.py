@@ -16,9 +16,14 @@ from .record import Record, GlobalRecord, convert, _PY2
 
 if _PY2:  # pragma: no cover
     from urlparse import urlsplit, urlunsplit
-    from urllib import quote, unquote
+    from urllib import quote as _quote, unquote
 else:  # pragma: no cover
-    from urllib.parse import urlsplit, urlunsplit, quote, unquote
+    from urllib.parse import urlsplit, urlunsplit, quote as _quote, unquote
+
+
+def quote(string):
+    # RFC 3986 includes "~" in the set of reserved characters.
+    return _quote(string, safe='/~')
 
 
 class UriRecord(GlobalRecord):

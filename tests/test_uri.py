@@ -62,7 +62,7 @@ class TestUriRecord(_test_record_base._TestRecordBase):
         (("urn:nfc:12345",), ("urn:nfc:12345", "urn:nfc:12345")),
         ((u"http://www.hääyö.com/~user/index.html",),
          (u"http://www.hääyö.com/~user/index.html",
-          u"http://www.xn--hy-viaa5g.com/%7Euser/index.html")),
+          u"http://www.xn--hy-viaa5g.com/~user/index.html")),
     ]
     test_init_kwargs_data = [
         (('URI',), "iri='URI'"),
