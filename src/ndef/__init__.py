@@ -123,7 +123,7 @@ SignatureRecord = signature.SignatureRecord
 
 # METADATA ####################################################################
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"
 
 __title__ = "ndef"
 __description__ = "NFC Data Exchange Format decoder and encoder."

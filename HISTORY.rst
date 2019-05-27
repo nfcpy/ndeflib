@@ -2,6 +2,23 @@
 History
 =======
 
+0.3.3 (2019-05-27)
+------------------
+
+* Support Python 3.7.
+
+  * Python 3.7 mandates PEP 479 which made StopIteration within a
+    generator raise RuntimeException.
+
+  * The urllib.parse.quote function now follows RFC 3986 and does no
+    longer convert the `~` character.
+
+  * Importing ABCs from `collections` will no longer be possible with
+    Python 3.8, must then import from `collections.abc`.
+
+* WiFi and Bluetooth Records print attribute keys in sorted order to
+  have consitent output in documentation embedded tests (doctest).
+
 0.3.2 (2018-02-05)
 ------------------
 
