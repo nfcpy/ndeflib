@@ -975,8 +975,8 @@ class TestAttribute_Credential:
         else:
             assert "{:args}".format(attr) == \
                 "(0x1045, b'ssid'), (0x1027, b'pwd')"
-        assert "{:data}".format(attr) == "Attributes 0x1045 0x1027"
-        assert "{}".format(attr) == "Credential Attributes 0x1045 0x1027"
+        assert "{:data}".format(attr) == "Attributes 0x1027 0x1045"
+        assert "{}".format(attr) == "Credential Attributes 0x1027 0x1045"
 
 
 #

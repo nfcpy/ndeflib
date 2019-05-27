@@ -654,7 +654,7 @@ class BluetoothRecord(GlobalRecord):
             args = [afmt.format(k, v) for k, v in self.items()]
             return ', '.join(args)
         elif format_spec == 'data':
-            keys = ["0x{:02X}".format(k) for k in self]
+            keys = ["0x{:02X}".format(k) for k in sorted(self.keys())]
             return "Attributes {}".format(' '.join(keys))
         else:
             return super(BluetoothRecord, self).__format__(format_spec)

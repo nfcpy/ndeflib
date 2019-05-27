@@ -212,10 +212,10 @@ Easy Pairing Record
    >>> record = ndef.BluetoothEasyPairingRecord('01:02:03:04:05:06', *eir_list)
    >>> record['Incomplete List of 16-bit Service Class UUIDs'] = b'\x0A\x11'
    >>> print(record)
-   NDEF Bluetooth Easy Pairing Record ID '' Attributes 0x08 0x02 0x0D
+   NDEF Bluetooth Easy Pairing Record ID '' Attributes 0x02 0x08 0x0D
    >>> octets = b''.join(ndef.message_encoder([record]))
    >>> print(list(ndef.message_decoder(octets))[0])
-   NDEF Bluetooth Easy Pairing Record ID '' Attributes 0x08 0x02 0x0D
+   NDEF Bluetooth Easy Pairing Record ID '' Attributes 0x02 0x08 0x0D
 
    .. attribute:: type
 

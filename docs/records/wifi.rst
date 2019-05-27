@@ -135,7 +135,7 @@ fields).
 >>> record['oob-password'] = [oobpwd.encode()]
 >>> record['vendor-extension'] = [wfaext.encode()]
 >>> print(record)
-NDEF Wifi Simple Config Record ID 'my password token' Attributes 0x1049 0x102C
+NDEF Wifi Simple Config Record ID 'my password token' Attributes 0x102C 0x1049
 >>> octets = b''.join(ndef.message_encoder([record]))
 >>> len(octets)
 105
@@ -229,7 +229,7 @@ fields).
 >>> wfa_ext.set_attribute('network-key-shareable', 1)
 >>> credential['vendor-extension'] = [wfa_ext.encode()]
 >>> print(credential)
-Credential Attributes 0x1020 0x1003 0x1045 0x1026 0x1027 0x1049 0x100F
+Credential Attributes 0x1003 0x100F 0x1020 0x1026 0x1027 0x1045 0x1049
 >>> record = ndef.wifi.WifiSimpleConfigRecord()
 >>> record.name = 'my config token'
 >>> record.set_attribute('credential', credential)
@@ -238,7 +238,7 @@ Credential Attributes 0x1020 0x1003 0x1045 0x1026 0x1027 0x1049 0x100F
 >>> wfa_ext.set_attribute('version-2', 0x20)
 >>> record['vendor-extension'] = [wfa_ext.encode()]
 >>> print(record)
-NDEF Wifi Simple Config Record ID 'my config token' Attributes 0x1049 0x103C 0x100E
+NDEF Wifi Simple Config Record ID 'my config token' Attributes 0x100E 0x103C 0x1049
 >>> octets = b''.join(ndef.message_encoder([record]))
 >>> len(octets)
 139
@@ -301,7 +301,7 @@ exchange of the connection handover messages.
 >>> carrier.set_attribute('uuid-enrollee', '00010203-0405-0607-0809-0a0b0c0d0e0f')
 >>> carrier['vendor-extension'] = [wfaext.encode()]
 >>> print(carrier)
-NDEF Wifi Simple Config Record ID '0' Attributes 0x1049 0x102C 0x1047
+NDEF Wifi Simple Config Record ID '0' Attributes 0x102C 0x1047 0x1049
 >>> hr = ndef.handover.HandoverRequestRecord('1.3', random.randint(0, 0xffff))
 >>> hr.add_alternative_carrier('active', carrier.name)
 >>> octets = b''.join(ndef.message_encoder([hr, carrier]))
@@ -357,7 +357,7 @@ the Enrollee find the AP without a full scan.
 >>> carrier.set_attribute('mac-address', b'\1\2\3\4\5\6')
 >>> carrier['vendor-extension'] = [wfaext.encode()]
 >>> print(carrier)
-NDEF Wifi Simple Config Record ID '0' Attributes 0x1020 0x1001 0x1045 0x1049 0x102C 0x103C
+NDEF Wifi Simple Config Record ID '0' Attributes 0x1001 0x1020 0x102C 0x103C 0x1045 0x1049
 >>> hs = ndef.handover.HandoverSelectRecord('1.3')
 >>> hs.add_alternative_carrier('active', carrier.name)
 >>> octets = b''.join(ndef.message_encoder([hs, carrier]))
@@ -660,7 +660,7 @@ Credential
    >>> import ndef
    >>> credential = ndef.wifi.Credential(('ssid', b'my-ssid'), ('network-key', b'secret'))
    >>> print(credential)
-   Credential Attributes 0x1045 0x1027
+   Credential Attributes 0x1027 0x1045
    >>> print(credential.get_attribute('ssid'))
    SSID 6D:79:2D:73:73:69:64
 
