@@ -131,11 +131,17 @@ def message_encoder(message=None, stream=None):
     if message is None:
         record = None
         while True:
-            record = yield (encoder.send(record))
+            try:
+                record = yield (encoder.send(record))
+            except StopIteration:
+                return
     else:
         itermsg = iter(message)
         encoder.send(None)
-        encoder.send(next(itermsg))
+        try:
+            encoder.send(next(itermsg))
+        except StopIteration:
+            return
         for record in itermsg:
             yield encoder.send(record)
         yield encoder.send(None)
