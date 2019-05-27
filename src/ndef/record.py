@@ -17,16 +17,17 @@ from types import FunctionType, MethodType
 from abc import ABCMeta, abstractmethod
 from functools import wraps
 from io import BytesIO
-import collections
 import re
 
 import sys
 _PY2 = sys.version_info < (3,)
 
 if _PY2:  # pragma: no cover
+    from collections import Sequence
     from urlparse import urlsplit
     from binascii import hexlify
 else:  # pragma: no cover
+    from collections.abc import Sequence
     from urllib.parse import urlsplit
     unicode = str
 
@@ -150,7 +151,7 @@ class Record(object):
             self._data = bytearray()
         elif isinstance(data, str):
             self._data = bytearray(data if _PY2 else data.encode('latin'))
-        elif isinstance(data, (bytearray, collections.Sequence)):
+        elif isinstance(data, (bytearray, Sequence)):
             self._data = bytearray(data)
         else:
             errstr = "data may be sequence or None, but not {}"

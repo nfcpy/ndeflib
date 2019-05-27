@@ -29,8 +29,13 @@ from .bluetooth import BluetoothEasyPairingRecord
 from .bluetooth import BluetoothLowEnergyRecord
 from .wifi import WifiSimpleConfigRecord
 from .wifi import WifiPeerToPeerRecord
-from collections import namedtuple, Sequence
+from collections import namedtuple
 from io import BytesIO
+
+try:
+    from collections.abc import Sequence
+except ImportError:
+    from collections import Sequence
 
 default_version = '1.3'
 
