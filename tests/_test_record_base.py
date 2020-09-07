@@ -86,7 +86,7 @@ class _TestRecordBase:
         print('\n' + ASSERT.format(CLNAME, payload, ERRSTR))
         with pytest.raises(ndef.DecodeError) as excinfo:
             RECORD._decode_payload(OCTETS, 'strict')
-        assert str(excinfo.value) == ERRSTR
+        assert ERRSTR in str(excinfo.value)
 
     def test_decode_relax(self, payload, args):
         RECORD = self.RECORD
