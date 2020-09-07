@@ -6,10 +6,6 @@ Parse or generate NDEF messages
    :target: https://pypi.python.org/pypi/ndeflib
    :alt: Python Package
 
-.. image:: https://readthedocs.org/projects/ndeflib/badge/?version=stable
-   :target: http://ndeflib.readthedocs.io/en/stable/?badge=stable
-   :alt: Stable Documentation
-
 .. image:: https://readthedocs.org/projects/ndeflib/badge/?version=latest
    :target: http://ndeflib.readthedocs.io/en/latest/?badge=latest
    :alt: Latest Documentation
