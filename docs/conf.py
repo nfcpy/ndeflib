@@ -102,7 +102,6 @@ rst_epilog = """
 # A string of reStructuredText that will be included at the beginning
 # of every source file that is read.
 rst_prolog = """
-.. module:: ndef
 """
 
 # The version info for the project you're documenting, acts as replacement for
