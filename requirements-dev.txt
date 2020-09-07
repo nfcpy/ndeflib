@@ -21,4 +21,5 @@ flake8            # syntax and style checks  "flake8 src/ tests/"
 tox               # run tests before push    "tox -c tox.ini"
 sphinx            # to create documentation  "(cd docs && make html doctest)"
 sphinx-rtd-theme  # with the final layout    "firefox docs/_build/html/index.html"
-cryptography      # signature documentation
+cryptography      # for signature documentation examples
+asn1crypto        # for signature documentation examples
